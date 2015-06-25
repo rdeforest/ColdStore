@@ -1,0 +1,58 @@
+#
+# Top-Level Makefile for Coldstore
+#
+
+TOP_SRCDIR = @top_srcdir@
+srcdir = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+infodir = @infodir@
+libdir = @libdir@
+mandir = @mandir@
+includedir = @includedir@
+INSTALL = @INSTALL@
+
+
+
+
+# directories
+libdirs := metaclass/ qvmm/ intern/ coldstore/
+execdirs := chaos/ 
+extradirs := include/ libs/
+docdirs := $(libdirs) $(execdirs)
+alldirs := $(extradirs) $(libdirs) $(execdirs)
+tardirs := $(alldirs)
+
+docfiles := $(foreach dir,$(docdirs),coldstore/$(dir)kdoc) $(foreach dir,$(docdirs),coldstore/$(dir)*.html)  $(foreach dir,$(docdirs),coldstore/$(dir)*.jpg) $(foreach dir,$(docdirs),coldstore/$(dir)*.fig)  $(foreach dir,$(docdirs),coldstore/$(dir)*.sgml)
+
+# rules
+.PHONY: $(alldirs) clean distclean tar doctar dist
+
+all: $(alldirs)
+
+clean:
+	-($(foreach dir,$(alldirs),$(MAKE) -C $(dir) clean;))
+
+distclean:
+	-($(foreach dir,$(alldirs),$(MAKE) -C $(dir) distclean;))
+
+kdocs: 
+	-($(foreach dir,$(docdirs),$(MAKE) -C $(dir) kdocs;))
+
+tar: distclean
+	( here=`pwd`; here=`basename $$here`; cd ..; tar czvf $(branchname)-`date +%Y%m%d`.tgz $$here )
+
+install:
+	@for dir in ${alldirs}; do \
+	  (cd $$dir && $(MAKE) install) \
+	  || case "$(MFLAGS)" in *k*) fail=yes;; *) exit 1;; esac; \
+	done && test -z "$$fail"
+
+doctar: kdocs
+	(here=`pwd`; here=`basename $$here`; cd ..; tar czvf $(branchname)-docs-`date +Y%m%d`.tgz $$here/*.html $$here/graphics $(docfiles))
+
+dist: tar doctar
+
+$(alldirs):
+	$(MAKE) -C $(@D) $(@F) all

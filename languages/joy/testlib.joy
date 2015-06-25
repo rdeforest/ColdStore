@@ -1,0 +1,164 @@
+(* file  TSTLIB.JOY *)
+
+LIBRA
+
+    r_y  ==  dup [[r_y] cons] dip i;
+
+    r_last == [rest null] [first] [rest r_last] ifte;
+    y_last == [ [pop rest null] [pop first] [[rest] dip i] ifte ]  y;
+    x_last == [ [pop rest null] [pop first] [[rest] dip x] ifte ]  x;
+    l_last == [rest null] [first] [rest] [] linrec;
+    t_last == [rest null] [first] [rest] tailrec;
+    w_last == [small not] [rest] while first;
+
+    r_fact == [0 =] [succ] [dup pred r_fact *] ifte;
+    y_fact == [ [pop 0 =] [pop succ] [[dup pred] dip i *] ifte ] y;
+    x_fact == [ [pop 0 =] [pop succ] [[dup pred] dip x *] ifte ] x;
+    g_fact == [null] [succ] [dup pred] [i *] genrec;
+    l_fact == [null] [succ] [dup pred] [*] linrec;
+    p_fact == [1] [*] primrec;
+    t_fact == [1 1] dip [dup [*] dip succ] times pop;
+    c_fact ==
+                [small]
+                [pop 1 [stack put i] callcc]
+                [dup pred c_fact *]
+                ifte;
+
+    r_fib == [small] [] [pred dup pred [r_fib] app2 +] ifte;
+    y_fib == [[pop small] [pop] [[pred dup pred] dip app2 +] ifte] y;
+    b_fib == [small] [] [pred dup pred] [+] binrec;
+    g_fib == [small] [] [pred dup pred] [app2 +] genrec;
+    r_nfib == [small] [pop 1]
+                [pred dup pred [r_nfib] app2 + succ] ifte;
+    y_nfib == [[pop small] [pop pop 1]
+                 [[pred dup pred] dip app2 + succ] ifte] y;
+    b_nfib == [small] [pop 1] [pred dup pred] [+ succ] binrec;
+    g_nfib == [small] [pop 1] [pred dup pred] [app2 + succ] genrec;
+
+    r_map == [pop null] [pop] [[uncons]dip dup [dip] dip r_map cons] ifte;
+
+    g_ifte    == [pop] genrec;
+    g_linrec  == [app1] swoncat genrec;
+    g_binrec  == [app2] swoncat genrec;
+    g_ternrec == [app3] swoncat genrec;
+
+    r_qsort ==
+                [ small ]
+                [ ]
+                [ uncons [>] split
+                  [r_qsort] app2
+                  swapd cons concat ]
+                ifte;
+    b_qsort ==
+                [ small ]
+                [ ]
+                [ uncons [>] split ]
+                [ swapd cons concat ]
+                binrec;
+    r_merge ==
+        [ [ [null] pop ]
+          [ [pop null] swap pop ]
+          [ [unswons2 <] [uncons] dip r_merge cons ]
+          [ [unswons2 >] uncons swapd r_merge cons ]
+          [ uncons2 r_merge cons cons ] ]
+        cond;
+
+(* mutual recursion *)
+    mr_even_odd ==
+        [ [ [pop null] [pop pop true ] [[pred] dip 1 mutinx] ifte ]
+          [ [pop null] [pop pop false] [[pred] dip 0 mutinx] ifte ] ];
+    mr_even == mr_even_odd 0 mutinx;
+    mr_odd  == mr_even_odd 1 mutinx;
+
+(* Manna, pp 181, 205: *)
+    w_gcd1 ==
+        [ != ]
+        [ [>] [dup [-] dip] [[dup] dip swap -] ifte]
+        while pop;
+    t_gcd1 ==
+        [ = ]
+        [ pop ]
+        [ [>] [dup [-] dip] [[dup] dip swap -] ifte]
+        tailrec;
+(* Bauer and Woessner, p 24: *)
+    r_gcd2 == [0 =] [pop] [dup [rem] dip swap r_gcd2] ifte;
+    l_gcd2 == [0 =] [pop] [dup [rem] dip swap] [] linrec;
+    t_gcd2 == [0 =] [pop] [dup [rem] dip swap] tailrec;
+    w_gcd2 == [0 >] [dup [rem] dip swap] while pop;
+
+    gcd_list  ==  [ [w_gcd1] [t_gcd1] [r_gcd2] [l_gcd2] [t_gcd2]  [w_gcd2] ]
+                  [i] map
+                  [pop pop] dip;
+
+    zipwith1 == [zip] dip [uncons first] swoncat map;
+    zipwith == [[null2] [pop2 []] [uncons2]] dip
+                [dip cons] cons
+                linrec;
+    scalarproduct1 == [*] zipwith1 sum;
+    scalarproduct2 == [*] zipwith sum;
+    scalarproduct3 == [null2] [pop2 []] [uncons2] [[*] dip cons]
+                linrec sum;
+    scalarproduct4 == [0] dip2
+        [null2] [pop2] [uncons2 [* +] dip2] tailrec;
+
+(* for tree manipulation: *)
+
+    putflat1 == [list] [[putflat1] step] [put] ifte;
+    putflat2 == [[putflat2] step] [put] iflist;
+    putflat3 == [put] treestep;
+
+    shunttree1 == [list] [[shunttree1] step] [swons] ifte;
+    shunttree2 == [[shunttree2] step] [swons] iflist;
+    shunttree3 == [swons] treestep;
+    flatten1 == [] swap shunttree3 reverselist;
+    squaremap == [dup *] map;
+    squaremapmap == [[dup *] map] map;
+    r_squaremaptree == [[r_squaremaptree] map] [dup *] iflist;
+    x_squaremaptree == [[pop list] [[x] cons map] [pop dup *] ifte] x;
+    r_treerec ==        [pop pop list]
+                [dup [[r_treerec] cons cons] dip i]
+                [pop i]
+                ifte;
+    r_smd ==    [dup *] [map] r_treerec;
+    smd == [dup *] [map] treerec;
+    reversetree1 == [] [[reverse] dip map] treerec;
+    reversetree2 == [] [reverse] [map] treegenrec;
+    maptree1 == [map] treerec;
+    maptree2 == [] [map] treegenrec;
+    striptree1 == [] [[[list] filter] dip map] treerec;
+    striptree2 == [] [[list] filter] [map] treegenrec;
+    striptree3 == [list] filtertree;
+    striptree4 == [false] filtertree.
+
+LIBRA
+
+HIDE
+    swapdd == [swapd] dip;
+    h  ==
+        [ null ]
+        [ ]
+        [ pred
+          swapd h swapd
+          [dup putch] dip3 " to " putchars [dup putch] dip newline
+          swapdd h swapdd
+          succ ]
+        ifte
+IN
+    r-hanoi ==['A 'B 'C] dip h newstack
+END;
+
+x-hanoi ==
+    ['A 'B 'C] dip
+    [ [ pop null ]
+      [ ]
+      [ [pred] dip
+        [swap] dip2 x [swap] dip2
+        [ [dup putch] dip3 " to " putchars [dup putch] dip newline] dip
+        [swap] dip3 x [swap] dip3
+        [succ] dip ]
+      ifte ]
+    x newstack.
+
+(* end  TSTLIB.JOY *)
+
+

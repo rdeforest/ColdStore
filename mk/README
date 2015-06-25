@@ -1,0 +1,5 @@
+README for coldstore/mk
+
+This directory contains the makefile definitions and rules for building
+coldstore.  The split into defs and rules is for fairly arcane reasons not
+worth getting into.

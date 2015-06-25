@@ -1,0 +1,6 @@
+TOP_SRCDIR = @top_srcdir@
+
+include $(TOP_SRCDIR)/mk/gcc.defs.mk
+include $(TOP_SRCDIR)/mk/gcc.rules.mk
+
+all:

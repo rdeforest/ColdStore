@@ -1,0 +1,31 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>Notes on Coldstore Development</title>
+  </head>
+
+  <body>
+    <h1>Notes on Coldstore Development</h1>
+    <ul>
+      <li>Keep on the lookout for any good bignum packages you see, in the next couple of months.  I've got one that looks ok, as well as the gnu one.
+      <li>I'm probably going to work on Dict, then Order, then Symbol.  Then onto the language-level stuff.
+      <li>I'll tend to leave stubs, rather than concentrate on each basetype to the exclusion of all others, because changes to one can propagate on a wave-front.
+      <li>Iterators have proven interesting.  String and List are their own Iterator types.  DictIt is a bit more complex.
+      <li>Not sure about the arithmetic protocol, specifically coercion.  Not sure at all how I'll handle that.  But it's not a major issue, as we only have ints at the moment.  Python has some specific notions about coercion.  Probably use it as a model.  Quantum-Vacuum's thinking out loud, "coercion could be made as a message sent to the object being coerced."
+      <li>I'm going to need help with the Stack stuff, specifically the exception handling and argument handling - the Frame stuff, really.  But that's some way down the track.
+      <li>I'm terminally confused about what the call() operator should do on most basetypes.  Error, I suppose.  Quantum-Vacuum says, "I think operators are type specific as a rule" <i>Shouldn't call() on basetypes return the basetype?</i> -- Maelstorm
+      <li>C++ basetypes export certain known methods, according to a protocol.  They may also export certain idiosyncratic methods, as may relocatable objects export idiosyncratic functions.  The opcode set of C-- is entirely distinct from the operations possible upon C++ basetypes.  
+      <li>It would be nice to be able to allocate things on the stack.  What happens, currently, is that if a reference to anything so allocated is converted to a Slot which is subsequently destroyed, tram attempts to free it (getting an exception.)
+	<p>What would be nice is if dncount can tell from the address that something's stack-allocated, and not call delete no matter what the refcount value.
+      <li>TupleBase&lt;&gt; is AKO Data.  When inherited-from, it has its own internal vptr.  This requires TupleBase to be INTERN()'ed like any other Data-child.  The (minor) difficulty here is that currently the only way to populate the mmapp()ed vptr table is to call Module, and Module has an overly simplistic idea of how to mangle a name.
+      <li>Found a bug in memmem which always fails to find a string of len 1
+      <li>I've religiously made all lengths size_t.  I think this is an error of judgement.  Making them int means we can detect some kinds of error sooner through protective redundancy: off-by-n errors may yield negatives, dereferencing to uninitialized locations will give us negatives in ~50% of cases.  The loss of one bit of length (restricting us to 4gig) is no loss at all.
+    </ul>
+    <hr>
+    <address><a href="mailto:colin@field.medicine.adelaide.edu.au">Colin McCormack</a></address>
+<!-- Created: Thu Mar 12 12:35:09 EST 1998 -->
+<!-- hhmts start -->
+Last modified: Sat May  2 14:04:04 EST 1998
+<!-- hhmts end -->
+  </body>
+</html>

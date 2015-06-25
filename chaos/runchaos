@@ -1,0 +1,11 @@
+#!/bin/sh
+
+[ -e coldstore ] && 
+   (echo -n "removing old store..."; 
+    rm coldstore; 
+    echo "done")
+
+LD_LIBRARY_PATH=../libs:.
+export LD_LIBRARY_PATH
+
+./chaos $*

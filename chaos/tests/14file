@@ -1,0 +1,14 @@
+"File" peektop
+    [ "This file is just data to test the file primitive with." 
+      "Second line." 
+      "Last line." 
+    ] 
+    " [ 'filetest.txt 1 ] file iterator rpush
+      [ rpop 
+          dup next swap
+          dup next swap
+          dup next swap
+        drop
+      ]
+    " test
+

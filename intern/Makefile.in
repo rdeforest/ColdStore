@@ -1,0 +1,48 @@
+#
+# Makefile for coldstore/intern
+#
+
+TOP_SRCDIR = @top_srcdir@
+srcdir = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+infodir = @infodir@
+libdir = @libdir@
+mandir = @mandir@
+includedir = @includedir@
+INSTALL = @INSTALL@
+
+
+#PROFILING := no
+include @top_srcdir@/mk/gcc.defs.mk
+
+# nb: -I./freebsd-inc/ is for FreeBSD but doesn't hurt linux
+# FIXME: move this to the source and use #ifdefs
+
+INCLUDES += -I./freebsd-inc/ -I@top_srcdir@/include -I@top_srcdir@/qvmm
+LDFLAGS += -lelf -liberty
+
+all: libintern.so
+
+include @top_srcdir@/mk/gcc.rules.mk
+
+libintern.so: elf.o elfexe.o Caller.o
+
+elfexetest: elfexe.o
+
+headers: demangle.h elf.hh elfexe.hh elfdump.hh
+
+install_headers: $(headers)
+	$(TOP_SRCDIR)/mkinstalldirs $(includedir)
+	@list='$(headers)'; for p in $$list; do \
+	  if test -f "$$p"; then d= ; else d="$(srcdir)/"; fi; \
+	  echo "(INSTALL) $$d$$p $(includedir)/$$p"; \
+	  $(INSTALL) $$d$$p $(includedir)/$$p; \
+	done
+
+install: all install_headers
+	$(TOP_SRCDIR)/mkinstalldirs $(libdir)
+	$(INSTALL) libintern.so $(libdir)/libintern.so
+
+CLEAN += elfexetest

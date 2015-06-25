@@ -1,0 +1,58 @@
+TOP_SRCDIR = @top_srcdir@
+srcdir = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+infodir = @infodir@
+libdir = @libdir@
+mandir = @mandir@
+includedir = @includedir@
+INSTALL = @INSTALL@
+
+include $(TOP_SRCDIR)/mk/occ.defs.mk
+
+OCCFLAGS += -SColdClass -SColdTemplate -SSlotClass
+YACC = bison++ 
+INCLUDES += -I$(TOP_SRCDIR)/include -I$(TOP_SRCDIR)/coldstore \
+	    -I$(TOP_SRCDIR)/toolkit
+
+CXXFLAGS += $(INCLUDES)
+LDFLAGS += $(WRAP) -rdynamic
+LDLIBS += -L$(TOP_SRCDIR)/libs -lgmp -lpcre  -lutil -lqvmm  -lintern  -liberty
+LDLIBS += -ldl -liberty 
+
+OCC_ENV += LD_LIBRARY_PATH=.:$(TOP_SRCDIR)/metaclass
+
+
+all:	chatter.so chatter 
+
+test: chatter
+	LD_LIBRARY_PATH=$(TOP_SRCDIR)/libs/ ./chatter < chatter.test
+
+include $(TOP_SRCDIR)/mk/occ.rules.mk
+
+manual: chattermanual.html
+
+chattermanual.html: chattermanual.wml
+	wml chattermanual.wml > chattermanual.html
+
+chatter.so: start.o Scanner.o Parser.o
+
+global.o: global-linux.c global-freebsd.c
+start.o: start.cc
+Scanner.o: Scanner.cc Scanner.hh
+Parser.o: Parser.cc Parser.hh
+chatter: chatter.o global.o $(TOP_SRCDIR)/libs/slop.o
+
+debug: chatter
+	-rm coldstore
+	LD_LIBRARY_PATH=$(TOP_SRCDIR)/libs ddd chatter &
+
+install: all
+	$(TOP_SRCDIR)/mkinstalldirs $(bindir)
+	$(TOP_SRCDIR)/mkinstalldirs $(libdir)
+	$(INSTALL) chatter $(bindir)/chatter
+	$(INSTALL) chatter.so $(libdir)/chatter.so
+
+CLEAN += 
+DISTCLEAN += chatter coldstore

@@ -1,0 +1,14 @@
+More information on Joy can be found at:
+http://www.latrobe.edu.au/www/philosophy/phimvt/j00syn.html
+
+
+There's a tutorial at:
+http://www.latrobe.edu.au/www/philosophy/phimvt/j01tut.html
+
+Things todo:
+
+Create an initial hack to keep the joy in coldstore in the makefile (remapping
+malloc, etc).
+
+Do a pass to convert Node, Parser, etc, into real class files.
+

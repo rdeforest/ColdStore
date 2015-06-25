@@ -1,0 +1,8 @@
+"Return stack" peektop
+    dup
+        [ 'y 'z 'x ] 
+            "'x 'y rpush 'z rpop 
+             [ ] swap append
+                 swap append
+                 swap append" test
+drop

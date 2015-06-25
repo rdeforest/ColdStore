@@ -1,0 +1,9 @@
+#!/bin/bash
+skeleton=skeleton
+blah=$1
+Blah=`echo -n \`echo $blah | cut -b 1 | tr "[a-z]" "[A-Z]"\`; echo $blah | cut -b 2-`
+Skeleton=`echo -n \`echo -n $skeleton | cut -b 1 | tr "[a-z]" "[A-Z]"\`; echo $skeleton | cut -b 2-`
+echo "To: $Blah"
+echo "From: $Skeleton"
+mkdir ../$blah
+for x in Makefile $skeleton.cc global-freebsd.c global-linux.c global.c semantics.cc semantics.hh; do cat $x | sed "s/$skeleton/$blah/g;s/$Skeleton/$Blah/g" > ../$blah/$x; done; cp $skeleton.cc ../$blah/$blah.cc

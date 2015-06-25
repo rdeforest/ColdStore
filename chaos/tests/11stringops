@@ -1,0 +1,23 @@
+"String comparisons" peektop
+    dup 1 "'fred   'fred   == " test
+    dup 1 "'wilma  'wilma  == " test
+    dup 0 "'fred   'fred   != " test
+    dup 0 "'wilma  'fred   == " test
+    dup 1 "'wilma  'fred   != " test
+    dup 1 "'wilma  'fred   >  " test
+    dup 0 "'wilma  'fred   <  " test
+    dup 0 "'fred   'wilma  >  " test
+    dup 1 "'fred   'wilma  <  " test
+drop
+
+"String operations" peektop
+    dup 'fredwilma  "'fred  'wilma  concat" test
+    dup 're         "'fred 1 2 slice"       test
+    dup 'e          "'fred 2 element"       test
+    dup 1           "'fred 're search"     test
+
+    /* https://sourceforge.net/bugs/?func=detailbug&bug_id=103780&group_id=3472 */
+    dup Null        "'x  'y  search"        test
+drop
+
+

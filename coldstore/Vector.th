@@ -1,0 +1,684 @@
+// Emacs mode identifier: -*- C++ -*-
+// templated Vector class for dynamic arrays of elements of arbitrary type
+// Copyright (C) 1998,1999 Colin McCormack,
+// see LICENSE (MD5 f5220f8f599e5e926f37cf32efe3ab68) for terms
+// 	$Id: Vector.th,v 1.14 2002/04/15 09:30:14 coldstore Exp $	
+
+template <class T>
+void Vector<T>::adjust_index_start(int& _start, int rlen)
+{
+    // no object
+    // negative start is end-relative
+    if(_start<0)
+      {
+        _start += rlen;
+      };
+    if(_start<0)
+        throw new Error("range", _start, "Start is before start");
+    if (_start > rlen)
+        throw new Error("range", _start, "Start is after end");
+    // start == rlen will be caught below, only matters if _len>0 anyway
+}
+
+template <class T>
+void Vector<T>::adjust_indices_here (int& _start, int& _len)
+{
+  adjust_indices (_start, _len, Length());
+}
+
+template <class T>
+void Vector<T>::adjust_indices (int& _start, int& _len, int rlen)
+{
+    adjust_index_start (_start, rlen);
+    // negative length is end-relative
+    if (_len < 0)
+        _len = rlen - _start + _len + 1;
+    // slice(x,-1) is to end of string, so must add 1
+    // check bounds
+    if ((_start + _len) > rlen)
+        throw new Error("range", _start, "End is after end");
+    if (_len < 0)
+        throw new Error("range", _start, "Negative length");
+}
+
+template <class T>
+int Vector<T>::actual_allocation(int newlen)
+{
+#ifndef __opencxx
+  return (newlen + (newlen / extra_allocation)) >? minimum_size;	// >? is max op
+#else
+  int a = (newlen + (newlen / extra_allocation));
+  int b = minimum_size;
+  if (a>b)
+    return a;
+  else
+    return b;
+#endif
+}
+
+// reallocate Segment
+template <class T>
+void Vector<T>::rlloc(int newlen)
+{
+    DEBLOG(cerr << "rlloc: " << *this << '\n');
+    assert(newlen > 0);
+    check();					// validate the current state
+    const int asize = actual_allocation(newlen);
+    TupleBase<T> *newalloc = new (asize) TupleBase<T>(this, asize);
+    if (allocation)
+        allocation->dncount();		// destroy contents of old Tuple
+    allocation = newalloc;		// make new allocation the current one
+    allocation->upcount();		// bump refcount
+    start = allocation->content();	// point Vector to correct Tuple
+    T::init(start + len, asize - len);	// initialize new space in new Tuple
+    len = newlen;			// set the new length
+    check();				// test the result
+}
+
+// realloc Vector's Segment to accomodate new growth
+// realloc uses extra_allocation to give each allocation more space for growth
+template <class T>
+void Vector<T>::resize(int newlen)
+{
+    DEBLOG(cerr << "resize: " << *this << '\n');
+    assert(newlen > 0);
+    if (!allocation) {
+        rlloc(newlen);
+    } else if (allocation->Length() < newlen) {
+        // insufficient space, realloc
+        if (newlen) {
+            if (!start) {
+                // this was a NULL Vector - allocate it some space
+                const int asize = actual_allocation(newlen);
+                check();
+                allocation = new (asize) TupleBase<T>(asize);
+                allocation->upcount();
+                set(allocation->content(), newlen);// point Vector at Tuple
+                T::init(start, newlen);	// initialize contents of new Segment 
+                check();
+            } else {
+                rlloc(newlen);
+            }
+        } else {
+            // Segment's shrunk to nothing, delete it and make a NULL Vector
+            allocation->dncount();
+            allocation = (TupleBase<T>*)0;
+            (Segment<T>)*this = Segment<T>((T*)0,0);
+        }
+    } else {
+        len = newlen;
+    }
+}
+
+// reallocate Vector's Segment if it's shrunk below minimum utilization
+template <class T>
+void Vector<T>::shrink()
+{
+    if (start) {
+        // it's not a NULL Vector
+        if (!len) {
+            // Segment's shrunk to nothing, delete it and make a NULL Vector
+            allocation->dncount();
+            allocation = (TupleBase<T>*)0;
+            set(0, 0);
+        } else if ((allocation->Length() / (int)minimum_occupancy) > len) {
+            // the allocation Segment is under-occupied,
+            // make a new tighter-fitting one
+            rlloc(len);
+        }
+    }
+    check();
+}
+
+// return an element of Vector, extending as required
+template <class T>
+T & Vector<T>::operator[] (int index) //const
+{
+    if (index >= len) {
+        resize(index+1);	// extend the Vector
+    len = index+1;
+    check();
+    }
+    return start[index];
+}
+
+// consistency check
+template <class T>
+void Vector<T>::check(int i) const
+{
+#if 0
+    DEBLOG(cerr << "check: " << *this << '\n');
+    if (allocation) {
+#ifdef BTREE_INTEGRITY
+        Memory::Assert();
+#endif
+	if (!allocation->encloses(*this)) {
+            cerr << "active: (" << start << ", " << len
+                 << ") doesn't enclose allocation (" << *allocation
+                 << "\n";
+            assert(!"active doesn't enclose allocation");
+        }
+        T::check(start, len);
+    } else if (len) {
+        assert(!"Null start pointer, non-zero length");
+    }
+#endif
+
+#if 0    
+    while (--i) {
+        // recursive - lets Vector<Vector<>> work
+        (this+1)->check(i);
+    }
+#endif
+}
+
+// Null Vector constructor
+template <class T>
+Vector<T>::Vector()
+    : Segment<T>(0),
+      allocation((TupleBase<T>*)0)
+{}
+
+// construct a Vector with pre-allocation
+template <class T>
+Vector<T>::Vector(unsigned int size)
+    : allocation(new (actual_allocation(size))
+                 TupleBase<T>(actual_allocation(size)))
+{
+    set(allocation->content(), 0);
+    check();					// validate the current state
+    allocation->upcount();
+}
+
+// Copy T* array of a given size
+template <class T>
+Vector<T>::Vector(const T *contentT, unsigned int size)
+    : allocation(new (actual_allocation(size))
+                 TupleBase<T>(actual_allocation(size)))
+{
+    set(allocation->content(), size);
+    //T::check(contentT, size);
+    T::dup(start, contentT, size);
+    check();					// validate the current state
+    allocation->upcount();
+}
+
+// Copy Segment
+template <class T>
+Vector<T>::Vector(const Segment<T> &contentT)
+    : allocation(new (actual_allocation(len))
+                 TupleBase<T>(actual_allocation(len)))
+{
+    set(allocation->content(), contentT.Length());
+    T::check(contentT.content(), len);
+    T::dup(start, contentT, len);
+    check();					// validate the current state
+    allocation->upcount();
+}
+
+// Singleton T& Vector
+template <class T>
+Vector<T>::Vector(const T &contentT)
+    : allocation(new (actual_allocation(1)) TupleBase<T>(actual_allocation(1)))
+{
+    set(allocation->content(), 1);
+    *start = contentT;
+    check();					// validate the current state
+    allocation->upcount();
+}
+
+// Repeat T& as array
+template <class T>
+Vector<T>::Vector(const T &contentT, unsigned int repetition)
+    : allocation(new (actual_allocation(repetition))
+                 TupleBase<T>(actual_allocation(repetition)))
+{
+    set(allocation->content(), repetition);
+    T::segFill(start, contentT, repetition);
+    check();					// validate the current state
+    allocation->upcount();
+}
+
+// Reference Tuple
+template <class T>
+Vector<T>::Vector(TupleBase<T> *t)
+    : allocation(t)
+{
+    if (allocation) {
+        set(allocation->content(), allocation->Length());
+        check();
+        allocation->upcount();
+    }
+}
+
+// Reference Tuple
+template <class T>
+Vector<T>::Vector(TupleBase<T> &t)
+    : allocation(&t)
+{
+    if (allocation) {
+        set(allocation->content(), allocation->Length());
+        check();
+        allocation->upcount();
+    }
+}
+
+// Reference Sub-Tuple
+template <class T>
+Vector<T>::Vector(TupleBase<T> *t, int _start, int _len)
+    : allocation(t)
+{
+    if (allocation) {
+        set(allocation->content() + _start,
+            (_len < 0)?allocation->Length() - _start:_len);
+        check();
+        allocation->upcount();
+    }
+}
+
+// Reference Sub-Tuple
+template <class T>
+Vector<T>::Vector(TupleBase<T> &t, int _start, int _len)
+    : allocation(&t)
+{
+    if (allocation) {
+        set(allocation->content() + _start,
+            (_len < 0)?allocation->Length() - _start:_len);
+        check();
+        allocation->upcount();
+    }
+}
+
+// Reference a Vector<T>'s contents
+template <class T>
+Vector<T>::Vector(const Vector<T> *v)
+    : allocation(v->Allocation())
+{
+    if (allocation) {
+        set(v->content(), v->Length());
+        check();
+        allocation->upcount();
+    }
+}
+
+template <class T>
+Vector<T>::Vector(const Vector<T> &v)
+    : allocation(v.Allocation())
+{
+    if (allocation) {
+        set(v.content(), v.Length());
+        check();
+        allocation->upcount();
+    }
+}
+
+// Share a subrange of Vector<T>'s contents
+template <class T>
+Vector<T>::Vector(const Vector<T> *v, int _start, int _len)
+    : allocation(v->Allocation())
+{
+    if (allocation) {
+        adjust_indices(_start,_len,v->Length());
+        set(v->content() + _start, _len);
+        check();
+        allocation->upcount();
+    }
+}
+
+template <class T>
+Vector<T>::Vector(const Vector<T> &v, int _start, int _len)
+    : allocation(v.Allocation())
+{
+    if (allocation) {
+        adjust_indices(_start, _len, v.Length());
+        set(v.content() + _start, _len);
+        check();
+        allocation->upcount();
+    }
+}
+
+// union vector constructor - returns a vector of v1 + v2
+template <class T>
+Vector<T>::Vector(const Vector<T> *v1, const Vector<T> *v2)
+    : allocation(new (actual_allocation(v1->len + v2->len))
+                 TupleBase<T>(actual_allocation(v1->len + v2->len)))
+{
+    v1->check();
+    v2->check();
+    
+    set(allocation->content(), v1->len + v2->len);
+    
+    T::dup(start, v1->start, v1->len);
+    T::dup(start + v1->len, v2->start, v2->len);
+    allocation->upcount();
+}
+
+template <class T>
+Vector<T>::Vector(const Vector<T> &v1, const Vector<T> &v2)
+    : allocation(new (actual_allocation(v1.len + v2.len))
+                 TupleBase<T>(actual_allocation(v1.len + v2.len)))
+{
+    v1.check();
+    v2.check();
+    
+    set(allocation->content(), v1.len + v2.len);
+    
+    T::dup(start, v1.start, v1.len);
+    T::dup(start + v1.len, v2.start, v2.len);
+    allocation->upcount();
+}
+
+template <class T>
+Vector<T>::~Vector()
+{
+    if (allocation) {
+        allocation->dncount();
+    }
+}
+
+// doDel - delete but don't shrink (used by replace)
+template <class T>
+Vector<T> *Vector<T>::doDel(int where, int what)
+{
+    DEBLOG(cerr << this << "->Vector<>::doDel("
+           << where << ", " << what << ')'
+           << *this
+           << '\n');
+    
+    if (!start || len == 0)
+        throw new Error("nil", 0, "Destination of delete is empty");
+
+    adjust_indices_here(where, what);
+
+    // trivial deletion of no items
+    if (what == 0)
+        return this;
+    
+    // check allocation's refcount, copy if necessary
+    if (allocation && (allocation->refcount() > 1))
+        rlloc(len);
+    
+    // destroy the segment to be elided
+    T::destroy(start+where, what);
+    check();
+    
+    if ((where+what) == len) {
+        // reduction in strength - deletion at end just reduces len
+        T::init(start + len - what, what);
+        check();
+    } else if (where == 0) {
+        // reduction in strength - deletion at beginning just increases start
+        T::init(start, what);
+        check();
+        start += what;
+    } else {
+        // move the relevant parts down
+        T::move(start+where, start + where + what, len - where - what);
+        check();
+        T::init(start + len - what, what);
+        check();
+    }
+    
+    // adjust length
+    len -= what;
+    
+    check();
+    return this;
+}
+
+template <class T>
+Vector<T> *Vector<T>::del(int where, int what)
+{
+    check();
+    doDel(where, what);
+    shrink();
+    return this;
+}
+
+// append values to right
+template <class T>
+Vector<T> *Vector<T>::vconcat(const T *addT, int additional)
+{
+    check();
+    DEBLOG(cerr << "vconcat " << *this
+           << " + " << addT <<
+           " for " << additional << '\n');
+
+    // appending NULL always works
+    if ((!addT &&  !additional) ||  !additional)
+        return this;
+
+    if (addT)
+        T::check(addT, additional);
+
+    check();
+    
+    // check allocation's refcount, copy if necessary
+    int oldlen = len;
+    if (allocation && (allocation->refcount() > 1)) {
+        rlloc(len + additional);
+        DEBLOG(cerr << "vconcat post rlloc " << *this << '\n');
+    } else {
+        resize(len + additional);	// ensure there's enough space
+        DEBLOG(cerr << "vconcat post resize " << *this << '\n');
+    }
+    
+    DEBLOG(cerr << "vconcat postalloc " << *this << '\n');
+
+    if (start + oldlen + additional > allocation->last()) {
+        // insufficient space on the right.
+        // we have to move the contents left anyway,
+        // so move it to the allocation start
+        T::move(allocation->content(), start, oldlen);
+        start = allocation->content();
+        DEBLOG(cerr << "vconcat move left " << *this << '\n');
+    }
+    
+    // there's now enough space to add to the right
+    if (addT)
+        T::dup(start+oldlen, addT, additional);
+    else
+        T::init(start + oldlen, additional);	// zero the new space
+
+    DEBLOG(cerr << "vconcat post dup " << *this << '\n');
+    
+    check();
+    
+    return this;
+}
+
+// insert values before point
+template <class T>
+Vector<T> *Vector<T>::vinsert(int where, const T *addT, int what)
+{
+    DEBLOG(cerr << *this << "->Vector<>::vinsert("
+           << where << ", " << addT << ", " << what << ")\n");
+    
+    check();
+    adjust_index_start(where, Length());
+
+    // inserting null always succeeds
+    if ((!addT &&  !what) ||  !what)
+        return this;
+
+    if (addT)
+        T::check(addT, what);
+        
+    if (where >= len) {
+        // strength-reduction: inserting at/after the end is adding
+        return vconcat(addT, what);
+    }
+    
+    // we're inserting contents in the middle
+    
+    // check allocation's refcount, copy if necessary
+    int oldlen = len;
+    if (allocation && (allocation->refcount() > 1))
+        rlloc(len + what);
+    else
+        resize(len + what);
+    
+    DEBLOG(cerr << *this << ' ' << oldlen
+           << " Vector<>::vinsert post-resize "
+           << where << " " << what << '\n');
+
+    if (start > allocation->content()) {
+        // make hole leftward then fill it
+        if (start - what > allocation->content()) {
+            // we can slide the start left and do the complete insertion
+            T::move(start - what, start, where);	// slide some left
+            start -= what;				// adjust start
+        } else {
+            // there's not enough space to the left, but there's some,
+            // slide left to the start of allocation
+            int diff = what - (start - allocation->content());	// right-space needed
+            T::move(start+where+diff, start + where, oldlen - where);	// slide some right
+            T::move(allocation->content(), start, where);// slide some left
+            start = allocation->content();		// adjust start
+        }
+    } else {
+        // make hole rightward
+        T::move(start+where+what, start + where, oldlen - where);// slide some right
+    }
+
+    T::init(start + where, what);	// zero the opened space
+    if (addT)
+        T::dup(start+where, addT, what);	// add in new content
+
+    check();
+
+    return this;
+}
+
+// replace range with array
+template <class T>
+Vector<T> *Vector<T>::Replace(int where, int what,
+                              const T *addT, int additional)
+{
+    DEBLOG(cerr << this << "->Vector<>::replace("
+           << where << ", " << what << ", " << addT 
+           << ", " << additional << ')'
+           << " Vector: " << *this
+           << '\n');
+    adjust_indices_here (where, what);
+    if (what == 0) {
+        return vinsert(where, addT, additional);
+    }
+    
+    check();
+    if (addT)
+        T::check(addT, additional);
+    
+    if (what != 0)
+        doDel(where, what);
+    if (where > len)
+        where = len;
+    
+    return vinsert(where, addT, additional);
+}
+
+// add an element to the set, true if added
+template <class T>
+bool Vector<T>::set_add(const T &d)
+{
+    check();
+    T::check(&d, 1);
+    int index;
+    if (tsearch(d, index)) {
+        return false;
+    } else {
+        // not yet present
+        vinsert(index, &d, 1);
+        // qsort(); shouldn't be necessary if tsearch is stable
+        return true;
+    }
+}
+
+// delete an element from the set, true if deleted
+template <class T>
+bool Vector<T>::set_remove(const T &d)
+{
+    check();
+    T::check(&d, 1);
+    int pos;
+    if (tsearch(d, pos)) {
+        // found it
+        doDel(pos, 1);
+        shrink();
+        return true;
+    } else {
+        // not present
+        return false;
+    }
+}
+
+// convert Vector to set
+template <class T>
+void Vector<T>::toset()
+{
+    check();
+    
+    if (len) {
+        // check allocation's refcount, copy if necessary
+        if (allocation->refcount() > 1)
+            rlloc(len);
+        
+        qsort();
+        
+        // remove duplicates
+        for (int i = 0; i < len - 1; i++) {
+            if (*(start + i) == *(start + i+1)) {
+                doDel(i,1);
+                i--;
+            }
+        }
+        shrink();
+    }
+}
+
+// destroy contents
+template <class T>
+void Vector<T>::destroy(int len)
+{
+    assert(len > 0);
+    allocation->dncount();
+}
+
+#if 1
+//extern bool DumpVerbose;
+// dump Vector to file
+template <class T>
+ostream& operator<< (ostream& out,  Vector<T> const &vec)
+{
+   bool DumpVerbose = true;
+    if (&vec && vec.allocation) {
+        if (DumpVerbose) {
+            out.form("[0x%08x,%d] [0x%08x,%d] ",
+                     vec.allocation->content(), vec.allocation->Length(),
+                     vec.content(), vec.Length());
+        }
+        out << '{';
+        const T *contents = vec.content();
+        for (int i = 0; i < vec.Length(); i++)
+            out << contents[i];
+        out << '}';
+    } else {
+        out << "[NULL]\n";
+    }
+    return out;
+}
+#endif
+
+// Make a clean copy of the vector
+template <class T>
+bool Vector<T>::Mutate()
+{
+    // check allocation's refcount, copy if necessary
+    if (allocation && (allocation->refcount() > 1)) {
+        rlloc(len);
+        assert(allocation && (allocation->refcount() > 0));
+        return true;
+    } else {
+        return false;
+    }
+}

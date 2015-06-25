@@ -1,0 +1,27 @@
+RYAN's todo:
+
+	* generic lexer/scanner to replace chaos, freon, and chatter lexers
+	  - wrap gscanner from glib?  (dependency we may not want)
+	  - write from scratch?
+	  - find another lexer to copy?
+	  - wrap flex up in a more OO way?
+	  - find other lexer generators?
+
+	* refactor MOP for Data and sub-types
+	  - split into common, scalar, sequence, and map methods
+	  - use metaobject slot in Message?
+
+	* rework Binding/Variable/Closure
+	  - one Binding for both Closure and subClosures - shared bindings, with
+		push/pop on closure entry/exit for lexical scope
+
+	* rework chatter parser until factorial example compiles and runs
+
+	* rewrite chatter and freon lexers using generic lexer framework
+
+	* rewrite freon parser by hand, lightly based on the ecmascript parser
+	  written in java
+
+	* embed freon and chatter into the mud
+
+	* get ready for release

@@ -1,0 +1,543 @@
+<?xml version="1.0"?>
+<GTK-Interface>
+
+<project>
+  <name>coldbrowser</name>
+  <program_name>coldbrowser</program_name>
+  <directory></directory>
+  <source_directory></source_directory>
+  <pixmaps_directory>pixmaps</pixmaps_directory>
+  <language>C++</language>
+  <gnome_support>True</gnome_support>
+  <gettext_support>False</gettext_support>
+</project>
+
+<widget>
+  <class>GtkWindow</class>
+  <name>coldBrowser</name>
+  <width>700</width>
+  <height>600</height>
+  <title>cold Browser</title>
+  <type>GTK_WINDOW_TOPLEVEL</type>
+  <position>GTK_WIN_POS_NONE</position>
+  <modal>False</modal>
+  <allow_shrink>False</allow_shrink>
+  <allow_grow>True</allow_grow>
+  <auto_shrink>False</auto_shrink>
+
+  <widget>
+    <class>GtkVBox</class>
+    <name>vbox1</name>
+    <homogeneous>False</homogeneous>
+    <spacing>0</spacing>
+
+    <widget>
+      <class>GtkVPaned</class>
+      <name>vpaned1</name>
+      <handle_size>6</handle_size>
+      <gutter_size>6</gutter_size>
+      <position>0</position>
+      <child>
+	<padding>0</padding>
+	<expand>True</expand>
+	<fill>True</fill>
+      </child>
+
+      <widget>
+	<class>GtkHBox</class>
+	<name>hbox8</name>
+	<height>180</height>
+	<homogeneous>False</homogeneous>
+	<spacing>0</spacing>
+	<child>
+	  <shrink>False</shrink>
+	  <resize>False</resize>
+	</child>
+
+	<widget>
+	  <class>GtkFrame</class>
+	  <name>parentsFrame</name>
+	  <width>300</width>
+	  <label>Objects</label>
+	  <label_xalign>0</label_xalign>
+	  <shadow_type>GTK_SHADOW_ETCHED_IN</shadow_type>
+	  <child>
+	    <padding>0</padding>
+	    <expand>True</expand>
+	    <fill>True</fill>
+	  </child>
+
+	  <widget>
+	    <class>GtkHBox</class>
+	    <name>hbox5</name>
+	    <height>170</height>
+	    <homogeneous>False</homogeneous>
+	    <spacing>0</spacing>
+
+	    <widget>
+	      <class>GtkVButtonBox</class>
+	      <name>vbuttonbox3</name>
+	      <layout_style>GTK_BUTTONBOX_DEFAULT_STYLE</layout_style>
+	      <spacing>10</spacing>
+	      <child_min_width>85</child_min_width>
+	      <child_min_height>27</child_min_height>
+	      <child_ipad_x>7</child_ipad_x>
+	      <child_ipad_y>0</child_ipad_y>
+	      <child>
+		<padding>0</padding>
+		<expand>False</expand>
+		<fill>False</fill>
+	      </child>
+
+	      <widget>
+		<class>GtkButton</class>
+		<name>newObject</name>
+		<cxx_visibility>public</cxx_visibility>
+		<can_default>True</can_default>
+		<can_focus>True</can_focus>
+		<label>New</label>
+		<relief>GTK_RELIEF_NORMAL</relief>
+	      </widget>
+
+	      <widget>
+		<class>GtkButton</class>
+		<name>deleteObject</name>
+		<cxx_visibility>public</cxx_visibility>
+		<can_default>True</can_default>
+		<can_focus>True</can_focus>
+		<label>Delete</label>
+		<relief>GTK_RELIEF_NORMAL</relief>
+	      </widget>
+
+	      <widget>
+		<class>GtkButton</class>
+		<name>showParents</name>
+		<cxx_visibility>public</cxx_visibility>
+		<can_default>True</can_default>
+		<can_focus>True</can_focus>
+		<label>Parents</label>
+		<relief>GTK_RELIEF_NORMAL</relief>
+	      </widget>
+
+	      <widget>
+		<class>GtkButton</class>
+		<name>showAll</name>
+		<cxx_visibility>public</cxx_visibility>
+		<can_default>True</can_default>
+		<can_focus>True</can_focus>
+		<label>All</label>
+		<relief>GTK_RELIEF_NORMAL</relief>
+	      </widget>
+	    </widget>
+
+	    <widget>
+	      <class>GtkScrolledWindow</class>
+	      <name>scrolledwindow14</name>
+	      <height>160</height>
+	      <hscrollbar_policy>GTK_POLICY_AUTOMATIC</hscrollbar_policy>
+	      <vscrollbar_policy>GTK_POLICY_ALWAYS</vscrollbar_policy>
+	      <hupdate_policy>GTK_UPDATE_CONTINUOUS</hupdate_policy>
+	      <vupdate_policy>GTK_UPDATE_CONTINUOUS</vupdate_policy>
+	      <child>
+		<padding>0</padding>
+		<expand>True</expand>
+		<fill>True</fill>
+	      </child>
+
+	      <widget>
+		<class>GtkViewport</class>
+		<name>viewport12</name>
+		<shadow_type>GTK_SHADOW_IN</shadow_type>
+
+		<widget>
+		  <class>GtkList</class>
+		  <name>parents</name>
+		  <cxx_visibility>public</cxx_visibility>
+		  <selection_mode>GTK_SELECTION_SINGLE</selection_mode>
+		</widget>
+	      </widget>
+	    </widget>
+
+	    <widget>
+	      <class>GtkScrolledWindow</class>
+	      <name>scrolledwindow9</name>
+	      <height>160</height>
+	      <hscrollbar_policy>GTK_POLICY_AUTOMATIC</hscrollbar_policy>
+	      <vscrollbar_policy>GTK_POLICY_ALWAYS</vscrollbar_policy>
+	      <hupdate_policy>GTK_UPDATE_CONTINUOUS</hupdate_policy>
+	      <vupdate_policy>GTK_UPDATE_CONTINUOUS</vupdate_policy>
+	      <child>
+		<padding>0</padding>
+		<expand>True</expand>
+		<fill>True</fill>
+	      </child>
+
+	      <widget>
+		<class>GtkViewport</class>
+		<name>viewport9</name>
+		<shadow_type>GTK_SHADOW_IN</shadow_type>
+
+		<widget>
+		  <class>GtkList</class>
+		  <name>children</name>
+		  <cxx_visibility>public</cxx_visibility>
+		  <selection_mode>GTK_SELECTION_SINGLE</selection_mode>
+		</widget>
+	      </widget>
+	    </widget>
+	  </widget>
+	</widget>
+
+	<widget>
+	  <class>GtkFrame</class>
+	  <name>membersFrame</name>
+	  <height>200</height>
+	  <label>Members</label>
+	  <label_xalign>0</label_xalign>
+	  <shadow_type>GTK_SHADOW_ETCHED_IN</shadow_type>
+	  <child>
+	    <padding>0</padding>
+	    <expand>True</expand>
+	    <fill>True</fill>
+	  </child>
+
+	  <widget>
+	    <class>GtkHBox</class>
+	    <name>hbox4</name>
+	    <homogeneous>False</homogeneous>
+	    <spacing>0</spacing>
+
+	    <widget>
+	      <class>GtkVButtonBox</class>
+	      <name>vbuttonbox2</name>
+	      <layout_style>GTK_BUTTONBOX_START</layout_style>
+	      <spacing>10</spacing>
+	      <child_min_width>85</child_min_width>
+	      <child_min_height>27</child_min_height>
+	      <child_ipad_x>7</child_ipad_x>
+	      <child_ipad_y>0</child_ipad_y>
+	      <child>
+		<padding>0</padding>
+		<expand>False</expand>
+		<fill>False</fill>
+	      </child>
+
+	      <widget>
+		<class>GtkButton</class>
+		<name>newMember</name>
+		<cxx_visibility>public</cxx_visibility>
+		<can_default>True</can_default>
+		<can_focus>True</can_focus>
+		<label>New</label>
+		<relief>GTK_RELIEF_NORMAL</relief>
+	      </widget>
+
+	      <widget>
+		<class>GtkButton</class>
+		<name>removeMember</name>
+		<cxx_visibility>public</cxx_visibility>
+		<can_default>True</can_default>
+		<can_focus>True</can_focus>
+		<label>Remove</label>
+		<relief>GTK_RELIEF_NORMAL</relief>
+	      </widget>
+	    </widget>
+
+	    <widget>
+	      <class>GtkScrolledWindow</class>
+	      <name>scrolledwindow8</name>
+	      <hscrollbar_policy>GTK_POLICY_AUTOMATIC</hscrollbar_policy>
+	      <vscrollbar_policy>GTK_POLICY_ALWAYS</vscrollbar_policy>
+	      <hupdate_policy>GTK_UPDATE_CONTINUOUS</hupdate_policy>
+	      <vupdate_policy>GTK_UPDATE_CONTINUOUS</vupdate_policy>
+	      <child>
+		<padding>0</padding>
+		<expand>True</expand>
+		<fill>True</fill>
+	      </child>
+
+	      <widget>
+		<class>GtkViewport</class>
+		<name>viewport8</name>
+		<shadow_type>GTK_SHADOW_IN</shadow_type>
+
+		<widget>
+		  <class>GtkList</class>
+		  <name>members</name>
+		  <cxx_visibility>public</cxx_visibility>
+		  <selection_mode>GTK_SELECTION_SINGLE</selection_mode>
+		</widget>
+	      </widget>
+	    </widget>
+	  </widget>
+	</widget>
+      </widget>
+
+      <widget>
+	<class>GtkViewport</class>
+	<name>viewport6</name>
+	<shadow_type>GTK_SHADOW_IN</shadow_type>
+	<child>
+	  <shrink>True</shrink>
+	  <resize>True</resize>
+	</child>
+
+	<widget>
+	  <class>GtkVBox</class>
+	  <name>vbox3</name>
+	  <homogeneous>False</homogeneous>
+	  <spacing>0</spacing>
+
+	  <widget>
+	    <class>GtkHBox</class>
+	    <name>hbox6</name>
+	    <homogeneous>False</homogeneous>
+	    <spacing>0</spacing>
+	    <child>
+	      <padding>0</padding>
+	      <expand>True</expand>
+	      <fill>True</fill>
+	    </child>
+
+	    <widget>
+	      <class>GtkHBox</class>
+	      <name>hbox7</name>
+	      <homogeneous>False</homogeneous>
+	      <spacing>0</spacing>
+	      <child>
+		<padding>0</padding>
+		<expand>True</expand>
+		<fill>True</fill>
+	      </child>
+
+	      <widget>
+		<class>GtkVBox</class>
+		<name>vbox4</name>
+		<homogeneous>False</homogeneous>
+		<spacing>0</spacing>
+		<child>
+		  <padding>0</padding>
+		  <expand>True</expand>
+		  <fill>True</fill>
+		</child>
+
+		<widget>
+		  <class>GtkNotebook</class>
+		  <name>notebook1</name>
+		  <cxx_visibility>public</cxx_visibility>
+		  <can_focus>True</can_focus>
+		  <show_tabs>True</show_tabs>
+		  <show_border>True</show_border>
+		  <tab_pos>GTK_POS_TOP</tab_pos>
+		  <scrollable>False</scrollable>
+		  <tab_hborder>2</tab_hborder>
+		  <tab_vborder>2</tab_vborder>
+		  <popup_enable>False</popup_enable>
+		  <child>
+		    <padding>0</padding>
+		    <expand>True</expand>
+		    <fill>True</fill>
+		  </child>
+
+		  <widget>
+		    <class>GtkVBox</class>
+		    <name>vbox6</name>
+		    <homogeneous>False</homogeneous>
+		    <spacing>0</spacing>
+
+		    <widget>
+		      <class>GtkScrolledWindow</class>
+		      <name>scrolledwindow10</name>
+		      <hscrollbar_policy>GTK_POLICY_NEVER</hscrollbar_policy>
+		      <vscrollbar_policy>GTK_POLICY_AUTOMATIC</vscrollbar_policy>
+		      <hupdate_policy>GTK_UPDATE_CONTINUOUS</hupdate_policy>
+		      <vupdate_policy>GTK_UPDATE_CONTINUOUS</vupdate_policy>
+		      <child>
+			<padding>0</padding>
+			<expand>True</expand>
+			<fill>True</fill>
+		      </child>
+
+		      <widget>
+			<class>GtkText</class>
+			<name>source</name>
+			<cxx_visibility>public</cxx_visibility>
+			<can_focus>True</can_focus>
+			<editable>True</editable>
+			<text></text>
+		      </widget>
+		    </widget>
+
+		    <widget>
+		      <class>GtkToolbar</class>
+		      <name>toolbar1</name>
+		      <orientation>GTK_ORIENTATION_HORIZONTAL</orientation>
+		      <type>GTK_TOOLBAR_BOTH</type>
+		      <space_size>5</space_size>
+		      <space_style>GTK_TOOLBAR_SPACE_EMPTY</space_style>
+		      <relief>GTK_RELIEF_NORMAL</relief>
+		      <tooltips>True</tooltips>
+		      <child>
+			<padding>0</padding>
+			<expand>False</expand>
+			<fill>False</fill>
+		      </child>
+
+		      <widget>
+			<class>GtkButton</class>
+			<child_name>Toolbar:button</child_name>
+			<name>compileButton</name>
+			<cxx_visibility>public</cxx_visibility>
+			<label>Compile</label>
+		      </widget>
+
+		      <widget>
+			<class>GtkButton</class>
+			<child_name>Toolbar:button</child_name>
+			<name>clearButton</name>
+			<cxx_visibility>public</cxx_visibility>
+			<label>Clear</label>
+		      </widget>
+		    </widget>
+		  </widget>
+
+		  <widget>
+		    <class>GtkLabel</class>
+		    <child_name>Notebook:tab</child_name>
+		    <name>sourcePage</name>
+		    <cxx_visibility>public</cxx_visibility>
+		    <label>Source</label>
+		    <justify>GTK_JUSTIFY_CENTER</justify>
+		    <wrap>False</wrap>
+		    <xalign>0.5</xalign>
+		    <yalign>0.5</yalign>
+		    <xpad>0</xpad>
+		    <ypad>0</ypad>
+		  </widget>
+
+		  <widget>
+		    <class>GtkEventBox</class>
+		    <name>eventbox1</name>
+
+		    <widget>
+		      <class>GtkScrolledWindow</class>
+		      <name>scrolledwindow11</name>
+		      <hscrollbar_policy>GTK_POLICY_ALWAYS</hscrollbar_policy>
+		      <vscrollbar_policy>GTK_POLICY_ALWAYS</vscrollbar_policy>
+		      <hupdate_policy>GTK_UPDATE_CONTINUOUS</hupdate_policy>
+		      <vupdate_policy>GTK_UPDATE_CONTINUOUS</vupdate_policy>
+
+		      <widget>
+			<class>GtkViewport</class>
+			<name>viewport11</name>
+			<shadow_type>GTK_SHADOW_IN</shadow_type>
+
+			<widget>
+			  <class>GtkTree</class>
+			  <name>nodeTree</name>
+			  <cxx_visibility>public</cxx_visibility>
+			  <selection_mode>GTK_SELECTION_SINGLE</selection_mode>
+			  <view_mode>GTK_TREE_VIEW_LINE</view_mode>
+			  <view_line>True</view_line>
+			</widget>
+		      </widget>
+		    </widget>
+		  </widget>
+
+		  <widget>
+		    <class>GtkLabel</class>
+		    <child_name>Notebook:tab</child_name>
+		    <name>nodePage</name>
+		    <cxx_visibility>public</cxx_visibility>
+		    <label>Node Tree</label>
+		    <justify>GTK_JUSTIFY_CENTER</justify>
+		    <wrap>False</wrap>
+		    <xalign>0.5</xalign>
+		    <yalign>0.5</yalign>
+		    <xpad>0</xpad>
+		    <ypad>0</ypad>
+		  </widget>
+		</widget>
+	      </widget>
+	    </widget>
+
+	    <widget>
+	      <class>GtkFrame</class>
+	      <name>inspectorFrame</name>
+	      <width>100</width>
+	      <cxx_visibility>public</cxx_visibility>
+	      <label>Inspector</label>
+	      <label_xalign>0</label_xalign>
+	      <shadow_type>GTK_SHADOW_ETCHED_IN</shadow_type>
+	      <child>
+		<padding>0</padding>
+		<expand>True</expand>
+		<fill>True</fill>
+	      </child>
+
+	      <widget>
+		<class>GtkScrolledWindow</class>
+		<name>scrolledwindow13</name>
+		<hscrollbar_policy>GTK_POLICY_ALWAYS</hscrollbar_policy>
+		<vscrollbar_policy>GTK_POLICY_ALWAYS</vscrollbar_policy>
+		<hupdate_policy>GTK_UPDATE_CONTINUOUS</hupdate_policy>
+		<vupdate_policy>GTK_UPDATE_CONTINUOUS</vupdate_policy>
+
+		<widget>
+		  <class>GtkCList</class>
+		  <name>inspectList</name>
+		  <cxx_visibility>public</cxx_visibility>
+		  <can_focus>True</can_focus>
+		  <columns>2</columns>
+		  <column_widths>80,80</column_widths>
+		  <selection_mode>GTK_SELECTION_SINGLE</selection_mode>
+		  <show_titles>True</show_titles>
+		  <shadow_type>GTK_SHADOW_IN</shadow_type>
+
+		  <widget>
+		    <class>GtkLabel</class>
+		    <child_name>CList:title</child_name>
+		    <name>label2</name>
+		    <label>Name</label>
+		    <justify>GTK_JUSTIFY_CENTER</justify>
+		    <wrap>False</wrap>
+		    <xalign>0.5</xalign>
+		    <yalign>0.5</yalign>
+		    <xpad>0</xpad>
+		    <ypad>0</ypad>
+		  </widget>
+
+		  <widget>
+		    <class>GtkLabel</class>
+		    <child_name>CList:title</child_name>
+		    <name>label3</name>
+		    <label>Value</label>
+		    <justify>GTK_JUSTIFY_CENTER</justify>
+		    <wrap>False</wrap>
+		    <xalign>0.5</xalign>
+		    <yalign>0.5</yalign>
+		    <xpad>0</xpad>
+		    <ypad>0</ypad>
+		  </widget>
+		</widget>
+	      </widget>
+	    </widget>
+	  </widget>
+
+	  <widget>
+	    <class>GtkStatusbar</class>
+	    <name>statusbar</name>
+	    <cxx_visibility>public</cxx_visibility>
+	    <child>
+	      <padding>0</padding>
+	      <expand>False</expand>
+	      <fill>False</fill>
+	    </child>
+	  </widget>
+	</widget>
+      </widget>
+    </widget>
+  </widget>
+</widget>
+
+</GTK-Interface>

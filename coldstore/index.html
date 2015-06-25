@@ -1,0 +1,250 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML
+><HEAD
+><TITLE
+>ColdStore Virtual Protocol</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.43"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="../docbook.css"></HEAD
+><BODY
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+><DIV
+CLASS="ARTICLE"
+><DIV
+CLASS="TITLEPAGE"
+><H1
+CLASS="TITLE"
+><A
+NAME="AEN2"
+><SPAN
+CLASS="PRODUCTNAME"
+>ColdStore</SPAN
+> Virtual Protocol</A
+></H1
+><H3
+CLASS="AUTHOR"
+>Colin McCormack</H3
+><P
+CLASS="PUBDATE"
+>Wed Sep  8 16:12:51 EST 1999<BR></P
+><HR></DIV
+><BLOCKQUOTE
+CLASS="ABSTRACT"
+><DIV
+CLASS="ABSTRACT"
+><P
+></P
+><P
+>This article describes the <SPAN
+CLASS="PRODUCTNAME"
+>ColdStore</SPAN
+> Virtual Protocol (implemented by the <A
+HREF="kdoc/Data.html"
+TARGET="_top"
+><TT
+CLASS="CLASSNAME"
+>Data</TT
+></A
+> class) and its technical rationale.</P
+><P
+></P
+></DIV
+></BLOCKQUOTE
+><DIV
+CLASS="FORMALPARA"
+><P
+><B
+>Introduction. </B
+><SPAN
+CLASS="PRODUCTNAME"
+>ColdStore</SPAN
+> is designed to support the development of virtual machines in several layers:<P
+></P
+><OL
+TYPE="1"
+><LI
+><P
+>Providing a melange of useful <A
+HREF="kdoc/index.html"
+TARGET="_top"
+>basic data types</A
+> for the virtual machine to manipulate.</P
+></LI
+><LI
+><P
+>Providing data types in which to implement a virtual machine which are derived from the base data types (so that the VM can be reflective.)</P
+></LI
+></OL
+>
+<SPAN
+CLASS="PRODUCTNAME"
+>ColdStore</SPAN
+> Layer 1 implements a series of basic, collection and iterator types derived from the <A
+HREF="kdoc/Data.html"
+TARGET="_top"
+><TT
+CLASS="CLASSNAME"
+>Data</TT
+></A
+> class. <A
+HREF="kdoc/Data.html"
+TARGET="_top"
+><TT
+CLASS="CLASSNAME"
+>Data</TT
+></A
+> exports a protocol by means of virtual methods, which is presented here in overview.</P
+></DIV
+><DIV
+CLASS="FORMALPARA"
+><P
+><B
+>Lineage. </B
+><SPAN
+CLASS="PRODUCTNAME"
+>ColdStore</SPAN
+> VP is modelled broadly on the Python API, reimplemented in C++, somewhat pared-down in some areas and extended in others.  It's still under active development and revision, so a point by point comparison will have to wait.  In summary: <SPAN
+CLASS="PRODUCTNAME"
+>ColdStore</SPAN
+>'s is better :)</P
+></DIV
+><DIV
+CLASS="FORMALPARA"
+><P
+><B
+>Future. </B
+>Layer1 will change.  Here are some possibilities:<P
+></P
+><UL
+><LI
+><P
+>Factoring <A
+HREF="kdoc/Data.html"
+TARGET="_top"
+><TT
+CLASS="CLASSNAME"
+>Data</TT
+></A
+> into classes exporting some subset of the protocol.  Python does this with its `isSequence' kind of predicates.  This is closely related to meta-object protocol.</P
+></LI
+></UL
+></P
+></DIV
+><DIV
+CLASS="FORMALPARA"
+><P
+><B
+>Taxonomy. </B
+><SPAN
+CLASS="PRODUCTNAME"
+>ColdStore</SPAN
+> VP, like Python's API, is divided into categories of operations:
+	<P
+></P
+><DL
+><DT
+>Meta-Object Protocol</DT
+><DD
+><P
+>As yet undefined.  We hope to add more reflection to C++ with this protocol.</P
+></DD
+><DT
+>Object Protocol</DT
+><DD
+><P
+>This protocol supports <P
+></P
+><UL
+><LI
+><P
+>object copy-on-write and mutability</P
+></LI
+><LI
+><P
+>object consistency checking</P
+></LI
+><LI
+><P
+>object typing</P
+></LI
+><LI
+><P
+>object construction and dumping</P
+></LI
+><LI
+><P
+>object ordering, equality, and truth value</P
+></LI
+></UL
+>
+	    </P
+></DD
+><DT
+>Arithmetic Protocol</DT
+><DD
+><P
+>This protocol represents the object as an arithmetic type, defining operators such as addition, subtraction, division, etc.  It's not mandatory that the semantics of these operations form a group in the mathematical sense - a reasonable analogy should suffice.</P
+></DD
+><DT
+>Collection Protocol</DT
+><DD
+><P
+>Treats the object as an indexable collection with the following operations:<P
+></P
+><UL
+><LI
+><P
+>slice - returns an element or subrange of the collection</P
+></LI
+><LI
+><P
+>replace - replaces an element or range of elements of the collection</P
+></LI
+><LI
+><P
+>delete - deletes an element of range of elements of the collection</P
+></LI
+><LI
+><P
+>insert - inserts an element or range of elements into the collection</P
+></LI
+><LI
+><P
+>length - returns the collection's cardinality</P
+></LI
+><LI
+><P
+>concat - concatenates two collections</P
+></LI
+><LI
+><P
+>search - finding an item in a collection</P
+></LI
+></UL
+>
+Again, the interpretation of collection is not a religious matter, and reasonable analogy is acceptable.  In particular, the Python Map and Sequence protocols are subsumed by the Sequence protocol.
+		</P
+></DD
+><DT
+>Iterator Protocol</DT
+><DD
+><P
+>the object considered as an iterator responds to More/Next messages/methods.</P
+></DD
+><DT
+>Functional Protocol</DT
+><DD
+><P
+>the object considered as a functional type has the ability to be `called' with arguments on a stack.</P
+></DD
+></DL
+></P
+></DIV
+></DIV
+></BODY
+></HTML
+>

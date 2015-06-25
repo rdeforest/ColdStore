@@ -1,0 +1,70 @@
+"Set" peektop 
+    [ ] 'l !
+    $l nset 's !
+    s 'a append 'b append 'c append 'd append 's !
+    [ 'a 'b 'c 'd ] nset 't !
+
+    dup " (nset, append, ==)" + 1 "s t ==" test
+
+    dup "/element" + 'a "s 'a element" test
+
+    dup [ 'b 'd 'e ] nset "
+        s 'a delete 't !
+        t 'c delete 't !
+        t 'e append 't !
+        t
+    " test
+    [ 'b 'd 'e ] nset 't !
+
+    /* What's the difference between or and concat? - Crag */
+    dup [ 'a 'b 'c 'd 'e ] nset "$s $t or"             test
+    dup [ 'a 'b 'c 'd 'e ] nset "$s $t concat 'q ! $q" test
+    dup [ 'b 'd ]          nset "$s $t and"            test
+    dup [ 'a 'c 'e ]       nset "$s $t xor"            test
+    dup  1 negative             "$s $t order"          test
+    dup  1                      "$t $s order"          test
+
+    $s $t concat 'q !
+
+    dup "/sanity" + 0 "s t ==" test
+    dup "/sanity" + 1 "q q ==" test
+
+    dup "/shift" +
+        dup 'a "$s 'b <<" test
+        dup 'b "$s 'bloggs <<" test
+        dup 'c "$q 'bogon >>" test
+        dup 'b "$q 'bogon <<" test
+    drop
+
+    dup "/slice" +
+        dup [ 'b 'c 'd 'e ]    nset "$q 'abracadabra 'zero slice" test
+        dup [ 'a 'b 'c 'd 'e ] nset "$q 'a 'zero           slice" test
+        dup [ ]                nset "$q 'zero 'nobody      slice" test
+        dup [ ]                nset "$q 'e 'ee             slice" test
+        dup [ ]                nset "$q 'boron 'bratty     slice" test
+    drop
+
+    dup "/mult" +
+        dup 'a "$q 0 *" test
+        dup 'b "$q 1 *" test
+        dup 'c "$q 2 *" test
+        dup Null "$q 17 *" test
+        dup Null "$q -8 *" test
+    drop
+
+    dup "/div" +
+        dup 2 "$q 'boron /" test
+        dup 1 "$q 'abracadabra /" test
+    drop
+
+    /*
+    {
+        $q iterator 'li !
+        {$li next emitln}
+        {$li more}
+        while
+    } drop
+    */
+drop
+
+

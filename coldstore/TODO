@@ -1,0 +1,27 @@
+Dict:
+        fix Dict(Dict&) constructor so it dups the BTree more efficiently.
+	slice protocol:
+	.slice(el) -> List(el, tree[el]) or ~dictnf
+	.slice(el, el1) -> List(List(el, tree[el]), ...)
+	.slice(el, NULL) -> List(e, tree[e]) such that e >= el
+	.slice(NULL, el) -> List(e, tree[e]) such that e < el
+	.slice(NULL) -> bottom(tree)
+	.slice(???) -> top(tree)
+
+Sequence:
+        add reverse() to the virtual protocol.
+
+Get rid of hardcoded paths, specifically in elf names.
+        put in a locate_libary() which searches for .so files along LD_PATH
+
+Namespace:
+	1) implement Dict triadic .slice for Namespace
+	2) think about why Namespace isn't AKO Dict
+	   a) Dict::BTree<SlotPair> vs Namespace::BTree<Slot>
+	Namespace::dump()
+	make Name refcounted under Namespace
+
+String:
+	make it possible to use ATupleBase<Char> to construct a local String,
+	entails making union Char visible in the headers.
+

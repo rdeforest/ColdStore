@@ -1,0 +1,11 @@
+'eval, proc, dup, element, append, delete, splice'
+'Harness/showfail: 1'
+'Expecting a NULL...'
+NULL
+'Should get ~dictnf here:'
+'Expecting ~elementnf:'
+'Set: s t or'
+'Set: s t and'
+'Set: s t xor'
+-1
+1

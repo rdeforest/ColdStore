@@ -1,0 +1,71 @@
+Nodes and Closures
+an Overview
+
+INTRODUCTION
+
+ColdStore layer1 exists to provide an ideal type library for the development of multiprogrammer virtual environments and persistent applications.  One of our goals has been to augment persistence with the ability to host multiple persistent programming languages... persistently.  Layer1's copy-on-write semantics, and its easy to use, dynamically typed lists, namespaces, hashes, etc. are tailoroed for this kind of dynamic environment built around interpreted object oriented programming languages.  
+
+Some recent development on layer1 has been focused on developing the infrastructure for developing interpreters themselves.  Below is a brief high-level overview of our approach as we are hashing it out, followed by an overview and documentation of the layer1 classes which we are developing to support language features.
+
+INTERPRETERS AND SYNTAX TREES
+
+Generally, the compile-run cycle for a typical interpreter can be divided into four steps: the lexing phase, the parsing phase, the compile phase, and the interpretation/execution phase.  Simple MOO and coldMUD servers (which we had experience on before developing coldstore, and which inform some of our object model) follow this cycle in the following form: a lexer phase turns a stream of strings into simple lexer tokens; next, the parser phase turns the lexer tokens into a set of linked, internal structures which look something like a syntax tree; then the compiler phase turns these internal structures into bytecode representations and stores them in an internal list.  Finally, the interpreter itself executes by turning bytecoded operations back into real life operations that are executed as running methods.
+
+An interpreter is a kind of translator with three points of translation.  Text => Lexer tokens by text validation, Tokens => Syntax tree by parsing semantics and syntax, Syntax tree => Opcodes for storage, and Opcodes => Interpretation for execution.
+
+When seen through ColdStore glasses the world becomes full of objects: structured data with intelligence attached.  In this vista, compilation itself becomes a set of transformations of what are essentially very funky object trees: a program in a language is a tree composed of many smaller nodes, each of which provides intelligence necessary to express itself in execution.  Given this, we can regard each phase in a new way.
+
+The lexer transforms flat, unintelligent text into simply structured tokens which form the units for later data intelligence.  The parser then takes these simple tokens and constructs an intelligent object composed of many, smaller objects: Nodes.  Each Node provides methods which allow for execution of itself.
+
+You may notice we've removed the need for Opcodes from our model.  Because all structures in the ColdStore persist automatically and in their native form (with attached intelligence), there is no need for this final transformation before interpretation.  The big win with ColdStore layer1 is that with the introduction of a proper generic syntax tree storage system, we can make the trees interpret themselves without ever needing to generate opcodes. 
+
+We win a number of things by making syntax trees themselves the unit of interpretation.
+
+Firstly, we chop a small amount of processing time out of the compile cycle, and reduce a certain amount of redundancy.  But more importantly, because we have a) the ability to persistent store an abstract representation of the language semantics itself; and b) generic data structures for representing trees and common facilities for walking trees, we can do all sorts interesting transformations. 
+
+One is that we can share generic node types (ifElseNode, switchNode, stmtListNode, etc.) among multiple languages. Most languages share a lot of common constructs which differ only cosmetically.  For example:  Pascal's  IF/ENDIF structure vs. C's if {BLOCK} structure -- one node, or at least subclasses versions of similar nodes can be taught to accomodate both forms.  Code re-use in implementation of multiple language interpreters is thus boosted, as well as possibilities for extended interaction between languages.
+
+We can also do sytematic transformations of tree nodes to translate between multiple languages or decompile existing code back to text.
+
+Finally, because the nodes in the tree are interned, persistant, and inspectable pieces of coldstore data, they can be made available for introspection and possible modification within the language itself, meaning syntax and interpretation semantics can be changed on the fly _within the interpreter itself_.  With abstract syntax trees available and persistent, the language becomes truly introspective.
+
+WHAT IS A NODE?
+
+A Node, in ColdStore:
+
+	* is a kind of Layer1 Data, pointed to by a Slot (smartpointer) so it can easily be placed into a List, Hash, Namespace, Directory, another Node, etc.
+	* is a class meant to be subclassed, with each subclass providing semantics -- one would rarely (if ever) use a Node itself, but would use some specific child of it
+	* has behaviour provided by invoking common interface as part of the VP (virtual protocol): 'eval'
+	* is meant to be nested.  As a child of List, each Node provides storage for more Data, Nodes, or otherwise.
+	* is coloured with its 'eval' method _and_ some specific context (line number of its occurence, etc.)
+	* is meant to be generated by parsers.  See freonParser.y as an example
+
+WHAT'S A CLOSURE?
+
+A Closure, in Coldstore
+
+	* is a context for execution - providing:
+			* a pointer to the current Node executing
+			* points to namespaces for variables for various scopes
+			* information about the calling object, "this" object, and the sender object
+			* a return value Slot
+	* is a stack via linkage between multiple Closures
+	* provides context which may enable restoring suspended executions
+
+EVALUATION
+
+A new method, 'eval' will be added to the virtual protocol for all Data.  'eval' takes a single argument which is a Closure for its evaluation, and returns the same Closure, but modified with a return value.
+
+For most non-Node data types, an evaluation merely returns (through the Closure) an exact copy of itself.  Evaluating an Integer '1' with a Closure returns a copy of that Closure, but with the return value set to... Integer '1'.
+
+A child of Node, however, returns the Closure modified with a return value as the ultimate result of a recursive descent through its child Nodes.  I.e. binaryNode => ( Integer(1), Integer(2), '+') returns the result of addition of the integers 1 and 2 via the Closure.
+
+The same Closure object is passed down through tree descent until a value is reached, and the return value is passed back up the chain.
+
+However, at some points during Node recursion, such as a message pass or function call, a new Closure is created for evaluation of the function, and that Closure is attached to the current Closure evaluation -- it is connected via the "caller" element in the new Closure.  The "top" element of the Closure represents the first Closure in the sequence, and is set by the constructor of the first Closure passed it.  "sender" (the initiator of a sequence of message calls) is derivable via Closure->top()->this().
+
+
+
+
+
+

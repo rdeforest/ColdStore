@@ -1,0 +1,310 @@
+// Emacs mode identifier: -*- C++ -*-
+// TupleBase - templated class for a static array of elements of arbitrary type
+// Copyright (C) 1998,1999 Colin McCormack,
+// see LICENSE (MD5 f5220f8f599e5e926f37cf32efe3ab68) for terms
+// 	$Id: TupleBase.th,v 1.11 2002/02/27 01:49:31 coldstore Exp $	
+
+//#define DEBUGLOG
+
+// Construct a _TupleBase of given size
+template <class T>
+_TupleBase<T>::_TupleBase(int size)
+    : _length(size)
+{
+    T::init(_content, _length);
+    check();
+}
+
+template <class T>
+_TupleBase<T>::~_TupleBase()
+{}
+
+template <class T>
+TupleBase<T>::~TupleBase()
+{
+    check();
+    T::destroy(_content, _length);
+}
+
+/** allocate space for Tuple of given byte size
+ */
+template <class T>
+void *_TupleBase<T>::operator new (unsigned int size, void *allocator)
+{
+    return Data::operator new(size, allocator);
+}
+
+/** allocate space for Tuple of given size, with extra overhead
+ */
+template <class T>
+void *_TupleBase<T>::operator new (unsigned int size, int extra, void *allocator)
+{
+    return operator new(size + (sizeof(T)*extra), allocator);
+}
+
+
+// Copy T* array of a given size
+template <class T>
+_TupleBase<T>::_TupleBase(const T *contentT, int size)
+    : _length(size)
+{
+    if (size <= 0)
+        throw new Error("range", size, "TupleBase constructor with non-positive length");
+
+    T::check(contentT, size);
+    T::init(_content, _length);
+    T::dup(_content, contentT, _length);
+    check();
+}
+
+// Copy a Segment
+template <class T>
+_TupleBase<T>::_TupleBase(const Segment<T> &contentT, int size)
+    : _length(size?size:contentT.Length())
+{
+    if (size <= 0)
+        throw new Error("range", size, "TupleBase constructor with non-positive length");
+
+    T::check(contentT.content(), contentT.Length());
+    T::init(_content, _length);
+    T::dup(_content, contentT.content(), MIN(_length, contentT.Length()));
+    check();
+}
+
+// Copy a Segment
+template <class T>
+_TupleBase<T>::_TupleBase(const Vector<T> *contentT, int size)
+    : _length(size?size:contentT->Length())
+{
+    if (_length <= 0)
+        throw new Error("range", _length, "TupleBase constructor with non-positive length");
+
+    contentT->check();
+    T::check(contentT->content(), contentT->Length());
+    T::init(_content, _length);
+    T::dup(_content, contentT->content(), MIN(_length, contentT->Length()));
+    contentT->check();
+    check();
+}
+
+// Copy null-terminated T* array
+template <class T>
+_TupleBase<T>::_TupleBase(const T *contentT)
+    : _length(T::findNull(contentT))
+{
+    T::check(contentT, _length);
+    T::init(_content, _length);
+    T::dup(content(), contentT, _length);
+    check();
+}
+
+// Repeat T& as array - is there a need for this?
+template <class T>
+_TupleBase<T>::_TupleBase(const T &contentT, int repetition)
+    : _length(repetition)
+{
+    T::init(_content, _length);
+    T::segFill(content(), contentT, repetition);
+    check();
+}
+
+// Copy a _TupleBase<T>'s contents
+template <class T>
+_TupleBase<T>::_TupleBase(const _TupleBase<T> *contentT)
+    : _length(contentT->Length())
+{
+    T::check(contentT->content(), contentT->Length());
+    T::init(_content, _length);
+    T::dup(_content, contentT->content(), MIN(_length, contentT->Length()));
+    check();
+}
+
+template <class T>
+_TupleBase<T>::_TupleBase(const _TupleBase<T> &contentT)
+    : _length(contentT.Length())
+{
+    T::check(contentT.content(), contentT.Length());
+    T::init(_content, _length);
+    T::dup(_content, contentT.content(), MIN(_length, contentT.Length()));
+    check();
+}
+
+// Copy a subrange of _TupleBase<T>'s contents
+template <class T>
+_TupleBase<T>::_TupleBase(const _TupleBase<T> *contentT, int _start, int l)
+    : _length(MIN(l, (contentT->Length() - _start)))
+{
+    if (_length <= 0)
+        throw new Error("range", _length, "TupleBase constructor with non-positive length");
+
+    T::check(contentT->content(), l);
+    T::init(_content, _length);
+    T::dup(_content, contentT->content() + _start, l);
+    check();
+}
+
+template <class T>
+_TupleBase<T>::_TupleBase(const _TupleBase<T> &contentT, int _start, int l)
+    : _length(MIN(l, (contentT.Length() - _start)))
+{
+    if (_length <= 0)
+        throw new Error("range", _length, "TupleBase constructor with non-positive length");
+
+    T::check(contentT.content(), l);
+    T::init(_content, _length);
+    T::dup(_content, contentT.content() + _start, l);
+    check();
+}
+
+// union vector constructor - returns a vector of v1 + v2
+template <class T>
+_TupleBase<T>::_TupleBase(const _TupleBase<T> *v1, const _TupleBase<T> *v2)
+    : _length(v1->Length() + v2->Length())
+{
+    T::check(v1->content(), v1->Length());
+    T::check(v2->content(), v2->Length());
+    
+    T::init(_content, _length);
+    
+    T::dup(_content, v1->content(), v1->Length());
+    T::dup(_content + v1->Length(), v2->content(), v2->Length());
+    check();
+}
+
+template <class T>
+_TupleBase<T>::_TupleBase(const _TupleBase<T> &v1, const _TupleBase<T> &v2)
+    : _length(v1.Length() + v2.Length())
+{
+    T::check(v1.content(), v1.Length());
+    T::check(v2.content(), v2.Length());
+    
+    T::init(_content, _length);
+    
+    T::dup(_content, v1.content(), v1.Length());
+    T::dup(_content + v1.Length(), v2.content(), v2.Length());
+    check();
+}
+
+// replace range with array
+template <class T>
+_TupleBase<T> *_TupleBase<T>::Replace(int where, int what, const T *addT, int additional)
+{
+    if (what <= 0)
+        throw new Error("range", what, "TupleBase Replace with non-positive length");
+
+    check();
+    T::check(addT, what);
+    
+    if ((where = endRelative(where)) < 0)
+        throw new Error("range", where, "start before 0");
+    
+    // check bounds on insertion point
+    if (where >= _length)
+        throw new Error("range", where, "start after end");
+    
+    if ((int)_length - where < additional)
+        throw new Error("range", where, "replacement size");
+    
+    T::dup(_content + where, addT, what);
+    
+    check();
+    return this;
+}
+
+// check Tuplebase's contents
+template <class T>
+void _TupleBase<T>::check(int n) const
+{
+#if 0
+  // this constrains _TupleBase to heap
+    int bound = bounds();
+    assert(bound >= _length);
+    cerr << "TupleCheck " << bound;
+#endif
+
+#ifdef DEBUGLOG
+    cerr << "TupleCheck " 
+         << " length: " << _length
+         << " Memory::mySize: " << Memory::mySize()
+         << " offset: " << offsetof(_TupleBase<T>, _content)
+         << " sizeof: " << sizeof(T)
+         << '\n';
+#endif
+#ifdef BTREE_INTEGRITY
+    Memory::Assert();
+#endif
+    int len = Length();
+    T *ptr= content();
+    DEBLOG(cerr << "_TupleBase content check of: " << ptr
+		<< " for " << len << '\n');
+    T::check(ptr, len);
+}
+
+// ColdStore interface
+template <class T>
+Data *_TupleBase<T>::clone(void *where) const
+{	// Uses the copy constructor
+    return new (where) _TupleBase<T>(this);
+}
+
+template <class T>
+Data *_TupleBase<T>::mutate(void *where) const
+{	// return mutable copy of this
+    return clone(where);
+}
+
+// ColdStore interface
+template <class T>
+Data *TupleBase<T>::clone(void *where) const
+{	// Uses the copy constructor
+    return new (where) TupleBase<T>(this);
+}
+
+template <class T>
+Data *TupleBase<T>::mutate(void *where) const
+{	// return mutable copy of this
+    return clone(where);
+}
+
+template <class T>
+Slot _TupleBase<T>::call(Slot &args)
+{
+  return Data::call(args);
+}
+
+template <class T>
+Slot TupleBase<T>::call(Slot &args)
+{
+  return _TupleBase<T>::call(args);
+}
+
+
+extern bool DumpVerbose;
+// dump _TupleBase to file
+template <class T>
+ostream& operator<< (ostream& out,  const _TupleBase<T> & vec)
+{
+    if (&vec) {
+        if (DumpVerbose) {
+            out.form("[0x%08x,%d] ",
+                     vec.content(), vec.Length());
+        }
+        out << '{';
+        const T *contents = vec.content();
+        for (int i = 0; i < vec.Length(); i++)
+            out << contents[i];
+        out << '}';
+    } else {
+        out << "[NULL]";
+    }
+    return out;
+}
+
+template <class T>
+void ATupleBase<T>::dncount(void) const
+{
+    Data::dncount();
+    if (!refcount()) {
+        this->~ATupleBase();
+    }
+}

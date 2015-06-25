@@ -1,0 +1,144 @@
+template <class T>
+tSlot<T>::tSlot(const Slot &s)
+    : data_(dynamic_cast<T*>((Data*)s))
+{
+    if (data_)
+        data_->upcount();
+    else if (s) {
+     // d is not null, data_ is null, ergo dynamic cast failed
+        throw new Error("type", s, "not of correct type");
+    }
+    DEBLOG(cerr << "tSlot construct (Slot&) " << " -> " << data_ << '\n');
+}
+
+template <class T>
+tSlot<T>::tSlot(Data const *d)
+    : data_((T*)dynamic_cast<T const *>(d))
+{
+    if (data_)
+        data_->upcount();
+    else if (d) {
+       // d is not null, data_ is null, ergo dynamic cast failed
+        throw new Error("type", d, "not of correct type");
+    }
+    DEBLOG(cerr << "tSlot construct (Data*)" << d << " -> " << data_ << '\n');
+}
+
+template <class T>
+tSlot<T>::tSlot(const tSlot<T>& f)	// copy constructor - dups reference
+    : data_(f.data_)
+{
+    if (data_)
+        data_->upcount();
+    DEBLOG(cerr << "tSlot construct (tSlot) " << f.data_ << " -> " << data_ << '\n');
+}
+
+template <class T>
+tSlot<T>::tSlot(const T *f)	// copy constructor - dups reference
+    : data_((T*)f)
+{
+    if (data_)
+        data_->upcount();
+    DEBLOG(cerr << "tSlot copy constructor " << f
+	   << " -> " << data_
+	   << ' ' << data_->refcount() << '\n');
+}
+
+// dereference smartpointer
+template <class T>
+tSlot<T>::operator T*() const
+{
+    return data_;
+}
+
+#if 0
+// dereference smartpointer
+template <class T>
+tSlot<T>::operator Slot() const
+{
+    return (Data*)dynamic_cast<void*>(data_);
+}
+#endif
+
+// dereference smartpointer
+template <class T>
+T* tSlot<T>::value() const
+{
+    return data_;
+}
+
+// dereference smartpointer - returns const
+template <class T>
+T *tSlot<T>::operator->() const
+{
+    return data_;
+}
+#if 0
+template <class T>
+tSlot<T>& tSlot<T>::operator= (const tSlot<T>& f)
+{
+    // DO NOT CHANGE THE ORDER OF THESE STATEMENTS!
+    // (This order properly handles self-assignment)
+    if (f.data_) {
+        f.data_->upcount();
+    }
+
+    // clean up the Data we own, if its refcount drops
+    if (data_)
+        data_->dncount();
+    
+    data_ = f.data_;
+    return *this;
+}
+#endif
+
+// assignment operator.  Initializes Slot
+template <class T>
+tSlot<T>& tSlot<T>::operator= (T *d)
+{
+    DEBLOG(cerr << "tSlot " << data_ << " = " << d << '\n');
+
+    // DO NOT CHANGE THE ORDER OF THESE STATEMENTS!
+    // (This order properly handles self-assignment)
+    if (d) {
+        d->upcount();
+    }
+
+    // clean up the Data we own, if its refcount drops
+    if (data_)
+        data_->dncount();
+    
+    data_ = d;
+    return *this;
+}
+
+// assignment operator.  Initializes Slot
+template <class T>
+tSlot<T>& tSlot<T>::operator= (Slot d)
+{
+    T *dt = toType(d, T);
+
+    DEBLOG(cerr << "tSlot " << data_ << " = " << dt << '\n');
+
+    // DO NOT CHANGE THE ORDER OF THESE STATEMENTS!
+    // (This order properly handles self-assignment)
+    if (dt) {
+        dt->upcount();
+    }
+
+    // clean up the Data we own, if its refcount drops
+    if (data_)
+        data_->dncount();
+    
+    data_ = dt;
+    return *this;
+}
+
+#if 0
+template <class T>
+tSlot<T>::operator Slot() const
+{
+  return (Data*)dynamic_cast<void*>(data_);
+}
+#endif
+

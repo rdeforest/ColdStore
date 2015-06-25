@@ -1,0 +1,30 @@
+README for coldstore/libs
+        Sun Aug  1 16:11:33 EST 1999
+
+Sadly, there's what I call a bug in ld-linux.so and libdl.so which causes absolute symbols to be relocated.  I'm in discussion with the maintainers of these programs to see how it can best be resolved.
+
+In the meantime, here are working versions for:
+        glibc 2.1.1-13
+        gcc version egcs-2.91.66 Debian GNU/Linux (egcs-1.1.2 release)
+        binutils 2.9.1.0.25-2
+        Linux 2.2.10 i686 unknown
+
+The includes/Makefile.inc make include file references the copies of these files in the libs/ directory
+
+Colin.
+
+MANIFEST:
+
+README		this file
+elf.diff	diffs against glibc-2.1.2 yielding the libdl stuff
+
+ld-2.1.2.so	ld-linux.so with elf.diff applied
+libdl-2.1.2.so  Working libdl with elf.diff applied
+libdl.so        symlink to libdl
+libdl.so.2      symlink to libdl
+
+elf.so		symlink to intern's elf.so
+libqvmm.so      symlink to qvmm's libqvmm.so
+libcold.so      symlink to coldstore's libcold.so
+
+mkshadow        symlink to shell script to generate shadow files

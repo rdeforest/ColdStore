@@ -1,0 +1,45 @@
+#
+# Makefile for coldstore/qvmm
+#
+
+TOP_SRCDIR = @top_srcdir@
+srcdir = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+infodir = @infodir@
+libdir = @libdir@
+mandir = @mandir@
+includedir = @includedir@
+INSTALL = @INSTALL@
+
+include @top_srcdir@/mk/gcc.defs.mk
+
+# define this for LOTS of spam on cerr
+# DEFINES += -DDEBUGLOG
+
+DEFINES += -DGUARD_ALLOC -DWRAP_MALLOC
+#DEFINES += -DBTREE_INTEGRITY
+#DEFINES += -DWRAP_MALLOC
+LDFLAGS += $(WRAP)
+LDFLAGS += -v
+
+include @top_srcdir@/mk/gcc.rules.mk
+
+all: libqvmm.so
+
+libqvmm.so: mmap.o store.o memory.o
+
+headers: qvmm.h store.hh
+
+install_headers: $(headers)
+	$(TOP_SRCDIR)/mkinstalldirs $(includedir)
+	@list='$(headers)'; for p in $$list; do \
+	  if test -f "$$p"; then d= ; else d="$(srcdir)/"; fi; \
+	  echo "(INSTALL) $$d$$p $(includedir)/$$p"; \
+	  $(INSTALL) $$d$$p $(includedir)/$$p; \
+	done
+
+install: all install_headers
+	$(TOP_SRCDIR)/mkinstalldirs $(libdir)
+	$(INSTALL) libqvmm.so $(libdir)/libqvmm.so	

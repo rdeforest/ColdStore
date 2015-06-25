@@ -1,0 +1,74 @@
+<!doctype html public "-//w3c//dtd html 4.0//en">
+<HTML>
+  <HEAD>
+    <TITLE>ColdStore for Guile (Notes)</TITLE>
+  </HEAD>
+
+  <BODY>
+    <H1>ColdStore for Guile (Notes)</H1>
+<p>These notes pertain to implementing Guile Workspaces under ColdStore</p>
+<p>Contact: Colin McCormack, <a href="mailto:colin@field.medicine.adelaide.edu.au">colin@field.medicine.adelaide.edu.au></a></p>
+<p>Date: Mon Aug 23 13:09:54 EST 1999</p>
+
+<h2>General Observations</h2>
+<p>Apart from persistence, and the ability to implement Guile persistent `workspaces', I believe the main immediate value of ColdStore to Guile is its reflective capabilities: specifically the ability to intern functions so that a Guile workspace would be able to persist usefully through several release versions of the Guile interpreter.</p>
+
+<h2>Recommended Approach</h2>
+<p>Guile would present as an ELF dynamic shared object, (aka DSO, .so file)</p>
+<p>A small ColdStore/Guile specific executable would load libguile.so in, effect intern relocations, and start Guile.</p>
+
+<h2>malloc() wrapping</h2>
+<p>malloc(), free() and realloc() are able to be wrapped using --wrap arguments to ld.  This minimal-effort approach would introduce a dependancy on gcc, but the use of malloc et al is fairly centralised, it's the work of a few minutes to modify Guile textually to use whichever malloc replacement function we choose, or even just to link in a different malloc library.</p>
+<p>We'll have to dispense with the qvmm allocator for Guile, since it has very little value for scheme (it introduces a lot of overhead into allocation which would (a) swamp sexpr-granularity allocations to no end (b) have no meaning with page-level allocations.  Although lisp sexprs have only 16-bit entropy (really!) the best/only way to take advantage of this is sexpr-encoding of the kind the TI explorer and LMI machines had, and that's beyond the scope of this project.</p>
+<p>Investigate: There is a GNU malloc() package which allocates into an mmap()ed region, it may be worth ripping the whole of the qvmm layer out and replacing it with this.</p>
+<p>If EPCKPT is ever rolled into the Linux kernel (by no means certain, since Linus didn't think of it first :) then it would be a good choice to substitute for some of ColdStore Layer0, and would give good outcomes wrt restarting Files.  It would also make most of these considerations moot, as vanilla malloc() will operate unchanged under EPCKPT.</p>
+<p>The substitution of a persistent malloc regime should be painless, almost invisible.</p>
+
+<h2>Interning</h2>
+<p>It will be necessary for any C symbol which is stored by Guile (specifically, pointers to functions, pointers to storage) to be `interned'.  They will have to be global in scope.</p>
+<p>There are two possibilities, here: libguile.so can be interned such that all global functional symbols will be interned, or (more efficiently) we can specificall intern only those symbols which need it.</p>
+<p>If there's a simple predicate on the symbol name which selects candidates for interning, and if Guile developers are prepared to accept this discipline, I can write an interning policy which will intern matching symbols.</p>
+
+<h2>Interaction with Guile executable dumps.</h2>
+<p>I note, but do not profess to understand, that Guile can dump executables, and presumably restart them?</p>
+<p>This is good, in that I believe Guile has the requisite level of sophistication about initializing data ... the init functions seem to be centralised, they seem to be controlled by a global flag.  With the exception of Tasks and files, this should be straight-forward.</p>
+<p>I'd benefit, here, from some Guile-Gizzard Guru input.</p>
+<p>If we rely too heavily upon Guile's executable dumps, then we risk losing the ability to have the heap persist over version changes.  Reasoning: executable dumps probably snapshot the stack/heap to disk, this would include the data segment which stores local/static variables and the stack.  Both of these segments are inaccessible to ColdStore's intern module.</p>
+
+<h2>Static Variables</h2>
+<p>These are a potential show-stopper.  ColdStore can't allocate them in the store, and does not try to dump the process stack or non-persistent heap.  EPCKPT might have helped here.  Perhaps Guile executable-dumps handle this, but if so, it's probably not useable by coldstore.</p>
+<p>As a guideline, we're going to have to make sure all statics are stored in the ColdStore, probably preferably by declaring them in the global object.  Anything that needs to be static in Guile should probably be macro'd conditionally to accomodate this.</p>
+
+<h2>Threading</h2>
+<p>This is not a ColdStore-specific problem, but will arise for any userland checkpoint/restart facility.</p>
+<p>The thread-safety of a ColdStore without qvmm will have to be investigated.  Since ColdStore's only providing memory allocation services while Guile's running, this should not be a major concern.</p>
+<p>Initialization of threads is of more import.  Resolve: how do we want threads to persist?  It's impossible to have them restart after a shutdown, in the general case, because any functional pointers may have changed.  If this is not the case, ColdStore's versioning/intern capability (ie: it's main value-add) disappears.  It may be possible to restart tasks in the case that the libguile.so is unchanged, but that's </p>
+<p>I'm presuming, and I recommend, that we do no more with threads than tidy them up and abort them on restart, if we can even do that much.  What does the executable-dump facility do?</p>
+<p>It may be that we don't even tidy/abort threads, but silently weed them out, on restart initialization.</p>
+
+<h2>Files</h2>
+<p>This is not a ColdStore-specific problem, but will arise for any userland checkpoint/restart facility.  EPCKPT covers this nicely, but it's Linux specific, and has a slightly doubtful prognosis (even though it's used in GNU's Queue program.)</p>
+<p>Looking cursorily over Guile, it seems there's some in-built facility to reference files persistently, as part of the executable dump facility.  Again, some GGG input would help here.</p>
+
+<h2>Ancillary Benefits to Guile</h2>
+<p>At the risk of introducing an unwanted dependancy:  ColdStore's use of libElf and its interference in libdl and ld-so mean that we could do some reasonably sophisticated magic-snarfing of C symbols at runtime, dispensing with the need to explicitly declare some of the subrs.  This would only be useful if C++ mangling was used, to get the argument types encoded in the name where they can be interpreted.</p>
+<p>This is by no means a major benefit.  I merely mention it for completeness' sake.</p>
+
+<h2>Guile Considerations</h2>
+<p>Making a language persistent  brings with it a quite onerous burden of correctnes, since (e.g.) a persistent bad pointer can make life very difficult when you come to restart the workspace, and termination of the code (under, say, signals) (hypothetically) doesn't leave the heap in a consistent state.</p>
+<p>It's a good proving ground for a language's implementation, I think.</p>
+<p>The question of persistent roots and global namespaces arises, although given that Guile provides garbage collection, it's pretty reasonable to suppose that all objects are reachable from some set of roots, which can be distinguished at restart.</p>
+<p>I'm supposing that Guile has a global namespace, and that it's a reachable root.</p>
+
+<h2>ColdStore Caveats/Limitations</h2>
+<p>ColdStore is new and green.  There are some current limitations which we should be aware of:</p>
+<dl>
+      <dt>Intel Specific</dt>
+      <dd>The trampoline code used to intern functions is Intel specific.  This limitation will change as soon as someone offers me the equivalent binary codes for the other architectures.</dd>
+      <dt>Linux Specific</dt>
+      <dd>Well, it's not really actually Linux specific, it does require mmap(), and the ranges chosen to mmap() the store are chosen to fit into the Linux memory map.  We've run an earlier version under Solaris, as a proof of concept.</dd>
+      <dt>Glibc 2.1 Specific</dt>
+      <dd>This is likely to be a hard requirement, because we need to be able to add symbols to a running proc, and this is achieved by unacceptably intimate fiddling with the internal data structures used by glibc's ld.so and libdl.so.  My preferred alternative would be to move this code into libdl.so, but that means getting agreement from the glibc developers ... bon chance!  Anyone for a free glibc development project?</dd>
+    </dl>
+  </BODY>
+</HTML>

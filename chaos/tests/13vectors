@@ -1,0 +1,63 @@
+"List" peektop
+    [ 'four 'three 'two 'one ] 'l !
+
+    dup "/length"           + 4  " $l length " test
+    dup "/equiv"            + $l " [ 'four 'three 'two 'one ] " test
+    dup "/non-list-compare" + 1  " 'xxx $l != " test
+    dup "/replace"          + [ 'four 'three 'two 'bambi ] " $l 3 'bambi replace " test
+    dup "/replace"          + [ 'bambi 'three 'two 'one  ] " $l 0 'bambi replace " test
+drop
+
+"Dict" peektop
+    [ 'a 1 'b 2 'c 3 'd 4 ] dict 'd !
+
+    dup "/search" +
+        dup 1 "$d 'a search" test
+        dup 2 "$d 'b search" test
+    drop
+    
+    dup "/length" + 4 "$d length" test
+
+    dup "/insert" +
+        $d 'e 5 insert 'd !
+
+        dup 5    "$d length" test
+        dup 5    "$d 'e element" test
+        
+        $d 'a 'one insert 'd !
+
+        dup 5    "$d length" test
+        dup 'one "$d 'a element" test
+    drop
+
+    dup "/delete" + 4 "$d 'a delete 'd ! $d length" test
+drop
+
+/* Hash type is depracated in favor of Dict type
+
+"Hash" peektop
+    [ 1 4 2 3 3 2 4 1 ] hash 'd !
+    dup 1 "$d 1 search 4 =="            test
+    dup 1 "$d 2 search 3 =="            test
+    dup 1 "$d length 4 =="              test
+
+    $d 0 5 insert 'd !
+    dup 1 "$d length 5 =="              test
+    dup 1 "$d 0 element [ 0 5 ] =="     test
+
+    $d 1 26 insert 'd !
+    dup 1 "$d length 5 =="              test
+    dup 1 "$d 1 element [ 1 26 ] =="    test
+
+    $d 1 delete 'd !
+    dup 1 "$d length 4 =="              test
+drop
+*/
+
+"Splice" peektop 1 "
+    [ 1 2 3 ] splice
+    3 ==     swap
+    2 == and swap
+    1 == and
+" test
+

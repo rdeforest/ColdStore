@@ -1,0 +1,56 @@
+TOP_SRCDIR = @top_srcdir@
+srcdir = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+infodir = @infodir@
+libdir = @libdir@
+mandir = @mandir@
+includedir = @includedir@
+INSTALL = @INSTALL@
+
+include @top_srcdir@/mk/occ.defs.mk
+
+
+OCCFLAGS += -SColdClass -SColdTemplate -SSlotClass
+YACC = bison++ 
+INCLUDES += -I@top_srcdir@/include -I@top_srcdir@/coldstore -I/usr/local/include \
+	    -I/usr/local/include/libelf
+
+CXXFLAGS += $(INCLUDES)
+LDFLAGS += $(WRAP) -rdynamic
+LDLIBS += -L@top_srcdir@/libs -lqvmm -lgmp -lpcre  -lutil
+LDLIBS += -ldl -liberty
+OCC_ENV += LD_LIBRARY_PATH=.:@top_srcdir@/metaclass
+
+all:	libcold_toolkit.so
+
+include @top_srcdir@/mk/occ.rules.mk
+
+Tokenizer.o: Tokenizer.cc Tokenizer.hh
+Tape.o: Tape.cc Tape.hh
+Root.o: Root.cc common.hh
+SequenceMethods.o: SequenceMethods.cc common.hh
+initialize.o: initialize.cc common.hh
+
+libcold_toolkit.so: Root.o SequenceMethods.o Tokenizer.o \
+	            StringMethods.o Tape.o initialize.o
+
+headers := Tokenizer.hh Tape.hh
+
+install_headers: $(headers)
+	$(TOP_SRCDIR)/mkinstalldirs $(includedir)
+	@list='$(headers)'; for p in $$list; do \
+	  if test -f "$$p"; then d= ; else d="$(srcdir)/"; fi; \
+	  echo "(INSTALL) $$d$$p $(includedir)/$$p"; \
+	  $(INSTALL) $$d$$p $(includedir)/$$p; \
+	done
+
+install: all install_headers
+	$(TOP_SRCDIR)/mkinstalldirs $(libdir)
+	$(TOP_SRCDIR)/mkinstalldirs $(includedir)
+	$(INSTALL) libcold_toolkit.so $(libdir)/libcold_toolkit.so
+
+CLEAN += 
+DISTCLEAN += 
+

@@ -1,0 +1,19 @@
+#!/bin/sh
+file=../libs/$1.so
+
+rm $file.profile
+rm coldstore
+
+#./chaos $*
+export LD_LIBRARY_PATH=../libs:/usr/lib/debug/:.
+#export LD_PROFILE_OUTPUT=`pwd`
+export LD_PROFILE_OUTPUT=.
+export LD_PROFILE=$file
+(echo {} list \'Namespace new \'x ! {x \"\"} list \'Directory new \'d \! ;
+ for x in `head -$2 /usr/share/dict/words`; do
+echo "{ "$x" } . d \"$x\" minsert ."; done) | ./chaos >/dev/null
+
+#LD_PRELOAD=./global.so LD_LIBRARY_PATH=../libs:. sprof chaos.so chaos.so.profile | tee chaos.so.stats
+
+make global.so
+LD_PRELOAD=./global.so:../libs/intern.so:../libs/libcold.so:../libs/libqvmm.so LD_LIBRARY_PATH=../libs:. sprof $file $file.profile | tee $file.stats

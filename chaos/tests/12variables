@@ -1,0 +1,18 @@
+"Variables" peektop
+    dup 0 "0 'fred ! $fred" test
+    dup 1 "1 'fred ! $fred" test
+
+    0 "bo" !
+    1 "ba" !
+    /*
+    {   dup 1 {
+                { b }
+                {'dictnf error ==}
+            try
+        } test
+    } drop
+    */
+    dup 1 " $ba "               test
+drop
+
+

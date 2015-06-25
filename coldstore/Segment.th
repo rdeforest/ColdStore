@@ -1,0 +1,409 @@
+// Emacs mode identifier: -*- C++ -*-
+// Segment - weak Vector
+// Copyright (C) 1998,1999 Colin McCormack,
+// see LICENSE (MD5 f5220f8f599e5e926f37cf32efe3ab68) for terms
+// 	$Id: Segment.th,v 1.6 2002/04/11 03:16:32 coldstore Exp $	
+
+template <class T>
+Segment<T>::Segment()
+  : start((T*)0), len(0) {}
+
+template <class T>
+Segment<T>::Segment(T &thing)
+  : start(&thing), len(1) {}
+
+template <class T>
+Segment<T>::Segment(TupleBase<T> &t)
+  : start(t.content()), len(t.Length()) {}
+
+template <class T>
+Segment<T>::Segment(TupleBase<T> *t)
+  : start(t->content()), len(t->Length()) {}
+
+template <class T>
+Segment<T>::Segment(T *_start, int _len)
+  : start(_start), len(_len)
+{
+    if (len < 0)
+        throw new Error("range", len, "Segment constructor with negative length");
+}
+    
+template <class T>
+Segment<T>::Segment(const Segment<T> &seg, int _len = 0, int offset = 0)
+  : start(seg.start + offset),
+    len(seg.len - _len)
+{
+    if (len < 0)
+        throw new Error("range", len, "Segment constructor with negative length");
+    if (!seg.segEncloses(*this))
+        throw new Error("range", (Data*)NULL, "subSegment constructor doesn't enclose");
+}
+    
+template <class T>
+Segment<T> Segment<T>::operator=(const Segment<T> &location)
+{	// Segment assignment
+  start = location.start;
+  len = location.len;
+  return *this;
+}
+
+template <class T>
+Segment<T> *Segment<T>::operator+=(int advance)
+{
+  start += advance;
+  len -= advance;
+  return len?this:(Segment*)0;
+}
+
+template <class T>
+Segment<T> *Segment<T>::operator++(int)
+{
+  return (*this) += 1;
+}
+
+template <class T>
+Segment<T>::~Segment()
+{
+    start=(T*)0;	// make the thing actively hostile to reallocation
+}
+
+template <class T>
+int Segment<T>::search(const T &what, int offset = 0) const
+{
+  return search(&what, 1, offset);
+}
+
+template <class T>
+int Segment<T>::search(const T *what, int offset = 0) const
+{
+  return search(what, T::findNull(what), offset);
+}
+
+template <class T>
+int Segment<T>::search(const Segment<T> &what, int offset = 0) const
+{
+  return search(what.content(), what.Length(), offset);
+}
+
+template <class T>
+int Segment<T>::search(const Segment<T>* what, int offset = 0) const
+{
+  return search(what->content(), what->Length(), offset);
+}
+
+template <class T>
+T &Segment<T>::operator[](int offset) const
+{
+    if (offset < 0)
+        throw new Error("range", offset, "Segment negative offset");
+    return start[offset];
+}
+
+template <class T>
+const T &Segment<T>::const_element(int index) const
+{
+    if (index < 0)
+        throw new Error("range", index, "Segment negative index");
+    if (index >= len)
+        throw new Error("range", len, "Segment index outside range");
+    return start[index];
+}
+
+template <class T>
+T &Segment<T>::element(int index) const
+{
+    if (index < 0)
+        throw new Error("range", index, "Segment negative index");
+    if (index >= len)
+        throw new Error("range", len, "Segment index outside range");
+    return start[index];
+}
+
+template <class T>
+int Segment<T>::Length() const
+{
+  return (start) ?len: 0;
+}
+
+template <class T>
+T* Segment<T>::content() const
+{
+  return start;
+}
+
+template <class T>
+Segment<T>::operator T* () const
+{
+  return start;
+}
+    
+template <class T>
+T *Segment<T>::segFirst() const
+{
+  return start;
+}
+
+template <class T>
+const T &Segment<T>::first() const
+{
+  return *start;
+}
+
+template <class T>
+T *Segment<T>::segLast() const
+{
+  return start + len - 1;
+}
+
+template <class T>
+const T &Segment<T>::last() const
+{
+    if (len <= 0)
+        throw new Error("range", len, "Segment negative offset");
+
+    return start[len - 1];
+}
+
+template <class T>
+bool Segment<T>::segEncloses(const T * const _start, int _len) const
+{
+    if (_len < 0)
+        throw new Error("range", _len, "Segment negative subrange len");
+    return (_start >= start) && ((_start + _len) <= (start + len));
+}
+
+template <class T>
+bool Segment<T>::segEncloses(Segment<T> const &seg) const
+{
+  return segEncloses(seg.start, seg.len);
+}
+
+template <class T>
+int Segment<T>::in(T *t, int tlen = 0) const
+{
+  if (segEncloses(t, tlen)) {
+    return t - start;
+  } else {
+    return -1;
+  }
+}
+
+template <class T>
+bool Segment<T>::empty() const
+{
+  return !start || (len <= 0);
+}
+
+template <class T>
+Segment<T>::operator bool () const
+{
+  return empty();
+}
+
+template <class T>
+bool Segment<T>::operator==(const Segment<T> &d) const
+{
+  return (this == &d) || (order(d) == 0);
+}
+
+template <class T>
+bool Segment<T>::operator!=(const Segment<T> &d) const
+{
+  return (this != &d) && (order(d) != 0);
+}
+
+template <class T>
+bool Segment<T>::operator>=(const Segment<T> &d) const
+{
+  return (order(d) >= 0);
+}
+
+template <class T>
+bool Segment<T>::operator>(const Segment<T> &d) const
+{
+  return (this != &d) && (order(d) > 0);
+}
+
+template <class T>
+bool Segment<T>::operator<=(const Segment<T> &d) const
+{
+  return (this != &d) && (order(d) <= 0);
+}
+
+template <class T>
+bool Segment<T>::operator< (const Segment<T> &d) const
+{
+  return (this != &d) && (order(d) < 0);
+}
+
+template <class T>
+bool Segment<T>::isMember(const T &d)
+{
+  int junk;
+  return tsearch(d, junk);
+}
+
+template <class T>
+int Segment<T>::endRelative(int where) const
+{
+  // negative where is end-relative
+  return (where < 0)? len + where: where;
+}
+
+// duplicate a range of basetype
+template <class T>
+T *Segment<T>::dup(T* to, const T* from, int range)
+{
+    if (range < 0)
+        throw new Error("range", range, "Segment duplicator with negative range");
+    for (int i = 0; i < range; i++) {
+        *(to + i) = *(from + i);
+    }
+    return to;
+}
+
+template <class T>
+void Segment<T>::set(T* t, int size)
+{
+    if (size < 0)
+        throw new Error("range", size, "Segment set with negative length");
+    start = t;
+    len = size;
+    DEBLOG(cerr << "Segment<T>::set(" << t << ',' << size << ")\n");
+}
+
+// compare two Segment<T>s (used by Segment::qsort and Segment::tsearch)
+// find a needle in this haystack
+typedef int (*Cmp)(const void*, const void*);	// qsort comparison operator type
+
+template <class T>
+int Segment<T>::cmp(const T *l, const T *r)
+{
+  return T::order(*l, *r);
+}
+
+// qsort Vector contents
+template <class T>
+Segment<T> *Segment<T>::qsort() {
+  if (len) {
+    ::qsort(start, len, sizeof(T), (Cmp)cmp);
+  }
+  //  check();
+  return this;
+}
+
+// binary search sorted Segment for match
+template <class T>
+bool Segment<T>::tsearch(const T &key, int &idx) const
+{
+  if (len) {
+    size_t lower = 0;
+    size_t upper = len;
+    while (lower < upper) {
+      idx = (lower + upper) / 2;
+      T &el = element(idx);
+      int comparison = -T::order(el, key);
+      //cerr << "tsearch: " << lower << ", " << idx << ", " << upper << ": " << key << " order " << el << " => " << comparison << '\n';
+      //cerr << "tsearch1: " << &el << '\n';
+      if (comparison < 0)
+        upper = idx;
+      else if (comparison > 0)
+        lower = idx + 1;
+      else
+        return true;
+    }
+    return false;
+  } else {
+    idx = 0;
+    return false;
+  }
+}
+
+// reverse Segment
+template <class T>
+Segment<T> *Segment<T>::reverse()
+{
+  T tmp;
+  // check();
+  
+  if (len) {
+    for (int i = 0; i < len / 2; i++) {
+      T::move(&tmp, start + i, 1);
+      T::move(start + i, start + len - i - 1, 1);
+      T::move(start + len - i - 1, &tmp, 1);
+    }
+  }
+  return this;
+}
+
+// find occurrence in vector
+template <class T>
+int Segment<T>::search(const T* what, int whatlen, int offset) const
+{
+  // check();
+  
+  // searching for NULL always fails
+  if (empty() || !what || !whatlen)
+    return -1;
+  
+  // null terminated string
+  if (whatlen < 0) {
+    whatlen = T::findNull(what);
+  }
+  
+  //what->check(whatlen);
+  
+  // negative where is end-relative
+  if ((offset = endRelative(offset)) < 0)
+    return -1;
+  
+  const T *found = NULL;
+  if (whatlen == 1) {
+    // strength reduction - single item search
+    found = T::find(start + offset, *what, len - offset);
+  } else {
+    // segment search
+    found = T::search(start + offset, what, whatlen, len - offset);
+  }
+  
+  if (!found) {
+    return -1;
+  } else {
+      assert(segEncloses(found, whatlen));	// sanity check
+      return (found - start);
+  }
+}
+
+// order - ordering between Segments
+template <class T>
+int Segment<T>::order (const Segment<T> &that) const
+{
+  int _cmp;
+  for (int i = 0; i < Length() && i < that.Length(); i++) {
+    if (!(_cmp = cmp(start + i, that.content() + i)))
+      continue;
+    else
+      return _cmp;
+  }
+  return Length() - that.Length();
+}
+
+#if 0
+// allocate an array of T's
+template <class T>
+T *Segment<T>::alloc(int nelem, void *allocator)
+{
+    return (T*)memset(memory->alloc(nelem * sizeof(T), allocator), nelem, sizeof(T));
+}
+
+// Deallocate storage pointed at by Segment
+template <class T>
+void Segment<T>::dealloc()
+{
+    DEBLOG(cerr << memory << "->Segment<T>::dealloc(" << start << ")\n");
+    memory->free(start);	// caller warrants that Segment was alloced by Segment(int)
+    start = (T*)0;
+    len = 0;
+}
+
+#endif

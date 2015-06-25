@@ -1,0 +1,300 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+  <head>
+    <title>Chaos - Forth-like minimal language</title>
+  </head>
+  <body>
+<h1>Chaos - Forth-like minimal language</h1>
+<p> Chaos is a very simple stack-based language designed mainly as a testbed for ColdStore.  </p>
+<p>
+In keeping with this, Chaos is able to generate calls to all of the
+elements of the ColdStore virtual protocol on the objects it creates.  It
+could also function as a nanocode level programming environment for
+ColdStore.
+</p>
+<p>Chaos has a very simple syntax:
+    <ol>
+      <li>Everything in quotes (&quot;) is a string constant.
+      <li>Everything in braces {} is a string constant.
+      <li>Everthing beginning with single quote (') is a string constant.
+      <li>Everything beginning with a dollar sign ($) is a variable reference.
+      <li>Everything that is a sequence of numerics is an integer constant.
+      <li>Bare words are function or primitive references.
+      <li>Everything else is whitespace.
+    </ol>
+</p>
+<p>Chaos' semantics are also simple.
+<ul>
+      <li>There is a value stack onto which all constants and the values of
+          all variable references are pushed, and from which all functional
+          arguments are popped.
+      <li>Definition: For the purpose of exposition, the terms TOP and
+          UNDER will be used to denote the values which would be removed from
+          the stack by a drop and swap drop, respectively.
+      <li>There is a stack of namespaces within which all variables are stored.
+      <li>Any constant is immediately pushed onto the stack.
+      <li>Any variable reference is textually replaced with the contents of
+          that variable, which is then pushed onto the stack.
+      <li>Any functional reference is either
+      <ul>
+          <li>a builtin function, which is evaluated; or
+          <li>the name of a variable, which will be evaluated first as a
+              variable reference, and then as if the value of that variable had
+              been presented as command input.
+      </ul>
+      <li>Any Error thrown by the underlying ColdStore, including
+          ~underflow, will terminate the execution of the all interpreters,
+          back to Chaos, which will print the Error, then continue with the
+          Error as its TOP.
+</ul>
+</p>
+
+#use wml::std::tags
+#use wml::std::grid
+
+<define-container func whitespace=delete>
+ <preserve fname> <preserve desc> <preserve note> <preserve sbefore> <preserve safter>
+ <set-var %attributes>
+ <tr>
+   <td align=left valign=top><b><get-var fname></b></td>
+   <td align=left valign=top>&nbsp;(<get-var sbefore> -- <get-var safter>)</td>
+   <td align=left valign=top><get-var desc></td>
+ </tr>
+   <td></td>
+   <td align=left valign=top><pre>%body</pre></td>
+   <td align=left valign=top><p><get-var note></p></td>
+ </tr>
+ <restore fname> <restore desc> <restore note> <restore sbefore> <restore safter>
+</define-container>
+
+<define-container group whitespace=delete>
+ <tr><td></td><td><h2>%body</h2></td></tr>
+</define-container>
+
+<table border="0" cellspacing="0" cellpadding="0">
+
+<group>Constants and Variables</group>
+
+<func fname="[0-9]+"                   desc="Integer"     safter="INT | BIGNUM"></func>
+<func fname="[0-9]+.[0-9]+[Ee]?(0-9)*" desc="Float"       safter="FLOAT"></func>
+<func fname="0[xX][0-9a-fA-F]+"        desc="hex Integer" safter="INT | BIGNUM"></func>
+<func fname="&quot;.*&quot;"           desc="String"      safter="STR"></func>
+<func fname="'([^ \t\n{$'\0][^ \t\n\0]*)"
+      desc="String (and later Symbol)"
+      safter="STR"></func>
+<func fname="{...}"                    
+      desc="brace-balanced String"
+      safter="STR"></func>
+<func fname="$[A-Za-z_][A-Za-z0-9_]*"  
+      desc="Var reference"
+      safter="var contents"></func>
+<func
+ fname="! set"
+ sbefore="val name"
+ desc="store UNDER in TOP"
+>
+  1 x !
+  2 y set
+  $x $y + .
+  Integer: 3
+</func>
+<func
+ fname=new
+ sbefore="args type"
+ safter="type->new(args)"
+ desc="Create an instance of TOP from UNDER"
+ note="This doesn't work yet."
+>
+  "0 1 2 3 4" 'Buffer new
+</func>
+
+<group>Flow Control</group>
+
+<func 
+ fname=fn
+ sbefore="... fname"
+ safter="... [depends on fname]"
+ desc="Evaluate TOP as the name of a function or primative"
+ note="a bareword is identical in functionality to evaluating fn with
+       that bareword as its arg."
+>
+  1 "dup" fn . .
+  Integer: 1
+  Integer: 1
+</func>
+
+<func 
+ fname=if 
+ sbefore="{true} {false} {condition}"
+ safter="..."
+ desc="Evaluate true or false depending on result of condition"
+ note="Since all three args are popped before evaluating condition, if
+       condition pushes more than one result it will be available to
+       whichever code is executed based on top"
+>
+  {{YES!!!} .} {{NOT LIKELY} .} {pokey?} if
+  {. .} {{nevermind} .} {3 2 1} if
+  Integer: 2
+  Integer: 1
+</func>
+
+<func 
+ fname=while
+ sbefore="{code} {condition}"
+ safter="..."
+ desc="if condition, evaluate code and then condition until condition is false"
+ note="Stack effects are dependent on both blocks. If code pushes a
+       truth value, condition may be blank, or you can just loop on
+       condition."
+>
+  3 {1 - dup .} {dup} while
+  Integer: 2
+  Integer: 1
+  Integer: 0
+  3 {} {1 - dup . dup} while
+  Integer: 2
+  Integer: 1
+  Integer: 0
+</func>
+
+<func 
+ fname=eval
+ sbefore="{code}"
+ safter="..."
+ desc="compile and execute TOP"
+ note="The only data for which this is not a NOP is a string, which
+       will be parsed and treated as inline code."
+>
+  {{This is a string} .} eval
+  'This is a string'
+</func>
+
+<func 
+ fname=list
+ sbefore="str"
+ safter="list"
+ desc="eval, and push list of results"
+ note="This is equivalent to 1 {eval} proc"
+>
+  {one $two 'three 4 "five"} list
+  =&gt; [one(), $two, "three", 4, "five"]
+</func>
+
+<func 
+ fname=scope
+ sbefore="{codeblock}"
+ safter="..."
+ desc="Evaluate TOP but forget any vars it defines."
+ note="Does not protect stack"
+>
+  {{'top set dup $top swap} scope} 'over set
+</func>
+
+<func
+ fname=proc
+ sbefore="elements count code"
+ safter="{endstack} list"
+ desc="Evaluate TOP with count elements as a starting stack."
+ note="Does not protect namespace or define a procedure. Merely protects
+ stack."
+>
+"a" "b" "c"
+2 { this len 2 == .
+    "c" == .
+  } proc
+{"b"} list == .
+"a" == .
+</func>
+
+<func
+ fname=cond
+ sbefore="{{{test} {block}} {{test} {block}} ... }"
+ safter="results of {block} chosen"
+ desc="Conditional/switch statement"
+>
+  myfunc {
+    {{dup 0 ==} {"myfunc returned Zero!" . drop}} 
+    {{1}        {"myfunc returned Other." . drop}}
+  } cond
+</func>
+
+<group>Stack Operations</group>
+
+<func fname=dup  sbefore="x"   safter="x x"  desc="duplicate TOP"></func>
+<func fname=drop sbefore="x"                 desc="Reduce the stack by one, discarding TOP"></func>
+<func fname=swap sbefore="x y" safter="y x"  desc="Swap TOP and UNDER"></func>
+<func fname=view                             desc="Render the stack for debugging"></func>
+<func fname=dump                             desc="Detailed stack dump"></func>
+
+<group>ColdStore environment</group>
+
+<func fname="."                              desc="Print TOP"></func>
+<func fname=this sbefore=""    safter="this" desc="push a reference to the current interpreter"></func>
+<func 
+ fname=names                           
+ desc="Push a copy of global namespace"
+ note="BEWARE: if you dump or view while a copy of names is on the stack,
+ Chaos will loop forever because the namespace is self-referential. Only a
+ SIGINT or similiar event will stop it."
+>
+ "Chaos" names slice this == .
+ Integer: 1
+</func>
+
+<group>Coldstore Object</group>
+
+<func fname=truth      desc="Replace TOP with its ColdStore truth value."></func>
+<func fname=type       desc="Replace TOP with its ColdStore truth value."></func>
+<func fname=sequence   desc="Replace TOP with a flattened sequence representation."
+                       note="This representation can be used as an argument to 'new to recreate the object."></func>
+<func fname=issequence desc="Predicate: does TOP support the Sequence protocol?"></func>
+<func fname=isiterator desc="Predicate: does TOP support the Iterator protocol?" ></func>
+
+<group>Arithmetic Operations</group>
+
+<func fname="+ sum"  sbefore="x y" safter="x+y"></func>
+<func fname="- sub"  sbefore="x y" safter="x-y"></func>
+<func fname="* mult" sbefore="x y" safter="x*y"></func>
+<func fname="/ div"  sbefore="x y" safter="x/y"></func>
+<func fname="% mod"  sbefore="x y" safter="x%y"></func>
+<func fname="positive"></func>
+<func fname="negative"></func>
+<func fname="~ invert"></func>
+<func fname="&amp; 'and"></func>
+<func fname="^ xor"></func>
+<func fname="| or"></func>
+<func fname="&lt;&lt; lshift"></func>
+<func fname="&gt;&gt; rshift"></func>
+<func fname="== != &gt;= &gt; &lt;= &lt;" desc="(Comparisons)"></func>
+
+<group>Sequence Operations</group>
+
+<func fname=length></func>
+<func fname=concat></func>
+<func fname=slice></func>
+<func fname=element></func>
+<func fname=search></func>
+<func fname=rreplace desc="Range replacement"></func>
+<func fname=replace desc="Element replacement"></func>
+<func fname=sreplace desc="monadic replacement"></func>
+<func fname=insert></func>
+<func fname=del></func>
+<func fname=rdel desc="Range deletion"></func>
+
+<group>Iterator Operations</group>
+
+<func fname=iterator></func>
+<func fname=current></func>
+<func fname=more></func>
+<func fname=next></func>
+
+<group>Functional Operations</group>
+
+<func 
+ fname=call
+ desc="TOP->call()"
+ note="This will call the nominated Builtin with TOP as its argument.  This will likely SigSegv."
+></func>
+</table>
+</body>
+</html>

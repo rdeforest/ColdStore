@@ -1,0 +1,370 @@
+template <class T>
+SkipList<T>::SkipList(ushort level)
+        : SkipEl<T>(level)
+{
+    garbage.unlock();
+
+    for (int i = 0; i <= level; i++)
+        unlock(i);
+}
+
+template <class T>
+SkipEl<T>::SkipEl(T &k, ushort level)
+        : key(k),
+          maxlevel(level)
+{
+#ifdef DEBUG
+    for (int i = 0; i <= maxlevel; i++)
+        locker[i] = pthread_self();
+#endif
+}
+
+template <class T>
+SkipEl<T>::SkipEl(ushort level)
+        : maxlevel(level)
+{
+#ifdef DEBUG
+    for (int i = 0; i <= maxlevel; i++)
+        locker[i] = pthread_self();
+#endif
+}
+
+
+template <class T>
+void SkipEl<T>::lock(ushort l)
+{
+#ifdef DEBUG
+    assert(!forward[l].locked() || (locker[l] != pthread_self()));
+#endif
+
+    forward[l].lock();
+
+#ifdef DEBUG
+    locker[l] = pthread_self();
+#endif
+}
+
+template <class T>
+void SkipEl<T>::unlock(ushort l)
+{
+#ifdef DEBUG
+    assert(forward[l].locked() && (locker[l] == pthread_self()));
+    locker[l] = 0;
+#else
+    assert(forward[l].locked());
+#endif
+    
+    forward[l].unlock();
+}
+
+template <class T>
+SkipEl<T>::operator T&()
+{
+    return key;
+}
+
+template <class T>
+T &SkipEl<T>::operator = (T&val)
+{
+    key = val;
+    return key;
+}
+
+template <class T>
+bool SkipEl<T>::operator < (T &comp)
+{
+    return key < comp;
+}
+
+template <class T>
+bool SkipEl<T>::operator == (T &comp)
+{
+    return key == comp;
+}
+
+template <class T>
+bool SkipList<T>::operator < (T &comp)
+{
+    return true;
+}
+
+template <class T>
+bool SkipList<T>::operator == (T &comp)
+{
+    return false;
+}
+
+
+template <class T>
+void SkipEl<T>::WeakSearch(T searchKey, ushort l, SkipEl<T> *&prev, SkipEl<T> *&next)
+{
+    prev = this;	// start at the list head
+    next = prev->forward[l];
+
+    // search until we find an element such that prev < element <= next
+    while (next && (*next < searchKey)) {
+        prev = next;
+        next = prev->forward[l];
+        assert(next != prev);	// guard against degenerate lists
+    }
+}
+
+template <class T>
+SkipEl<T> *SkipList<T>::Search(T searchKey)
+{
+    SkipEl<T> *prev = this;
+    SkipEl<T> *next;
+
+    for (short l = maxlevel; l >= 0; l--) {
+        next = prev->forward[l];
+
+        // search until we find an element such that prev < element <= next
+        while (next && (*next < searchKey)) {
+            prev = next;
+            next = prev->forward[l];
+            assert(next != prev);	// guard against degenerate lists
+        }
+    }
+
+    if (next && (*next == searchKey)) {
+        return next;
+    } else {
+        return NULL;
+    }
+}
+
+template <class T>
+SkipEl<T> *SkipEl<T>::getLock(T searchKey, ushort level)
+{
+    SkipEl<T> *prev = this;
+    SkipEl<T> *next = forward[level];
+
+    while (next && *next < searchKey) {
+         prev = next;
+         next = prev->forward[level];
+    }
+    // can't move any further, lock and double check result
+    prev->lock(level);
+    next = prev->forward[level];
+    while (next && *next < searchKey) {
+        prev->unlock(level);
+        prev = next;
+        prev->lock(level);
+        next = prev->forward[level];
+    }
+    assert(prev);	// we can't ever return a NULL
+    return prev;
+}
+
+template <class T>
+void SkipEl<T>::StrongSearch(T searchKey, ushort l, SkipEl<T> *&prev, SkipEl<T> *&next)
+{
+    WeakSearch(searchKey, l, prev, next); // do as much work as possible without using locks
+
+    prev->lock(l);    	// lock the insertion point
+    next = prev->forward[l]; // prev forward may have changed since completion of weak search
+
+    // continue the search, now locking as we go
+    while (next && (*next < searchKey)) {
+        prev->unlock(l);
+        prev = next;
+        prev->lock(l);
+        next = prev->forward[l];
+        assert(next != prev);
+    }
+
+    // leaves the last visited pointer (prev) locked
+}
+
+template <class T>
+bool SkipList<T>::Insert(T searchKey)
+{
+    SkipEl<T> *prev = this;
+    SkipEl<T> *next;
+    SkipEl<T> *update[maxlevel+1];
+
+    // weakly search down to level 0 for perfect match/replacement
+    for (int i = maxlevel; i >= 0; i--) {
+        next = prev->forward[i];
+        while (next && *next < searchKey) {
+            prev = next;
+            next = prev->forward[i];
+        }
+        update[i] = prev;	// keep a list of nodes visited
+    }
+    
+    prev = prev->getLock(searchKey, 0);
+    next = prev->forward[1];
+    if (next && *next == searchKey) {
+        // got a match, perform replacement
+        *next = searchKey;
+        prev->unlock(0);
+        return false;
+    }
+    // prev is locked at level 0
+
+    // not found, must add an element
+    int level = randomLevel();
+    assert(level <= maxlevel);
+    SkipEl<T> *el = new SkipEl<T>(searchKey, level);
+
+#if 0
+    NB: We're not doing LevelHint, because it interferes with inheritence, so we don't need this
+    // if maxlevel < el->maxlevel, add levels to update, to keep header updated correctly
+    for (int i = maxlevel; i <= el->maxlevel; i++)
+        update[i] = this;
+#endif
+
+    for (int i = 0; i <= el->maxlevel; i++) {
+        if (i > 0)
+            prev = update[i]->getLock(searchKey, i);
+        el->forward[i] = prev->forward[i];
+        el->unlock(i);
+        prev->forward[i] = el; // insertion occurs now, auto unlock
+        prev->unlock(i);
+    }
+
+    el->garbage.unlock();	// unlock the element
+    
+    return true;
+}
+
+template <class T>
+SkipEl<T> *SkipList<T>::Delete(T searchKey)
+{
+    SkipEl<T> *prev = this;
+    SkipEl<T> *next = NULL;
+    SkipEl<T> *update[maxlevel+1];
+
+    // weakly search down to level 0 for perfect match/replacement
+    for (int i = maxlevel; i >= 0; i--) {
+        prev->WeakSearch(searchKey, i, prev, next);
+        update[i] = prev;	// keep a list of nodes visited
+
+        next = prev->forward[i];
+        while (next && *next < searchKey) {
+            prev = next;
+            next = prev->forward[i];
+        }
+        update[i] = prev;
+    }
+    next = prev;
+    bool isGarbage;
+    do {
+        next = next->forward[0];
+        if (!next || *next > searchKey)
+            return NULL;
+        next->garbage.lock();
+        SkipEl<T> *tmp = next->forward[0];
+        isGarbage = tmp && (next->key > tmp->key);
+        if (isGarbage)
+            next->garbage.unlock();
+    } while (!(*next == searchKey) || isGarbage);
+    // y is in the list and we have exclusive insert/delete rights
+
+    assert(this != next); // this is always the SkipList and can never be deleted
+
+    for (int i = next->maxlevel; i >= 0; i--) {
+        // loop invariant: next is effectively a level i element
+        prev = update[i]->getLock(searchKey, i);
+
+        // forward(prev)[i] = next
+        next->lock(i);
+        prev->forward[i] = next->forward[i]; // deletion occurs now - autounlock
+        next->forward[i] = prev;	// implicit unlock, leave pointer back into the list
+        prev->unlock(i);
+        next->unlock(i);
+    }
+
+    //putOnGarbageQueue(next);
+    next->garbage.unlock();
+    return next;
+}
+
+template <class T>
+void lptr<T>::lock()
+{
+    bool ret = false;
+    for (;;) {
+        int val = lock_ptr;
+        if (!(lock_ptr & 1) && CAS(&lock_ptr, val, val | 1))
+            break;
+        sched_yield();	// give another thread a go
+    }
+}
+
+template <class T>
+lptr<T>::operator SkipEl<T> *()
+{
+    return (SkipEl<T>*)(lock_ptr & cnmask);	// return the pointer, sans lock
+}
+
+template <class T>
+SkipEl<T> *lptr<T>::operator = (SkipEl<T> *what)
+{
+    assert(locked());	// we must have had this locked to update it
+    //lock_ptr = cnmask & (unsigned int)what;	// set new value, unlocked
+    lock_ptr = 1 | (unsigned int)what;	// set new value, leave locked
+}
+
+template <class T>
+SkipEl<T> *lptr<T>::operator = (lptr what)
+{
+    *this = (SkipEl<T>*)what;
+}
+
+template <class T>
+void lptr<T>::unlock()
+{
+    lock_ptr &= cnmask;	// only this can hold the lock (we hope :)
+}
+
+template <class T>
+bool lptr<T>::CAS (ulong *p, ulong oldval, ulong newval)
+{
+    bool ret;
+    long int nval = newval;
+
+    __asm__("lock; cmpxchgl %3, %1; sete %0"
+            : "=q" (ret), "=m" (*p), "=a" (nval)
+            : "r" (nval), "m" (*p), "a" (oldval)
+            : "memory", "cc");
+
+    return ret;
+}
+
+template <class T>
+lptr<T>::lptr()
+        : lock_ptr(1)
+{}
+
+template <class T>
+bool lptr<T>::locked()
+{
+    return (lock_ptr & 1) == 1;
+}
+
+template <class T>
+ushort SkipList<T>::randomLevel()
+{
+    ushort level = 0;
+    ushort b;
+    do {
+        if (randomsLeft <= 0) {
+            randomBits = random();
+            randomsLeft = BitsInRandom/2;
+        }
+        b = randomBits & 3;
+        if (!b)
+            level++;
+        randomBits >>= 2;
+        randomsLeft--;
+    } while (!b);
+    return ((level > maxlevel) ? maxlevel : level);
+}
+
+template <class T>
+uint SkipList<T>::randomBits = 0;	// repository for random bits (saves re-calling random)
+
+template <class T>
+short SkipList<T>::randomsLeft = 0;	// number of bits left in random repository

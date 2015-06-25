@@ -1,0 +1,6 @@
+- new and delete object buttons
+- remove member button
+- view node tree button (use gtk tree view)
+- view children button (new browser window, viewing children only)
+- view parents button (as above)
+- inspector panel ( lotsa work there )

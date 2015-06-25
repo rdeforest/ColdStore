@@ -1,0 +1,81 @@
+TOP_SRCDIR = @top_srcdir@
+srcdir = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+infodir = @infodir@
+libdir = @libdir@
+mandir = @mandir@
+includedir = @includedir@
+INSTALL = @INSTALL@
+
+
+include @top_srcdir@/mk/occ.defs.mk
+
+
+OCCFLAGS += -SColdClass -SColdTemplate -SSlotClass
+INCLUDES += -I@top_srcdir@/include -I@top_srcdir@/coldstore -I@top_srcdir@/toolkit
+CXXFLAGS += $(INCLUDES)
+LDFLAGS += $(WRAP) -rdynamic
+LDLIBS += -L@top_srcdir@/libs -lintern -ldl -lqvmm -lgmp -lpcre -liberty
+
+
+OCC_ENV += LD_LIBRARY_PATH=.:@top_srcdir@/metaclass
+
+
+all:	mud.so mudtest.so mud 
+
+include @top_srcdir@/mk/occ.rules.mk
+
+test: mud
+	LD_LIBRARY_PATH=@top_srcdir@/libs/ ./mud < mud.test
+
+manual: mudmanual.html
+
+mudmanual.html: mudmanual.wml
+	wml mudmanual.wml > mudmanual.html
+
+mud.so: Event.o HasVerbs.o Thing.o Named.o Described.o Located.o \
+	Container.o Receiver.o Broadcaster.o Room.o \
+	ConsoleObserver.o Actor.o UserDictionary.o  \
+	Connection.o  World.o Parser.o Verb.o Command.o
+
+mudtest.so: server.o
+global.o: global-linux.c global-freebsd.c
+Event.o: Event.cc Event.hh
+Root.o: Root.cc 
+HasVerbs.o: HasVerbs.cc
+Located.o: Located.cc 
+Container.o: Container.cc
+Receiver.o: Receiver.cc Event.hh 
+Broadcaster.o: Broadcaster.cc Event.hh
+Room.o: Room.cc 
+ConsoleObserver.o: ConsoleObserver.cc Event.hh 
+UserDictionary.o: UserDictionary.cc 
+Actor.o: Actor.cc 
+Connection.o: Connection.cc 
+UserDictionary.o: UserDictionary.cc 
+Parser.o: Parser.cc 
+Verb.o: Verb.cc
+Command.o: Command.cc
+
+server.o: server.cc
+
+
+mud: mud.o global.o @top_srcdir@/libs/slop.o
+World.o: World.cc
+
+debug: mud
+	-rm coldstore
+	LD_LIBRARY_PATH=@top_srcdir@/libs ddd mud &
+
+CLEAN += mudParser.cc mudParser.hh 
+DISTCLEAN += mud coldstore
+
+install: all 
+	$(TOP_SRCDIR)/mkinstalldirs $(libdir)
+	$(TOP_SRCDIR)/mkinstalldirs $(bindir)
+	$(INSTALL) mud.so $(libdir)/mud.so
+	$(INSTALL) mudtest.so $(libdir)/mudtest.so
+	$(INSTALL) mud $(bindir)/mud
+

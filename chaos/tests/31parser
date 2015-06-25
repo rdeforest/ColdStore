@@ -1,0 +1,27 @@
+
+"Parser" peektop
+    /* this line used to cause a segv: */
+    dup {'a} "{'a}" test
+
+    /* The following lines are intended to confuse comment and
+     * whitespace removal.
+     */
+
+    {/**/dup/**/1/**/"1"/**/test} drop
+
+    /* number parsing */
+    dup 15 "15" test
+
+    /* This is known to crash the parse loop */
+    /* dup 15 "0xf" test */
+
+    dup 15 "1.5 10 *" test
+    dup 15 "1.5e1" test
+
+    /* String tests */
+    /* This used to hang the interpreter */
+    dup "foo" "\"\\foo\"" test
+    dup "\\" "\"\\\\\"" test
+    dup "\"" "\"\\\"\"" test
+drop
+

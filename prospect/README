@@ -1,0 +1,11 @@
+Run 'make' in this directory, then run prospect.  It will take a good looooong
+time to run, while it pokes through your absolute memory map.  It will notify
+you when it finds a section it cannot use.  Use the largest chunk that shows
+up as available, by editing the parameters in qvmm.h (this will be moved to
+a configuration file soon).
+
+Any time you upgrade your operating system or linker or system libs, you'll
+need to run prospect again to ensure that it hasn't created any new holes.
+If it does create a hole where a coldstore is currently mapped, you are out of
+luck and had better revert -- this will eventually change when qvmm supports
+some system of relocation.

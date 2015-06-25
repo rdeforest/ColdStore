@@ -1,0 +1,16 @@
+This is Chaos, a "toy" language used to test Coldstore.  Being a
+whitespace-delimited RPN stack-based language, Chaos superficially
+resembles forth -- but it is not forth, or even a partial
+implementation of forth.  Chaos does not include a number of forth
+words, and implements other words differently.  Chaos has no control
+words that change parsing order: *everything* is RPN, no exceptions.
+
+Chaos is a testbed, and as such is constantly under revision, so the
+entire language specification may change on a whim.  Basing a
+production system on Chaos is not advisable.  That said, Chaos has
+been designed for easy extensibility, and we encourage experimentation
+with it.  Suggestions for improving Chaos are also encouraged, but new
+primitives or parse structures will be considered against our desire
+to keep the language minimal.
+
+

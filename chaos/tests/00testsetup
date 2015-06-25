@@ -1,0 +1,3 @@
+"Beginning test suite." emitln
+
+{$verbose 0 > {dup emitln} {} if} 'peektop !

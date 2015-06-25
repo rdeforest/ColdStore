@@ -1,0 +1,41 @@
+#
+# Makefile for coldstore/metaclass
+# 
+
+
+TOP_SRCDIR = @top_srcdir@
+srcdir = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+infodir = @infodir@
+libdir = @libdir@
+mandir = @mandir@
+includedir = @includedir@
+INSTALL = @INSTALL@
+
+
+METACOMPILING = yes
+
+include @top_srcdir@/mk/occ.defs.mk
+include @top_srcdir@/mk/occ.rules.mk
+
+all: ColdClass.so ColdTemplate.so SlotClass.so
+
+ColdClass.so: ColdClass.mc
+
+SlotClass.so: SlotClass.mc
+
+ColdTemplate.so: ColdTemplate.mc
+
+ColdClass.so: ColdClass.mc
+
+#test: coldtest #metatype_test.o
+#coldtest.o: ColdClass.so 
+#metatype_test.o: MetaType.so
+#template.o: temptest.so nontemptest.so
+
+install: all
+
+CLEAN += *.cc
+

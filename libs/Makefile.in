@@ -1,0 +1,43 @@
+#
+# Makefile for libcold_toolkit
+#
+
+TOP_SRCDIR = @top_srcdir@
+srcdir = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+infodir = @infodir@
+libdir = @libdir@
+mandir = @mandir@
+includedir = @includedir@
+INSTALL = @INSTALL@
+
+include @top_srcdir@/mk/gcc.defs.mk
+
+CLEAN += slop.c
+
+all: links slop.o
+
+include @top_srcdir@/mk/gcc.rules.mk
+
+.PHONY: links
+.INTERMEDIATE: slop.c
+
+links:
+	-rm -f ./libqvmm.so ./libintern.so ./libcold.so ./libcold_toolkit.so
+	-ln -s @top_srcdir@/qvmm/libqvmm.so .
+	-ln -s @top_srcdir@/intern/libintern.so .
+	-ln -s @top_srcdir@/coldstore/libcold.so .
+	-ln -s @top_srcdir@/toolkit/libcold_toolkit.so .
+
+SLOPSYM=Disposable_Symbol_Used_By_ElfExe_to_Reserve_Space_in_the_Executable_Elf_Dynamic_Symbol_Table_Should_be_loooooooong
+SLOPCOUNT=10000
+slop.c:
+	echo 'asm(".section .absolute");' > slop.c
+	awk "BEGIN {for (i = 1; i <= $(SLOPCOUNT); i++) print \"asm(\\\".globl $(SLOPSYM)\" int(i) \"; .set $(SLOPSYM)\" int(i) \", 0\\\");\"}" >> slop.c
+
+slop.o: slop.c
+	$(CC) -fPIC -c slop.c
+
+install: all

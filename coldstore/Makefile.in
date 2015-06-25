@@ -1,0 +1,77 @@
+
+#
+# Makefile for coldstore/coldstore
+#
+
+
+TOP_SRCDIR = @top_srcdir@
+srcdir = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+infodir = @infodir@
+libdir = @libdir@
+mandir = @mandir@
+includedir = @includedir@
+INSTALL = @INSTALL@
+
+
+include @top_srcdir@/mk/occ.defs.mk
+
+
+CCFLAGS += -v 
+LDFLAGS += -v
+
+OCCFLAGS += -SColdClass -SColdTemplate -SSlotClass
+LDFLAGS += $(WRAP)
+
+#DEFINES += -DDEBUGLOG
+
+INCLUDES += -I@top_srcdir@/qvmm -I@top_srcdir@/include -I@top_srcdir@/coldstore
+#INCLUDES += -I/usr/local/include -I/usr/local/include/libelf
+
+OCC_ENV += LD_LIBRARY_PATH=.:@top_srcdir@/metaclass:$$LD_LIBRARY_PATH
+
+
+headers := Data.hh List.hh NList.hh Slot.hh Vector.hh Integer.hh Segment.hh \
+String.hh BTree.hh Dict.hh Symbol.hh Integer.hh Tuple.hh Slot.hh Store.hh \
+Hash.hh Object.hh Tree.hh BigInt.hh Real.hh NamedNamespace.hh Directory.hh \
+Ribbon.hh File.hh Connection.hh \
+Endpoint.hh Server.hh Set.hh OrderedSet.hh VectorSet.hh \
+Null.hh Compose.hh Promise.hh DopeV.hh
+
+sources := String.cc List.cc NList.cc Integer.cc Tuple.cc Slot.cc Data.cc \
+Builtin.cc Dict.cc Error.cc Symbol.cc Store.cc Hash.cc Object.cc \
+Tree.cc Regexp.cc BigInt.cc Real.cc NamedNamespace.cc Directory.cc \
+Ribbon.cc File.cc Connection.cc \
+Endpoint.cc Server.cc Set.cc OrderedSet.cc VectorSet.cc \
+Null.cc Compose.cc Promise.cc DopeV.cc
+
+components := $(sources:.cc=.o)
+
+all: libcold.so
+
+include @top_srcdir@/mk/occ.rules.mk
+
+libcold.so: $(components)
+
+include $(sources:%.cc=.%.d)
+
+install_headers: $(headers)
+	$(TOP_SRCDIR)/mkinstalldirs $(includedir)
+	@list='$(headers)'; for p in $$list; do \
+	  if test -f "$$p"; then d= ; else d="$(srcdir)/"; fi; \
+	  echo "(INSTALL) $$d$$p $(includedir)/$$p"; \
+	  $(INSTALL) $$d$$p $(includedir)/$$p; \
+	done
+
+install: all install_headers
+	$(TOP_SRCDIR)/mkinstalldirs $(libdir)
+	$(TOP_SRCDIR)/mkinstalldirs $(includedir)
+	$(INSTALL) libcold.so $(libdir)/libcold.so
+
+uninstall:
+	/bin/rm -f $(libdir)/libcold.so
+
+
+

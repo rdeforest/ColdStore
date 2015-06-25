@@ -1,0 +1,131 @@
+<!doctype Article PUBLIC "-//Davenport//DTD DocBook V3.0//EN" [
+<!entity CS "<productname/ColdStore/">
+<!entity Data "<ulink url='kdoc/Data.html'><classname>Data</classname></ulink>">
+]>
+<article>
+  <artheader>
+    <title>&CS; Virtual Protocol</title>
+    <author>
+      <firstname>Colin</firstname>
+      <surname>McCormack</surname>
+    </author>
+    <pubdate>Wed Sep  8 16:12:51 EST 1999</pubdate>
+    <address><email>colin@field.medicine.adelaide.edu.au</email></address>
+  </artheader>
+  <abstract>
+    <simpara>This article describes the &CS; Virtual Protocol (implemented by the &Data; class) and its technical rationale.</simpara>
+  </abstract>
+  <formalpara>
+    <title>Introduction</title>
+    <para>&CS; is designed to support the development of virtual machines in several layers:<orderedlist>
+        <listitem>
+          <simpara>Providing a melange of useful <ulink url="kdoc/index.html">basic data types</ulink> for the virtual machine to manipulate.</simpara>
+        </listitem>
+        <listitem>
+          <simpara>Providing data types in which to implement a virtual machine which are derived from the base data types (so that the VM can be reflective.)</simpara>
+        </listitem>
+      </orderedlist>
+&CS; Layer 1 implements a series of basic, collection and iterator types derived from the &Data; class. &Data; exports a protocol by means of virtual methods, which is presented here in overview.</para>
+  </formalpara>
+  <formalpara>
+    <title>Lineage</title>
+    <para>&CS; VP is modelled broadly on the Python API, reimplemented in C++, somewhat pared-down in some areas and extended in others.  It's still under active development and revision, so a point by point comparison will have to wait.  In summary: &CS;'s is better :)</para>
+  </formalpara>
+  <formalpara>
+    <title>Taxonomy</title>
+    <para>&CS; VP, like Python's API, is divided into categories of operations:
+	<variablelist>
+        <varlistentry>
+          <term>Meta-Object Protocol</term>
+          <listitem>
+            <simpara>As yet undefined.  We hope to add more reflection to C++ with this protocol.</simpara>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>Object Protocol</term>
+          <listitem>
+            <para>This protocol supports <itemizedlist>
+                <listitem>
+                  <simpara>object copy-on-write and mutability</simpara>
+                </listitem>
+                <listitem>
+                  <simpara>object consistency checking</simpara>
+                </listitem>
+                <listitem>
+                  <simpara>object typing</simpara>
+                </listitem>
+                <listitem>
+                  <simpara>object construction and dumping</simpara>
+                </listitem>
+                <listitem>
+                  <simpara>object ordering, equality, and truth value</simpara>
+                </listitem>
+              </itemizedlist>
+	    </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>Arithmetic Protocol</term>
+          <listitem>
+            <simpara>This protocol represents the object as an arithmetic type, defining operators such as addition, subtraction, division, etc.  It's not mandatory that the semantics of these operations form a group in the mathematical sense - a reasonable analogy should suffice.</simpara>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>Collection Protocol</term>
+          <listitem>
+            <para>Treats the object as an indexable collection with the following operations:<itemizedlist>
+                <listitem>
+                  <simpara>slice - returns an element or subrange of the collection</simpara>
+                </listitem>
+                <listitem>
+                  <simpara>replace - replaces an element or range of elements of the collection</simpara>
+                </listitem>
+                <listitem>
+                  <simpara>delete - deletes an element of range of elements of the collection</simpara>
+                </listitem>
+                <listitem>
+                  <simpara>insert - inserts an element or range of elements into the collection</simpara>
+                </listitem>
+                <listitem>
+                  <simpara>length - returns the collection's cardinality</simpara>
+                </listitem>
+                <listitem>
+                  <simpara>concat - concatenates two collections</simpara>
+                </listitem>
+                <listitem>
+                  <simpara>search - finding an item in a collection</simpara>
+                </listitem>
+              </itemizedlist>
+Again, the interpretation of collection is not a religious matter, and reasonable analogy is acceptable.  In particular, the Python Map and Sequence protocols are subsumed by the Sequence protocol.
+		</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>Iterator Protocol</term>
+          <listitem>
+            <simpara>the object considered as an iterator responds to More/Next messages/methods.</simpara>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>Functional Protocol</term>
+          <listitem>
+            <simpara>the object considered as a functional type has the ability to be `called' with arguments on a stack.</simpara>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+</para>
+  </formalpara>
+  <formalpara>
+    <title>Future</title>
+    <para>Layer1 will change.  Here are some possibilities:<itemizedlist>
+        <listitem>
+          <simpara>Factoring &Data; into classes exporting some subset of the protocol.  Python does this with its `isSequence' kind of predicates.  This is closely related to the evolution of a meta-object protocol.</simpara>
+        </listitem>
+        <listitem>
+          <simpara>More types/baseclasses.</simpara>
+        </listitem>
+      </itemizedlist>
+</para>
+  </formalpara>
+</article>

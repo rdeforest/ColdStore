@@ -1,0 +1,114 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<HTML>
+  <HEAD>
+    <TITLE>ColdStore - ELF Interning</TITLE>
+    <style type="text/css">
+	BODY {
+		background: white;
+	}
+	H1 {
+		border-style: dashed;
+		border-width: medium;   /* sets border width on all sides */
+		border-color: black;
+        }
+	H2 {
+		border-style: dashed;
+		border-width: medium;   /* sets border width on all sides */
+		border-color: black;
+        }
+      	UL { 
+		margin: 0% 5% 0% 5%;
+		/* padding: 3px 3px 3px 3px; */
+						 /* No borders set */
+        }
+        LI { 
+		background: gray;         /* Content, padding will be gray */
+		margin: 0% 5% 0% 5%;
+		list-style: disk;
+						 /* No borders set */
+        }
+
+        LI.big { 
+		background: gray;         /* Content, padding will be gray */
+		margin: 0% 5% 0% 5%;
+		padding: 0% 0% 2% 0%; /* Note 0px padding right */
+		/*list-style: none;*/
+        }
+</style>
+</HEAD>
+<BODY>
+<h1>Symbol Interning</h1>
+This short presentation discusses how and why ColdStore plays around with ELF and the dynamic loader to intern ELF Symbols.
+<p>The code-level documentation for interning symbols is <a href="kdoc/index-long.html">here</a>.
+<h1>The Problem</h1>
+ColdStore allows programs to create objects which persist indefinitely.  Objects created by a program can even outlive the program which created them, which presents a problem: what happens to global addresses (as of functions) stored in objects when the function or object implementing them moves in memory?
+
+<p>Left unattended, a persistent object would continue to point to the address it was created with, long after the code implementing it had moved.
+
+<p>ColdStore has to anchor these external global references to something which will never move, at least for the life of persistent objects.  The obvious choice of persistent target is something stored inside the ColdStore, alongside the objects which reference them.
+
+<h1>ELF - Relevant Facts</H1>
+<p>ELF permits Dynamic Shared Objects (also known as shared libraries) to be defined which can be loaded into a process' address space at an arbitrary location, and executed there.
+<p>ELF relocates objects by reference to symbols.  These are not (or not necessarily) the same symbols as your debugger sees, but are referenced when the ELF dynamic loader (ld-linux.so.2, in my case) needs to generate an absolute address at run-time.
+
+<p>Even though a DSO may be compiled to contain position independant code (as by the use of the -fPIC argument to GCC) the code in a shared library must often also call and reference between libraries.
+
+<p>Example of when relocation is needed in a DSO: a shared library calls printf(), then interrogates errno to see why it failed.  The shared library's call instruction must have the address of the printf function, and the code which loads errno needs the address of the four bytes of memory called errno.
+
+<p>The way this is arranged is that the calling shared library declares a symbol _printf and marks it as global and undefined.  When the dynamic link loader loads the shared library (or, sometimes, after it's loaded it) it resolves references to that symbol by searching the executable image, and all of the other shared libraries loaded, until it finds a defining symbol, whic it uses to resolve the caller's references.
+
+<p>With the example of errno, the situation becomes even more interesting: for errno to work as it should in unix, all references to errno in all loaded objects must refer to the same object, even if they have defined it themselves!  So two shared libraries defining `int errno;' will in fact be using the same locations in memory when they set/test the variable.
+
+<p>This works because ELF defines a strict symbol search order over DSOs, and it makes any resolved reference by one DSO in the search available to all subsequent searches.  In this way, global references are made truly global (subject to the search order - it's possible to have two global references to two different locations, I think, but it's more than I need to worry about.)
+
+<h1>ColdStore's Use of ELF</h1>
+<p>In a nutshell: ColdStore can override symbol values to force them to point at addresses allocated within ColdStore at fixed locations.  It points functional symbols at a small piece of generated machine code which jumps to the real location of the function at runtime, it copies the contents of data and virtual table symbols into the store itself.
+
+<p>Coldstore overrides symbols by adding new symbols to the executable object's symbol table.  It does that by meddling with the internal implementation of ld-linux.so.  If you're interested in why this is a defensible (and even unavoidable) design choice, see <a href="#glibc">below</a>.
+
+<p>Because of how ELF works, symbols declared in the global symbol table are preferred to those declared in shared libraries, so when the linking loader relocates the shared libraries, all their references are forced to point into the store, at the absolute address given.
+
+<h1>ColdStore Implementation</h1>
+<ol>
+      <li>Before a component shared library is loaded, ColdStore scans the file looking for interesting symbols.  What's considered `interesting' is parameterised, but there are at the moment three <a href="#policy">Policies</a>.</li>
+      <li>Interesting symbols are added to the global symbol table</li>
+      <li>The shared library is loaded.</li>
+      <li>A fixup pass over the interned symbols
+<ol>
+          <li>Points a `trampoline' at Function symbols' actual values.</li>
+          <li>Copies the contents of Data symbols from the shared library into their ColdStored locations.</li>
+        </ol>
+</li>
+    </ol>
+<p>All references to interesting symbols are now </p>
+<h3><a name="policy">Interning Policies</a></h3>
+<table border="1">
+        <tbody>
+          <tr>
+            <th>Elf::STL</th>
+            <td>All globals will be interned in addition to DEFAULT_P.</td>
+          </tr>
+          <tr>
+            <th>Elf::COLDSTORE</th>
+            <td>Special purpose ColdStore symbols are interned in addition to DEFAULT_P.</td>
+          </tr>
+          <tr>
+            <th>Elf::DEFAULT_P</th>
+            <td>Virtual Tables are interned.</td>
+          </tr>
+        </tbody>
+      </table>
+
+<h1><a name="glibc">When is an Absolute Symbol not an Absolute Symbol?</a></h1>
+<p>When it's in a shared library, as of glibc2.1.2pre2 and earlier.
+
+<p>In the initial version of ColdStore interning, I generated a DSO containing symbol internings, and loaded it before the overridden DSO.  Unfortunately, ld-linux.so, libdl.so and/or ld choose to relocate absolute symbols by adding the load address of the shared library in which they're declared.
+
+<p>I just wish my bank would add $0x4000000 to my balance, the way ld-linux adds it to my absolute symbols.  So much for playing it by the book.
+
+<p>After several weeks of total exasperation, in which I was more than ably assisted by Ulrich Drepper, HJLu and Andy Schwab of the glibc team, I decided it was time to add the functionality I needed to the library, by fair means or foul.
+<p>I realise that this decision entails considerable portability problems, and probably binds me to the distribution of special purpose link loaders, but I think it's the right technical choice, and I think the functionality should probably be present in standard libdl.nso.
+
+<p>Since I can't even get an unequivocal consensus from the glibc team that relocating absolute symbols is a bug as well as a contradiction in terms, or that it doesn't conform to ELF standards, I hold no hope of having useful (but fairly specialised) functionality added to libdl.so unless I do it myself.
+</body>
+</html>

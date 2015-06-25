@@ -1,0 +1,38 @@
+$Id: TODO,v 1.1.1.1 2000/04/01 00:00:38 opiate Exp $
+
+** PRIORITY and BUGFIXES
+
+Protect lock-clean tasks by generating the ~deadlock in another task
+in the wait cycle.  A task is lock-clean if it requests locks in
+increasing order of address.  A task is garanteed to be lock-clean if
+it requests all the locks it'll need on the first Tram::lock call.
+Further calls to Tram::lock are possible if they represent subsets of
+the first call, or if all the new requests are for higher addresses
+than all locks already granted.  In every deadlock situation, we have
+at least one lock-dirty task in the wait cycle.
+
+Make Guard throw something that can be decoded and displayed at a higher level.
+
+** REQUIRED
+
+Mailbox facility.
+
+
+
+** UNSORTED and/or UNSOLVED
+
+Better task debugging environment.
+
+Tram::atexit().
+
+
+** OPTIONAL
+
+Add a real-time-clock-based suspend facility.
+and/or
+Add a global virtual clock sequencer.
+
+
+** MAYBE SOME DAY
+
+Priority queues

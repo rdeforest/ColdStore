@@ -1,0 +1,312 @@
+// Q - Simple doubly-linked list class
+// Copyright (C) 1998,1999 Colin McCormack,
+// see LICENSE (MD5 f5220f8f599e5e926f37cf32efe3ab68) for terms
+//	$Id: Q.th,v 1.5 2000/11/05 03:15:45 coldstore Exp $
+
+template <class T>
+Qh<T>::Qh()
+  :start(NULL)
+{}
+
+template <class T>
+void Qh<T>::own(Q<T> *el)
+{
+  el->_parent = this;
+  if (!start)
+    start = el;
+}
+
+template <class T>
+Q<T> *Qh<T>::add(Q<T> *q)
+{
+    if (start) {
+        start->add(q);
+    } else {
+        q->del();
+        start = q;
+    }
+    return q;
+}
+
+template <class T>
+Q<T> *Qh<T>::operator =(Q<T> *element)
+{
+  DEBLOG(cerr << '<' << this << " Qh = " << element << "> ");
+  return start = element;
+}
+
+template <class T>
+bool Qh<T>::operator ==(Q<T> *element)
+{
+  return start == element;
+}
+
+template <class T>
+Q<T> *Qh<T>::queue()
+{
+  return start;
+}
+    
+template <class T>
+Q<T> *Qh<T>::set(Q<T> *here)
+{
+  return start = here;
+}
+    
+template <class T>
+Qh<T>::operator T*()
+{
+  //DEBLOG(cerr << this << " Qh as " << (T*)start);
+  return (T*)start;
+}
+
+template <class T>
+bool Qh<T>::empty() const
+{
+  DEBLOG(cerr << "(Qh " << this
+         << ((start==NULL)?" empty) ":" non-empty) "));
+  return start == NULL;
+}
+
+template <class T>
+Qh<T>::operator bool()
+{
+  DEBLOG(cerr << "(Qh " << this
+         << ((start==NULL)?" empty) ":" non-empty) "));
+  return start != NULL;
+}
+
+
+template <class T>
+Q<T>::Q()
+  : _next(this), _prev(this), _parent(NULL)
+{
+  DEBLOG(cerr << this << " Q on no chain\n");
+}
+
+template <class T>
+Q<T>::Q(Qh<T> &parent)
+  : _next(this), _prev(this), _parent(NULL)
+{
+  DEBLOG(cerr << this << " Q on chain " << _parent << ' ');
+  if (parent.empty()) {
+    parent.set(this);
+    _parent = &parent;
+  } else {
+    parent.queue()->add(this);
+    DEBLOG(cerr << '(' << _prev << ',' <<_next
+           << ") in " << _parent << '\n');
+  }
+}
+
+template <class T>
+Q<T>::~Q()
+{
+  del();
+}
+        
+template <class T>
+Q<T>::Q(T *q)
+  : _next(this), _prev(this), _parent(NULL)
+{
+  DEBLOG(cerr << this << " Q after " << q << ' ');
+  if (q)
+    q->Q<T>::add(this);	// insert this at end of q
+  
+  DEBLOG(cerr << '(' << _prev << ',' <<_next <<
+         ") in " << _parent << '\n');
+}
+
+template <class T>
+Q<T>::Q(T &q)
+  : _next(this), _prev(this), _parent(NULL)
+{
+  DEBLOG(cerr << this << " Q copy " << &q << ' ');
+  q.Q<T>::add(this);	// insert this at end of q
+  DEBLOG(cerr << '(' << _prev << ',' <<_next
+         << ") in " << _parent << '\n');
+}
+
+template <class T>
+T *Q<T>::next() const
+{
+  return (T*)_next;
+}
+    
+template <class T>
+T *Q<T>::prev() const
+{
+  return (T*)_prev;
+}
+    
+template <class T>
+bool Q<T>::empty() const
+{
+  return !this || (this == _next);
+}
+    
+template <class T>
+void Q<T>::check() const
+{
+  assert ((_prev->_next == this) && (_next->_prev == this));
+}
+    
+template <class T>
+Q<T> *Q<T>::del()
+{
+  check();
+    
+  if (!empty()) {
+    if (_parent->queue() == this) {
+      _parent->set(_next);
+    }
+
+    _next->_prev = _prev;
+    _prev->_next = _next;
+    _next = _prev = this;	// make this an empty list
+  } else if (_parent) {
+    _parent->set(NULL);
+  }
+  return this;
+}
+
+template <class T>
+Q<T> *Q<T>::add(Q<T> *q)
+{
+  check();
+  q->check();
+    
+  q->del();		// delete q from any q it's on
+    
+  _next->_prev = q;	// our former _next now points back to q
+  q->_next =_next;	// q points forward to our former _next
+  q->_prev = this;	// q points backward to this
+  _next = q;		// q is our current _next
+  q->_parent = _parent;	// q's on our ring
+  return this;
+}
+
+template <class T>
+void Q<T>::ins(Q<T> *q)
+{
+  check();
+  q->check();
+    
+  q->del();		// delete q from any q it's on
+  
+  _prev->_next = q;	// our former _prev now points forward to q
+  q->_prev = _prev;	// q points back to our former _prev
+  q->_next = this;	// q points forward to this
+  _prev = q;		// q is our current _prev
+  q->_parent = _parent;	// q's on our ring
+}
+    
+#if 0
+  operator T *() {
+    return (T*)this;
+  }
+#endif
+
+#if 0
+    Qi(Q<T> *q)
+        : _head(NULL), _curr(NULL)
+        {
+            if (q) {
+                _curr = q->next();
+                q->Q<T>::check();
+            }
+        }
+#endif
+
+template <class T>
+Qi<T>::Qi(T *q)
+  : _head(NULL), _curr(NULL)
+{
+  if (q) {
+    _curr = q;
+    q->Q<T>::check();
+  }
+}
+
+template <class T>
+bool Qi<T>::check()
+{
+  _curr->Q<T>::check();
+  _head->Q<T>::check();
+  return true;
+}
+    
+template <class T>
+Q<T> *Qi<T>::Next()
+{
+  if (!_head)
+    _head = _curr;
+  return (_curr = _curr->Q<T>::next());
+}
+    
+template <class T>
+Q<T> *Qi<T>::Prev()
+{
+  if (!_head)
+    _head = _curr;
+  return (_curr = _curr->Q<T>::prev());
+}
+    
+template <class T>
+bool Qi<T>::More() const
+{
+  return (_head != _curr);
+}
+    
+template <class T>
+Qi<T>::operator bool() const
+{
+  return (_head != _curr);
+}
+    
+template <class T>
+Q<T> *Qi<T>::operator ++(int)
+{
+  return Next();
+}
+    
+template <class T>
+Q<T> *Qi<T>::operator --(int)
+{
+  return Prev();
+}
+    
+template <class T>
+Q<T> *Qi<T>::del()
+{
+  T *newc = (T*)(_curr->Q<T>::next());
+  T *oldc = _curr;
+  _curr->Q<T>::del();
+  _curr = newc;
+  return oldc;
+}
+    
+template <class T>
+void Qi<T>::add(T *q)
+{
+  _curr->Q<T>::add(q);
+}
+    
+template <class T>
+void Qi<T>::ins(T *q)
+{
+  _curr->Q<T>::ins(q);
+}
+    
+template <class T>
+Qi<T>::operator T *() const
+{
+  return _curr;
+}
+
+template <class T>
+T *Qi<T>::Current() const
+{
+  return _curr;
+}
+

@@ -1,0 +1,76 @@
+"'if', strings, braces, '0', '1', '.': " peektop
+    1 {} {dup "true failed" + emitln}  if 
+    0 {dup "false failed" + emitln} {} if
+drop
+
+"swap, ==, !: " peektop
+    {1} 'myproc !  myproc
+        {} 
+        {dup "myproc failed" + emitln}
+    if
+drop
+
+"eval, dup, element, append, delete, splice" emitln
+
+/* Now we define a word for testing code:
+        {test failure message} {expected result} "code" test
+  Runs the code, compares to expected result, emits test failure
+  message and code if results don't match up.
+
+  NOTE: codestr MUST be a string or this will throw ~type
+*/
+
+/*  "desc" result codestr --  */
+{ local (
+    "{" swap +
+    "}" +
+    dup 'code ! 
+    [ 
+      $code parse dup
+        {"WARNING: unparsed leftovers ->" swap + $lf + emit}
+        {drop}
+      if
+      this len
+        {}
+        {{}}
+      if
+    ] splice
+  )
+  /*  "desc" result codestr code  */
+  rpush [ rpop 
+          catch
+          this len 1 >
+            {drop}
+            {}
+          if
+          rpush 
+  ] drop rpop
+  /* "desc" expect codestr result */
+  rot ==
+    {$verbose 1 > {"PASS: " emit drop $lf + emit} {drop drop} if}
+    {$verbose 1 > {"FAIL: " emit} {} if swap ": " + swap + $lf + emit}
+  if
+} 'test !
+
+/*  list < code -- [ code result ] >  */
+{ rpush [ rpop eval ] } 'list !
+
+/*  nlist < xn xn-1 .. x1 n -- [ xn xn-1 .. x1 ] >  */
+{   [ ] 'Namespace new (
+        'n !
+        this $n negative $n slice
+        'topn !
+        this $n negative $n rdelete drop
+        $topn
+    )
+} 'nlist !
+
+"Harness"
+    dup "/showfail" + 0 "1" test
+    dup "/success"  + 1 "1" test
+drop
+
+"While" peektop
+    {1 +} 'incr !
+    dup 4 "0 {incr} {dup 4 <} while" test
+drop

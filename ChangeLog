@@ -1,0 +1,4559 @@
+2001-08-09 17:03  opiate
+
+	* all: Major CVS reorganization, plus merge of autoconf build
+	system.
+
+2001-08-08 09:21  opiate
+
+	* Makefile: Removed guile from top-level make
+
+2001-08-07 10:24  opiate
+
+	* toolkit/StringMethods.cc: Methods related to string handling.
+
+2001-08-06 12:38  opiate
+
+	* experimental/mud/: Actor.cc, Broadcaster.cc, Makefile,
+	Reactor.cc, World.cc: Removed Reactor, folded behaviour into
+	Broadcaster.cc
+
+2001-08-05 17:44  opiate
+
+	* experimental/mud/: Actor.cc, Broadcaster.cc, Connection.cc,
+	Reactor.cc, Receiver.cc, World.cc, server.cc: Removed event related
+	debug messages, and fixed server code for reconnects and restarts.
+
+2001-08-05 13:21  opiate
+
+	* metaclass/SlotClass.mc, toolkit/Makefile, toolkit/Root.cc,
+	toolkit/initialize.cc: Fixes to SlotClass.mc, and some toolkit
+	modifications.
+
+2001-08-05 13:21  opiate
+
+	* coldstore/: Closure.cc, Object.cc, Object.hh: Made Object use
+	list for parents for now because VectorSet->insert puts new member
+	at beginning rather than end.
+
+2001-08-05 13:20  opiate
+
+	* languages/chatter/: Scanner.cc, Scanner.hh, start.cc: Removed
+	test code on start so that brain can be used from the eval loop in
+	the mud.
+
+2001-08-05 13:19  opiate
+
+	* experimental/mud/: Actor.cc, Broadcaster.cc, Command.cc,
+	Connection.cc, ConsoleObserver.cc, Container.cc, Described.cc,
+	GlobalVerbs.cc, HasVerbs.cc, Located.cc, Makefile, Named.cc,
+	Parser.cc, Parser.hh, Reactor.cc, Receiver.cc, Room.cc, Thing.cc,
+	UserDictionary.cc, Verb.cc, World.cc, common.cc, common.hh, mud.cc,
+	server.cc, server.hh: Major overhaul of the mud to use the new
+	object model.
+
+2001-07-24 18:43  opiate
+
+	* languages/chatter/: Parser.cc, start.cc: Added support for block
+	closures -- copy variable slots from parent closure at compile time
+	to support variable inheritance.  Closures pass as values.
+
+2001-07-24 18:42  opiate
+
+	* toolkit/: ListType.cc, Makefile, Root.cc, SequenceMethods.cc,
+	initialize.cc: Removed ListType, moved map to MetaData, and made
+	toolkit add methods "join" and "englishJoin" to MetaData at boot
+	via new file "SequenceMethods"
+
+2001-07-24 18:41  opiate
+
+	* coldstore/: MetaData.cc, MetaData.hh: Added MetaData metaobject
+	to hold message reception for translating the VP.
+
+2001-07-24 18:40  opiate
+
+	* coldstore/: Binding.cc, Binding.hh, Closure.cc, Closure.hh,
+	Data.cc, Data.hh, Frame.cc, InterpreterNodes.cc, Makefile,
+	Message.cc, Object.cc, Slot.hh: 1. Fixed Message reduction to
+	reduce a copy of the message, not the original.  2. Made
+	Binding/Closure allow for a limited version of inheriting scope -
+	on creation, a Closure copies values from its parent closure's
+	binding into itself.  3. Removed message -> VP method translation
+	from Data and put it in a new class/object MetaData - a metaclass
+	manually called by Data.  4. Added Data methods:  map (apply a
+	closure to a sequence), mapMethod (send a message to each element
+	in a sequence), ifTrue, ifFalse, else.	5. Fixed passing Closures
+	as values.
+
+2001-07-23 16:27  opiate
+
+	* coldstore/Data.cc, languages/chatter/Parser.cc: keyword selectors
+	use underscore to delimit arguments i.e.   slice:range becomes:
+	slice_range
+
+2001-07-23 15:00  opiate
+
+	* languages/chatter/: Parser.cc, start.cc: blocks are now closures,
+	and can be passed around as such.  added test of ifTrue/ifFalse etc
+
+2001-07-23 15:00  opiate
+
+	* metaclass/SlotClass.mc: Uses o->receive instead of o->call
+
+2001-07-23 15:00  opiate
+
+	* coldstore/: Closure.cc, Closure.hh, Data.cc, Data.hh, Message.cc,
+	Object.cc, Object.hh: 1. Renamed call( Message *, Frame * ) to
+	receive to avoid ambiguity with call( int narg, ... ) 2. A Closure
+	is now reduced through method calls (invoke/reduce) rather than
+	through ->reduce -- allows Closures to be atomic object things,
+	that can be passed around as values, and invoked as necessary 3.
+	Added ifTrue/ifFalse/else etc. to supported selectors on Data.
+
+2001-07-18 22:25  opiate
+
+	* languages/chatter/start.cc: Modified to test new instance
+	variable scheme
+
+2001-07-18 19:17  opiate
+
+	* languages/chatter/Parser.cc: output nameNode for object +
+	instance variable matching
+
+2001-07-18 16:34  opiate
+
+	* toolkit/: ListType.cc, Root.cc, common.hh, initialize.cc: Added
+	instance variable addition to Root
+
+2001-07-18 16:33  opiate
+
+	* coldstore/: Frame.cc, InterpreterNodes.cc, InterpreterNodes.hh,
+	Node.cc, Object.cc: Some cleanups to traceback handling.  Added
+	instance variable assignment and reduction to nameNode.
+
+2001-07-18 15:00  opiate
+
+	* toolkit/: ListType.cc, Root.cc, initialize.cc: Removed ListType
+	initialization (it needs work, only MUD uses it, and MUD is broken
+	ATM pending major overhaul) Root modified to use new object
+	instance variable vs. method distinction.  I.e. see new
+	"add_method", "del_method", and "id" methods.
+
+2001-07-18 14:58  opiate
+
+	* metaclass/SlotClass.mc: Use of new Object instance variable
+	handling:	  object.variable		  = create an IVKey
+	from "variable" and from current		definer (held in
+	frame's closure) and use that to	       slice the object.   
+	 object.variable = value		 = above, but set the value
+	     object.name = &function		     = don't use IVKey,
+	create a _method_ entry (i.e. not	       having a definer)
+	with a closure around a cfunction
+	
+	necessary changes:	namespace.key no longer functions (can't
+	slice a namespace by   IVKey...)       adding methods to objects
+	that aren't CFunctionNodes requires   a manual insert
+
+2001-07-18 14:55  opiate
+
+	* coldstore/Tuple.cc: .equal was calling TupleBase<Slot>::length
+	instead of ::Length, causing ~unimplemented to be thrown.
+
+2001-07-18 14:53  opiate
+
+	* coldstore/: Object.cc, Object.hh: Major reworking (again)
+	
+		* Removed OSymbol and related support code.
+		* Added IVKey, which is to be used as the name field in
+	Symbols for referencing Instance Variables on objects
+		* Renamed search_up to search_graph
+	
+	Idea is that instance variables are marked by their definer (that
+	is their name, says Colin...) -- only methods with the same definer
+	can read/write them.  Major simplification of Object, but much more
+	powerful.
+
+2001-07-18 10:23  opiate
+
+	* metaclass/SlotClass.mc: Changes to remove "name" from Closure
+	creation.
+
+2001-07-18 10:23  opiate
+
+	* languages/chatter/: Parser.cc, Parser.hh, Scanner.cc, start.cc:
+	Kludge to Scanner to handle Peek beyond end of Tape.  Scanner
+	should be rewritten once we have full Char class with isalpha,
+	isspace, etc. on it.  Modified Parser to use blockNode instead of
+	stmtNode, and flattened out listNode a bit
+
+2001-07-18 10:21  opiate
+
+	* coldstore/: Closure.cc, Closure.hh, Frame.cc,
+	InterpreterNodes.cc, InterpreterNodes.hh: Cleaned up some nodes
+	(Removed unused, renamed stmtNode to blockNode...) removed "name"
+	from Closure, and modified traceback to use the name in the frame
+	instead.
+
+2001-07-16 13:42  opiate
+
+	* languages/chatter/: Parser.cc, start.cc: Fixed list reduction.
+
+2001-07-13 14:07  opiate
+
+	* languages/chatter/Parser.hh: Minor source cleanup.  Also forgot
+	to mention that list parsing was added in previous checking of
+	Parser.cc.
+
+2001-07-13 14:03  opiate
+
+	* languages/chatter/: Parser.cc, Parser.hh, start.cc: Added:
+	argument as well as variable declaration.  Cleaned up overall
+	parser structure, statement end detection cleaned up. No more
+	lookaheads per statement in order to find possible ending, the next
+	token is passed into the next parse routine.
+
+2001-07-13 11:20  opiate
+
+	* coldstore/: Data.cc, Frame.cc, Message.cc: Some stub message
+	receivers in Data for basic arithmetic operations.  Cleanups to
+	Frame::traceback Made Message reduce arguments before call.
+
+2001-07-11 14:29  amphibian
+
+	* coldstore/: String.cc, String.hh: Made string take signed lengths
+	so can use Vector's negative parameter hacks
+
+2001-07-11 14:27  amphibian
+
+	* coldstore/Vector.th: Bug fixes
+
+2001-07-11 09:56  opiate
+
+	* languages/chatter/: Parser.cc, Parser.hh, Scanner.cc, Scanner.hh,
+	start.cc: Local variable declaration, assignment.  Return values. 
+	Parenthetic expressions.  Blocks (kinda).  Fixes to message
+	passing.
+
+2001-07-11 09:55  opiate
+
+	* coldstore/: Binding.cc, Binding.hh, Closure.cc, Closure.hh,
+	Data.hh, Frame.cc, Frame.hh, InterpreterNodes.cc, Message.cc,
+	Message.hh, Node.cc, Node.hh, Object.cc: Refinements to message
+	passing code.  Fixes on Frame, Closure, etc.  Modifications of
+	variable handling in Binding.  Addition of isAtomic to Data, use in
+	Node::Reduce
+
+2001-07-11 09:08  amphibian
+
+	* coldstore/: Vector.hh, Vector.th: adjust_indices - centralise
+	wierd index handling
+
+2001-07-11 09:07  amphibian
+
+	* coldstore/List.cc: Make Trees compare better (they use
+	List::order/equal; element vs order thing)
+
+2001-07-11 09:06  amphibian
+
+	* chaos/: semantics.cc, semantics.hh: Made Chaos mutable to make
+	splice work. Alternative is to make Stack mutable.
+
+2001-07-11 09:04  amphibian
+
+	* chaos/chaos.test: Updated Dict tests
+
+2001-07-10 07:51  opiate
+
+	* metaclass/SlotClass.mc: SlotClass modified to use new calling
+	scheme.
+
+2001-07-07 23:17  opiate
+
+	* languages/chatter/: Makefile, Parser.cc, Parser.hh, Scanner.cc,
+	Scanner.hh, start.cc: New Parser for a smalltalk-like language. 
+	Parses basic programs, no block and parentheses depth checking,
+	return operation, or variable handling yet.
+
+2001-07-07 23:15  opiate
+
+	* coldstore/: Message.cc, Message.hh, Object.cc, Object.hh: Some
+	cleanups and modifications to new message system.
+
+2001-07-07 15:26  opiate
+
+	* toolkit/: ListType.cc, Root.cc, Tokenizer.cc: Modifications to
+	use new message passing scheme.
+
+2001-07-07 15:25  opiate
+
+	* coldstore/: Binding.cc, Closure.hh, Data.cc, Data.hh, Frame.cc,
+	Frame.hh, InterpreterNodes.cc, Makefile, Message.cc, Message.hh,
+	Node.cc, Object.cc, Object.hh: New method invocation scheme.  See
+	Object->call( Message *, Frame * )
+
+2001-07-05 23:46  opiate
+
+	* toolkit/: Tape.cc, Tape.hh: Changed tell() to Tell() to maintain
+	wonky method names on iterators! Also added silly comment.
+
+2001-07-05 23:38  opiate
+
+	* languages/chatter/start.cc, toolkit/Tape.cc: [no log message]
+
+2001-07-05 18:12  opiate
+
+	* languages/chatter/: Makefile, Scanner.cc, Scanner.hh, brain.cc,
+	config.h, global-freebsd.c, global-linux.c, global.c, runbrain,
+	start.cc: A lexer for the "brain" language
+
+2001-07-05 18:09  opiate
+
+	* toolkit/: ListType.cc, Makefile, Tape.cc, Tape.hh: Funky random
+	access templated Tape iterator added.
+
+2001-07-04 10:35  uid24244
+
+	* coldstore/: Builtin.cc, Builtin.hh, Object.cc, Set.cc, Set.hh,
+	Store.cc, Store.hh, Symbol.cc, Symbol.hh, VectorSet.hh: buggered
+	about with Builtin and Store some more.
+
+2001-07-04 08:08  uid24244
+
+	* coldstore/Builtin.hh: added a few comments
+
+2001-07-04 07:54  uid24244
+
+	* coldstore/Store.cc: fixed Registered problem in resuming store
+
+2001-07-04 07:32  uid24244
+
+	* coldstore/: Closure.hh, Data.hh, Directory.hh, Frame.cc, Hash.hh,
+	NamedNamespace.hh, Set.cc, Tuple.hh, TupleBase.th: occ preprocessor
+	to add construct and create methods to all coldclass classes - some
+	necessary mods to support this for some classes which the occ can't
+	cope with (e.g NamedNamespace - anything with two Data parents)
+
+2001-07-04 07:26  uid24244
+
+	* metaclass/ColdClass.mc: occ preprocessor to add construct and
+	create methods to all coldclass classes
+
+2001-07-03 18:01  opiate
+
+	* coldstore/Object.cc: Fixed fatal error in Object::search which
+	caused bad_typeid from NULL VectorSet::search result because of
+	change there.
+
+2001-07-03 08:01  coldstore
+
+	* coldstore/: Builtin.hh, Store.cc, Store.hh: registration of
+	Builtins in store->Registered is complete.
+
+2001-07-03 07:54  coldstore
+
+	* chaos/chaos.cc: changed the Policy of autoload_elf to STL
+
+2001-07-02 23:16  coldstore
+
+	* chaos/: chaos.l, semantics.cc: made store->Registered contain all
+	Builtins There's a chaos command 'builtin' too.
+
+2001-07-02 23:15  coldstore
+
+	* coldstore/: Builtin.hh, Connection.cc, Connection.hh, Store.cc:
+	made store->Registered contain all Builtins
+
+2001-07-02 20:16  amphibian
+
+	* coldstore/VectorSet.cc: Added some debug narrative
+
+2001-07-02 20:15  amphibian
+
+	* coldstore/Symbol.cc: Names should compare with each other, by
+	their values, but do not equal their values
+
+2001-07-02 20:02  amphibian
+
+	* coldstore/Error.cc: Error::dump can be called when _err == NULL
+	if debuglogging is on. Check for it.
+
+2001-07-02 11:53  coldstore
+
+	* coldstore/TupleBase.th: disabled check which broke on circular
+	structure (as they all will)
+
+2001-07-02 11:48  coldstore
+
+	* coldstore/Data.cc: fixed error in outputting NULL
+
+2001-07-02 11:46  coldstore
+
+	* coldstore/Segment.th: changed the ordering in comparisons so
+	Names would compare correctly with Strings, in VectorSet's tsearch
+
+2001-07-02 11:41  coldstore
+
+	* chaos/semantics.cc: cleaned up debugging narrative a bit
+
+2001-07-01 11:13  opiate
+
+	* experimental/browser/: coldBrowser.cc, coldBrowser.hh: Removed
+	references to Frame, replaced with Closure usage.
+
+2001-06-30 19:41  coldstore
+
+	* metaclass/Makefile: Made occ compilation always include our
+	metaclasses except for compilation of metaclasses
+
+2001-06-30 19:35  coldstore
+
+	* mk/: gcc.defs.mk, gcc.rules.mk, occ.defs.mk, occ.rules.mk: Made
+	occ compilation always include our metaclasses
+
+2001-06-30 18:11  coldstore
+
+	* coldstore/: String.cc, String.hh: Fixed stupid arg order error in
+	char search (needle in a haystack)
+
+2001-06-26 22:43  opiate
+
+	* coldstore/: Closure.cc, Closure.hh, Node.cc: Minor fixes to
+	Closure & Node
+
+2001-06-26 07:36  opiate
+
+	* toolkit/ListType.cc: Fixed map.
+
+2001-06-26 07:36  opiate
+
+	* experimental/mud/: List.cc, Makefile, Root.cc, common.hh,
+	start.cc: Moved Root and List to new toolkit Root and ListType.
+
+2001-06-25 11:10  opiate
+
+	* toolkit/: ListType.cc, Makefile, Root.cc, Tokenizer.cc,
+	common.hh, initialize.cc: 1. Added Root and ListType to the
+	toolkit, initElf calls their definers 2. Made each token matcher
+	take an additional argument, which is the frob parent for the token
+	result.
+
+2001-06-22 15:39  opiate
+
+	* experimental/mud/new-parser.txt: Propose syntax for new parser
+
+2001-06-22 15:09  opiate
+
+	* toolkit/: Tokenizer.cc, Tokenizer.hh: Fixes to tokenizer... word
+	and quotation recognition working as expected.
+
+2001-06-22 10:18  opiate
+
+	* toolkit/: Makefile, Tokenizer.cc, Tokenizer.hh: Fixed up word and
+	quote tokenizers.  Still some bug when the tokenizer is actually
+	used with more than one token matcher closure!
+
+2001-06-21 21:57  opiate
+
+	* languages/python/: ClosureType.cc, ClosureType.hh, FrameType.cc,
+	FrameType.hh, Makefile, ObjectType.cc, PyCode.cc, PyCode.hh,
+	PyColdObject.cc, Utility.cc, coldmodule.cc, coldmodule.hh: Removed
+	some old redundant non-working code and changed Frame stuff to
+	Closure.  Need to add variable lookup in closures via mapping
+	operators.
+
+2001-06-21 15:10  opiate
+
+	* experimental/mud/: GlobalVerbs.cc, Makefile, mud.cc, start.cc:
+	Added test of libcold_toolkit.so Tokenizer
+
+2001-06-21 15:09  opiate
+
+	* libs/Makefile: Added production of libcold_toolkit.so
+
+2001-06-21 15:09  opiate
+
+	* Makefile: Added compile for libcold_toolkit.so
+
+2001-06-21 15:08  opiate
+
+	* toolkit/: Makefile, Tokenizer.cc, Tokenizer.hh: Added
+	libcold_toolkit.so and Tokenizer class in it.
+
+2001-06-20 23:28  opiate
+
+	* experimental/mud/: Actor.cc, Connection.cc, GlobalVerbs.cc,
+	server.cc, server.hh: "@who" verb programmed
+
+2001-06-20 22:58  opiate
+
+	* metaclass/SlotClass.mc: Fix to reduce list arguments in method
+	calls before list construction.
+
+2001-06-20 22:55  coldstore
+
+	* coldstore/: String.cc, String.hh: fixed bug returning Slot to
+	List* in String::explode
+
+2001-06-20 22:30  opiate
+
+	* experimental/mud/: Actor.cc, Broadcaster.cc, Connection.cc,
+	ConsoleObserver.cc, Container.cc, Described.cc, Dictionary.cc,
+	GlobalVerbs.cc, List.cc, Located.cc, Makefile, Named.cc, Parser.cc,
+	Reactor.cc, Receiver.cc, Room.cc, Root.cc, Thing.cc, Verb.cc,
+	common.cc, common.hh, server.cc, start.cc: Added String.cc Some
+	cleanups in the parser
+
+2001-06-20 22:29  opiate
+
+	* coldstore/: List.cc, List.hh: Added join()
+
+2001-06-20 19:26  coldstore
+
+	* coldstore/: String.cc, String.hh, Vector.hh, Vector.th: Added
+	utility methods explode and nullterminate to String Added a
+	specific String operator<< Fixed some bugs in Char::search
+
+2001-06-20 19:24  coldstore
+
+	* coldstore/Symbol.cc: removed a stack-allocated Name in Namespace
+	search which was redundant and caused the check code to barf.
+
+2001-06-20 18:21  opiate
+
+	* coldstore/Frob.hh: Made proxy data portion available via data()
+
+2001-06-20 18:20  opiate
+
+	* experimental/mud/: Actor.cc, Broadcaster.cc, Connection.cc,
+	ConsoleObserver.cc, Container.cc, Described.cc, Dictionary.cc,
+	GlobalVerbs.cc, List.cc, Located.cc, Makefile, Named.cc, Parser.cc,
+	Reactor.cc, Receiver.cc, Room.cc, Root.cc, Thing.cc, Verb.cc,
+	common.hh, start.cc: Made $root.create_child automatically set the
+	id in store->Names, created example use of Frob for utility
+	classes, see List.cc aka $list
+
+2001-06-20 17:03  opiate
+
+	* languages/freon/: Freon.cc, Parse.cc, freonParser.y:
+	Modifications to use new Bindings
+
+2001-06-20 17:02  opiate
+
+	* coldstore/: Binding.cc, Binding.hh, Closure.cc, Closure.hh,
+	InterpreterNodes.cc, Makefile: Added Binding node, acts as a
+	indexable variable storage.  Made Closure a child of it.
+
+2001-06-19 22:31  opiate
+
+	* coldstore/: Closure.cc, InterpreterNodes.cc: Fixed reduction of
+	return values.
+
+2001-06-19 21:10  amphibian
+
+	* intern/elf.hh: Add include guards
+
+2001-06-19 21:08  amphibian
+
+	* coldstore/: Symbol.cc, VectorSet.cc, VectorSet.hh: slice() versus
+	search(), VectorSet overrode search() in a bad way...
+
+2001-06-19 21:06  amphibian
+
+	* tools/skeleton/: Makefile, global-freebsd.c, global-linux.c,
+	global.c, rename-project, semantics.cc, semantics.hh, skeleton.cc:
+	Added skeleton/ - skeleton coldstore C++ app. Use rename-project to
+	create your own with its own name.
+
+2001-06-19 17:59  opiate
+
+	* metaclass/SlotClass.mc: Changes necessary to work with new
+	Closure class.
+
+2001-06-19 17:59  opiate
+
+	* languages/freon/: Freon.cc, Makefile, Parse.cc, freonLexer.cc,
+	freonLexer.hh, freonNodes.cc, freonNodes.hh, freonParser.y:
+	Cleanups and modifications to parser and lexer related to move to
+	Closure
+
+2001-06-19 17:58  opiate
+
+	* experimental/mud/: CFunctionNode.cc, CFunctionNode.hh, Freon.cc,
+	GlobalVerbs.cc, Makefile, Room.cc, Root.cc, common.cc, mud.cc,
+	server.cc: Cleanups and modifications triggered by switch to
+	Closures
+
+2001-06-19 17:56  opiate
+
+	* coldstore/: Closure.cc, Closure.hh, Frame.cc, Frame.hh,
+	InterpreterNodes.cc, InterpreterNodes.hh, Makefile, Node.cc,
+	Node.hh, Symbol.hh: Added Closure class, separated bits from Frame
+	that were parser generated and placed them in Closure.	Modified
+	Symbol to reduce to its value, made Closure a namespace, modified
+	interpreter to use Symbols for storing variables.  Other
+	modifications to make Closure work.
+
+2001-06-15 18:07  opiate
+
+	* experimental/mud/: Actor.cc, Located.cc, Named.cc, Receiver.cc,
+	Room.cc, Root.cc, Thing.cc, server.cc: added add_child, del_child
+	to $root, removed all references to addParent, and createChild and
+	replaced with use of $root's
+
+2001-06-15 01:36  opiate
+
+	* experimental/mud/: Actor.cc, Connection.cc, ConsoleObserver.cc,
+	GlobalVerbs.cc, Makefile, Parser.cc, Reactor.cc, common.cc,
+	common.hh, mud.cc, server.cc, server.hh, start.cc: Some misc bugs
+	related to methodCall?
+
+2001-06-13 15:02  opiate
+
+	* experimental/browser/: coldBrowser.cc, start.cc: Fixed child
+	click to update members properly.
+
+2001-06-13 00:55  opiate
+
+	* experimental/mud/: Makefile, start.cc: Removed readline calls.
+
+2001-06-13 00:53  opiate
+
+	* experimental/browser/: Makefile, coldBrowser.cc, coldBrowser.hh,
+	coldBrowser_glade.cc, coldBrowser_glade.hh, coldbrowser.glade:
+	Added extra pane for child/parent traversal.
+
+2001-06-12 20:56  opiate
+
+	* experimental/xml/: Makefile, config.h, global-freebsd.c,
+	global-linux.c, global.c, runxml, shape.dtd, start.cc,
+	svg-example.svg, svg.dtd, xml.cc: First crack at a validating XML
+	parser for coldstore.
+
+2001-06-12 11:19  opiate
+
+	* experimental/browser/: Makefile, browser.cc, coldBrowser.cc,
+	coldBrowser.hh: Children and Parents button finished.  Browser put
+	into seperate .so (browser.so) with test executable at
+	browsertest.so
+
+2001-06-10 23:27  opiate
+
+	* experimental/browser/: coldBrowser.cc, coldBrowser.hh,
+	coldBrowser_glade.cc, coldBrowser_glade.hh, coldbrowser.glade,
+	start.cc: Modified layout.  Added support for filtering by class. 
+	Ran into snag re: Gtk::Object conflicting with Object.	Need to put
+	coldstore into namespace.
+
+2001-06-10 23:24  opiate
+
+	* coldstore/InterpreterNodes.cc: Misc. frob changes.
+
+2001-06-10 23:24  opiate
+
+	* coldstore/Symbol.cc: Removed refcount check on Symbol deleted.
+
+2001-06-10 23:22  opiate
+
+	* metaclass/SlotClass.mc: Modified Slot() to pass a Tuple with
+	args, instead of varargs.  Modified declaration of arguments so
+	block structure is maintained.
+
+2001-06-09 15:02  opiate
+
+	* experimental/browser/: coldBrowser.cc, coldBrowser.hh,
+	coldBrowser_glade.cc, coldBrowser_glade.hh, coldbrowser.glade:
+	First crack at tree view.  Missing:   Proper scrolling behaviour
+	(containing scrollbar doesn't seem to work?)   Mapping between
+	items and values (create subclass of Gtk::TreeItem with Slot  
+	member)   Display of values on click.
+
+2001-06-09 13:57  opiate
+
+	* experimental/browser/: ColdCanvas.cc, ColdCanvas.hh, Makefile,
+	coldBrowser.cc, coldBrowser.hh, coldBrowser_glade.cc,
+	coldBrowser_glade.hh, coldbrowser.glade, start.cc: Beginnings of
+	inspector panel.  changed to notebook form for tree/source view.
+
+2001-06-08 20:00  opiate
+
+	* experimental/browser/: TODO, coldbrowser.glade: Added TODO file
+	and the glade file.
+
+2001-06-08 19:54  opiate
+
+	* experimental/browser/: Makefile, coldBrowser.cc, coldBrowser.hh,
+	coldBrowser_glade.cc, coldBrowser_glade.hh, start.cc: New member
+	and compile buttons finished.
+
+2001-06-08 18:32  opiate
+
+	* experimental/browser/: Makefile, browser.cc, coldBrowser.cc,
+	coldBrowser.hh, coldBrowser_glade.cc, coldBrowser_glade.hh,
+	coldbrowser.cc, config.h, global-freebsd.c, global-linux.c,
+	global.c, runbrowser, start.cc: Initial commit of a gtkmm based
+	method browser for coldstore.
+
+2001-06-08 00:17  opiate
+
+	* languages/freon/: Freon.cc, Parse.cc: Removed some debugging
+	statements.
+
+2001-06-08 00:15  opiate
+
+	* languages/freon/: Freon.cc, freonLexer.cc, freonParser.y: Made
+	"print" builtin.
+
+2001-06-08 00:14  opiate
+
+	* languages/freon/Parse.cc: Fixed read from stdio.
+
+2001-06-08 00:01  opiate
+
+	* languages/freon/Parse.cc: Fixed segfaulting bug.  testFreon()
+	needed to be no return type because that's how it was being called.
+
+2001-06-05 22:12  opiate
+
+	* experimental/mud/: Reactor.cc, common.cc, server.cc, start.cc:
+	Modifications to get rid of Slot::() usage
+
+2001-06-05 22:12  opiate
+
+	* coldstore/: Frob.hh, InterpreterNodes.cc, Slot.cc, Slot.hh:
+	Removed () operator.  some fixes to Frob
+
+2001-06-05 22:11  opiate
+
+	* metaclass/: SlotClass.h, SlotClass.mc: Modifications to make
+	calls on operator translate through Data::call with slots converted
+	to Data*
+
+2001-06-05 13:24  opiate
+
+	* coldstore/Frob.cc, coldstore/Frob.hh,
+	coldstore/InterpreterNodes.cc, coldstore/Makefile,
+	experimental/mud/start.cc: First crack at Frob class.
+
+2001-06-05 11:30  opiate
+
+	* coldstore/Frame.cc, coldstore/Frame.hh,
+	experimental/mud/Actor.cc, experimental/mud/GlobalVerbs.cc,
+	experimental/mud/Makefile, experimental/mud/server.cc,
+	experimental/mud/start.cc, languages/freon/Freon.cc,
+	languages/freon/freonParser.y, languages/python/FrameType.cc,
+	languages/python/ObjectType.cc, languages/python/pyc.cc: Some
+	python fixes.  Added _source field to Frame to store method source.
+	 Added @list and @program to the mud.
+
+2001-06-05 04:22  opiate
+
+	* coldstore/Frame.cc, coldstore/Frame.hh,
+	coldstore/InterpreterNodes.cc, languages/freon/freonParser.y,
+	metaclass/SlotClass.mc: Object-local variables fixed.
+
+2001-06-05 03:36  opiate
+
+	* languages/python/: FrameType.cc, Makefile, PyColdObject.cc,
+	PyColdObject.hh, coldmodule.cc, coldmodule.hh, pyc.cc, start.cc:
+	Make freon available as an Object as it is now.  Bug in something
+	to do with refcounts in frame_call needs to be fixed, tho.
+
+2001-06-05 03:13  opiate
+
+	* coldstore/: Frame.cc, InterpreterNodes.cc: Changed Frame
+	traceback to look nicer.  conditionalNode finished.
+
+2001-06-05 03:12  opiate
+
+	* experimental/mud/: Actor.cc, GlobalVerbs.cc, Makefile, Parser.cc,
+	common.cc, common.hh, start.cc: Use new frame->traceback instead of
+	our custom one Some mods to eval to evaluate in context of Actor
+
+2001-06-05 03:12  opiate
+
+	* languages/freon/: Freon.cc, Freon.hh, Parse.cc, Unfinished-Nodes,
+	freonLexer.hh, freonNodes.cc, freonParser.y: Redefined freon
+	interface to be more layer2 compatible.
+
+2001-06-05 01:29  opiate
+
+	* coldstore/: InterpreterNodes.cc, InterpreterNodes.hh: Removed
+	functionCallNode, renamed retrieveMethodNode to retrieveMemberNode
+
+2001-06-04 23:05  opiate
+
+	* experimental/mud/: Actor.cc, Connection.cc, common.cc, server.cc:
+	Fixed some line termination problems for windows clients.
+
+2001-06-04 22:45  opiate
+
+	* experimental/mud/: Actor.cc, Connection.cc, GlobalVerbs.cc,
+	server.cc, start.cc: re-added quit verb, fixed network.
+
+2001-06-04 20:11  opiate
+
+	* metaclass/SlotClass.mc: Modified member write to allow slot.x =
+	slot.y notation.
+
+2001-06-04 19:11  opiate
+
+	* experimental/mud/: Actor.cc, Broadcaster.cc, Connection.cc,
+	ConsoleObserver.cc, Container.cc, Described.cc, Dictionary.cc,
+	Freon.cc, GlobalVerbs.cc, Located.cc, Named.cc, Parser.cc,
+	Reactor.cc, Receiver.cc, Room.cc, Root.cc, Thing.cc, Verb.cc,
+	common.cc, common.hh, start.cc: Rewrote most objects to use new
+	metaclass member accessors on Slot.
+
+2001-06-04 19:10  opiate
+
+	* metaclass/: SlotClass.h, SlotClass.mc: Added Object/Namespace
+	introspection via Slot member operations.  I.e.   object.member ...
+
+2001-06-04 15:27  opiate
+
+	* coldstore/: Frame.cc, Frame.hh, InterpreterNodes.cc,
+	InterpreterNodes.hh: Added CFunctionNode to list of Nodes (native
+	method Node) Added extra constructor to Frame that creates a native
+	method from a function
+
+2001-06-01 00:56  maelstorm
+
+	* README: Making it clearer that we require libiberty for the
+	building of coldstore
+
+2001-05-31 22:43  opiate
+
+	* experimental/mud/: Actor.cc, server.cc, start.cc: CRLF fixes in
+	server.cc and Actor.cc
+
+2001-05-31 22:19  opiate
+
+	* experimental/mud/: Actor.cc, Broadcaster.cc, Connection.cc,
+	Container.cc, GlobalVerbs.cc, Makefile, common.cc, common.hh,
+	server.cc, server.hh, start.cc: Added connect/disconnect notify,
+	cleaned up net service a bit, login screen!
+
+2001-05-31 22:12  coldstore
+
+	* coldstore/: Connection.cc, Connection.hh, Endpoint.cc, Server.cc,
+	Server.hh: Modified Server to have a bit more functionality. 
+	Should be considered provisional, though, until toad and I work out
+	our interface POE issues.
+
+2001-05-31 16:42  opiate
+
+	* experimental/mud/: Makefile, server.cc, server.hh, sockhelp.cc,
+	sockhelp.hh, start.cc: First crack at network MUD support.  See
+	server.cc and start.cc.  Listens on port 8888.
+
+2001-05-31 14:34  opiate
+
+	* experimental/mud/: Actor.cc, ConsoleObserver.cc, Container.cc,
+	Freon.cc, GlobalVerbs.cc, Makefile, Parser.cc, Reactor.cc,
+	Thing.cc, common.cc, common.hh, start.cc: Added: reaction class,
+	made say/get/emote etc. events utilize it on Actor Use $actor.tell
+	instead of cerr Say, emote, and eval verbs.
+
+2001-05-30 23:46  opiate
+
+	* languages/python/: FrameType.cc, ObjectType.cc, pyc.cc: Fixes for
+	calling functions/frames/methods from Python
+
+2001-05-30 19:15  opiate
+
+	* experimental/mud/: Freon.cc, GlobalVerbs.cc: Added "drop" verb,
+	and added missing Freon.cc
+
+2001-05-30 18:39  opiate
+
+	* coldstore/InterpreterNodes.cc, experimental/mud/Broadcaster.cc,
+	experimental/mud/Container.cc, experimental/mud/Parser.cc,
+	experimental/mud/Room.cc, experimental/mud/Thing.cc,
+	experimental/mud/start.cc: Some major fixes.  VectorSets for
+	subscribers and contents.
+
+2001-05-30 16:52  opiate
+
+	* coldstore/Frame.cc, coldstore/InterpreterNodes.cc,
+	experimental/mud/Actor.cc, experimental/mud/Broadcaster.cc,
+	experimental/mud/CFunctionNode.cc,
+	experimental/mud/ConsoleObserver.cc, experimental/mud/Container.cc,
+	experimental/mud/Described.cc, experimental/mud/Dictionary.cc,
+	experimental/mud/Event.cc, experimental/mud/GlobalVerbs.cc,
+	experimental/mud/Located.cc, experimental/mud/Makefile,
+	experimental/mud/Named.cc, experimental/mud/Parser.cc,
+	experimental/mud/Parser.hh, experimental/mud/Receiver.cc,
+	experimental/mud/Room.cc, experimental/mud/Root.cc,
+	experimental/mud/Thing.cc, experimental/mud/Verb.cc,
+	experimental/mud/common.cc, experimental/mud/common.hh,
+	experimental/mud/mud.cc, experimental/mud/start.cc,
+	languages/freon/Freon.cc, languages/freon/freonParser.y: Added
+	$freon and eval command for evaluating freon expressions in
+	coldstore/mud Made messageNode use Object::slice instead of search
+	Some misc fixes.
+
+2001-05-29 14:03  opiate
+
+	* experimental/mud/: Actor.cc, Things.cc: Misc changes, removed
+	Things.cc
+
+2001-05-23 16:42  opiate
+
+	* languages/python/PyColdObject.cc: [no log message]
+
+2001-05-23 14:32  opiate
+
+	* experimental/mud/: Broadcaster.cc, Container.cc, GlobalVerbs.cc,
+	Located.cc, Makefile, Parser.cc, Room.cc, Thing.cc, common.cc,
+	common.hh, start.cc: Added global verb dictionary Populated it with
+	first iteration "look" and "get" verbs Added "lookAt" to Thing and
+	Container Noticed broken Object slice behaviour that shows up in
+	$container.lookAt vs. lookContents.  No idea.
+
+2001-05-23 12:26  opiate
+
+	* coldstore/: Frame.cc, Frame.hh, Node.cc, Object.cc, Object.hh:
+	Frame: out.form instead of sprintf for tracebacks Object: include
+	tuple because we use it, and don't print OSymbol values, to avoid
+	getting all funky recursive in some places
+
+2001-05-23 12:18  opiate
+
+	* experimental/mud/: Actor.cc, Broadcaster.cc, ConsoleObserver.cc,
+	Container.cc, Described.cc, Dictionary.cc, Located.cc, Makefile,
+	Named.cc, Parser.cc, Parser.hh, Receiver.cc, Room.cc, Root.cc,
+	Thing.cc, Verb.cc, common.cc, common.hh, start.cc: The sacred
+	beginnings of a MUD/Infocom-style command parser.  Matches verbs
+	and nouns from the environment and executes verbs.  Supposedly.
+
+2001-05-21 22:47  opiate
+
+	* experimental/mud/: Broadcaster.cc, CFunctionNode.cc,
+	CFunctionNode.hh, ConsoleObserver.cc, Container.cc, Event.cc,
+	Event.hh, Located.cc, Makefile, NativeMethod.cc, NativeMethod.hh,
+	Receiver.cc, Room.cc, Root.cc, Thing.cc, common.cc, common.hh,
+	start.cc: Removed NativeMethod, replaced with use of standard Frame
+	and added CFunctionNode, which calls a native C function.  Added
+	ConsoleObserver which can sit in a room and report all events it
+	receives Now trap errors -> tracebacks, unfortunately it segfaults
+	on catch.  (no idea, probably circular reference in Frame *) Made
+	methodCall take string arg.
+
+2001-05-21 19:26  opiate
+
+	* experimental/mud/: Broadcaster.cc, Container.cc, Located.cc,
+	Makefile, Room.cc, common.hh, start.cc: Room class committed.
+
+2001-05-21 19:03  opiate
+
+	* experimental/mud/: Broadcaster.cc, Container.cc, Event.cc,
+	Event.hh, Located.cc, Makefile, NativeMethod.cc, NativeMethod.hh,
+	Receiver.cc, Thing.cc, Things.hh, common.cc, common.hh, mud.cc,
+	start.cc: Individual .cc files for each prototype, cleanup of
+	source.
+
+2001-05-21 17:39  opiate
+
+	* experimental/mud/: Event.cc, Event.hh, Makefile, NativeMethod.hh,
+	Things.cc, Things.hh, start.cc: Added Event class, and methods to
+	use them in Broadcaster and Receiver
+
+2001-05-21 17:07  opiate
+
+	* languages/freon/: Parse.cc, freonParser.y: Some minor and misc
+	changes to the parser.
+
+2001-05-21 17:07  opiate
+
+	* languages/python/: FunctionType.cc, FunctionType.hh, Makefile,
+	ObjectType.cc, ObjectType.hh, Pickled.cc, Pickled.hh, PyCode.cc,
+	PyCode.hh, PyColdObject.cc, PyColdObject.hh, ScalarType.hh,
+	Utility.cc, coldmodule.cc, coldmodule.hh, pyc.cc, start.cc: Misc
+	changes to attempt function conversion.  Again.  interpreter
+	shutdown is giving us problems with converting function objects
+	_after_ their respective code objects have been deleted.
+
+2001-05-21 13:20  opiate
+
+	* experimental/mud/: Makefile, NativeMethod.cc, NativeMethod.hh,
+	Things.cc, global-freebsd.c, global-linux.c, global.c, mud.cc,
+	runmud, start.cc: Test beginnings of a simple MUDdish thing written
+	in C++, but using Object and a native method class.  Awkward.
+
+2001-05-18 13:50  opiate
+
+	* languages/python/: FrameType.cc, FrameType.hh, FreonType.cc,
+	FreonType.hh, FunctionType.cc, FunctionType.hh, Makefile,
+	MappingType.cc, MappingType.hh, ObjectType.cc, ObjectType.hh,
+	PyColdObject.cc, PyColdObject.hh, ScalarType.cc, ScalarType.hh,
+	SequenceType.cc, SequenceType.hh, coldmodule.cc, coldmodule.hh:
+	Broke coldmodule.hh up into several type specific header files
+
+2001-05-18 13:07  opiate
+
+	* languages/python/: FrameType.cc, FreonType.cc, FunctionType.cc,
+	Makefile, MappingType.cc, ObjectType.cc, PyCode.hh,
+	PyColdObject.cc, ScalarType.cc, SequenceType.cc, Utility.cc,
+	coldmodule.cc, coldmodule.hh: Divided giant coldmodule.cc up into
+	several files grouped by type of operation.
+
+2001-05-16 11:49  opiate
+
+	* coldstore/Object.cc, coldstore/Object.hh,
+	languages/python/coldmodule.cc, languages/python/coldmodule.hh:
+	Changed semantics of Object's call to get closer to goal of
+	definer-based encaspulation.   slice, not search, seeks out
+	inherited symbols.
+
+2001-05-16 10:11  opiate
+
+	* coldstore/: Object.cc, Object.hh: Some misc. fixes to Object
+
+2001-05-15 10:39  opiate
+
+	* languages/python/: coldmodule.cc, freontest.py, start.cc,
+	test.py: Removed cookie, add line# to frame attributes.
+
+2001-05-15 10:39  opiate
+
+	* languages/freon/: Parse.cc, freonNodes.cc: Traceback changes
+
+2001-05-15 10:39  opiate
+
+	* coldstore/: Frame.cc, Frame.hh, InterpreterNodes.cc, Node.cc,
+	Object.cc, Object.hh: OSymbol and non-parent value override
+
+2001-05-13 12:19  coldstore
+
+	* mk/: gcc.defs.mk, gcc.rules.mk: got the wrong order in the
+	makefile rules - put kdocs before all.	I owe beer for breaking
+	build.
+
+2001-05-13 03:48  coldstore
+
+	* coldstore/: Frame.cc, Frame.hh, InterpreterNodes.cc, Node.hh,
+	Object.cc: made Node::reduce protected so all reductions will go
+	through Node::Reduce, giving us a central place to intercept node
+	reduction.
+
+2001-05-13 00:33  coldstore
+
+	* coldstore/Alloca.hh, coldstore/Builtin.hh, coldstore/Data.hh,
+	coldstore/Dict.hh, coldstore/Error.hh, coldstore/File.hh,
+	coldstore/List.hh, coldstore/NList.hh, coldstore/NamedNamespace.hh,
+	coldstore/Pool.hh, coldstore/Segment.hh, coldstore/Slot.hh,
+	coldstore/String.hh, coldstore/Symbol.hh, coldstore/Tuple.hh,
+	coldstore/TupleBase.hh, coldstore/Vector.hh,
+	coldstore/VectorSet.hh, mk/gcc.defs.mk: Added kdoc support back
+	into make system: make kdocs will construct a subdir with the html
+
+2001-05-12 23:29  coldstore
+
+	* todo, chaos/.gdbinit, coldstore/Frame.cc,
+	coldstore/InterpreterNodes.cc, coldstore/Node.cc: Moved traceback
+	construction out of each individual node's reduce, into the static
+	Node::Reduce()
+
+2001-05-12 13:38  opiate
+
+	* languages/python/: coldmodule.cc, freontest.py: Routine to
+	unconvert simple layer1 types to equiv Python types.
+
+2001-05-12 12:34  opiate
+
+	* todo: A potential outline of what to do...
+
+2001-05-11 21:32  opiate
+
+	* coldstore/InterpreterNodes.cc, coldstore/InterpreterNodes.hh,
+	languages/freon/freonLexer.cc, languages/freon/freonParser.y,
+	languages/python/freontest.py: Added support for "this" to
+	lexer/parser.  This included in example.  Bombs on dump.
+
+2001-05-11 18:19  opiate
+
+	* coldstore/Frame.cc, coldstore/Frame.hh,
+	coldstore/InterpreterNodes.cc, languages/python/freontest.py: Added
+	"name" field to Frame Made retrieveMethodNode fill in "name",
+	"this", and "definer" on methods.
+
+2001-05-11 17:06  opiate
+
+	* coldstore/Frame.cc, coldstore/Frame.hh,
+	coldstore/InterpreterNodes.cc, languages/freon/Freon.cc,
+	languages/freon/Parse.cc, languages/freon/freonNodes.cc,
+	languages/freon/freonParser.y, languages/python/coldmodule.cc,
+	languages/python/freontest.py: Beginnings of proper error->frame
+	handling.  Errors are turned into Frames, which are caught at the
+	top of the command chain.  Some refcounting problems to work out
+	(segfaults after traceback caught)
+
+2001-05-11 16:09  opiate
+
+	* coldstore/Frame.cc, coldstore/Frame.hh,
+	coldstore/InterpreterNodes.cc, coldstore/InterpreterNodes.hh,
+	languages/freon/Freon.cc, languages/freon/Makefile,
+	languages/freon/Parse.cc, languages/freon/Unfinished-Nodes,
+	languages/freon/freon.cc, languages/freon/freonLexer.cc,
+	languages/freon/freonNodes.cc, languages/freon/freonNodes.hh,
+	languages/freon/freonParser.y, languages/python/coldmodule.cc,
+	languages/python/freontest.py, languages/python/runpyc: Some node
+	cleanups.  Frame source cleanup.  Removed _status and _topNode,
+	added _error.  Added documentation to header file.  indexNode (not
+	tested) Split freon.so into freon.so and freontest.so
+
+2001-05-10 12:06  coldstore
+
+	* intern/Makefile: No putting /usr/local/* in the makefiles.
+
+2001-05-10 10:50  opiate
+
+	* coldstore/Frame.cc, coldstore/Frame.hh,
+	coldstore/InterpreterNodes.cc, coldstore/InterpreterNodes.hh,
+	languages/freon/Unfinished-Nodes, languages/freon/freonNodes.cc,
+	languages/freon/freonParser.y, languages/python/freontest.py:
+	Changes to make messageNode work.  See freontest.py as example
+
+2001-05-09 17:21  opiate
+
+	* coldstore/Frame.cc, coldstore/Frame.hh,
+	coldstore/InterpreterNodes.cc, coldstore/InterpreterNodes.hh,
+	languages/freon/Parse.cc, languages/freon/freonNodes.cc,
+	languages/freon/freonParser.y, languages/python/coldmodule.cc,
+	languages/python/freontest.py: Calling freon from python now works.
+	 See python/freontest.py
+
+2001-05-09 00:09  opiate
+
+	* languages/python/: Pickled.cc, Pickled.hh: Pickled was missing.
+
+2001-05-09 00:09  opiate
+
+	* languages/python/: Makefile, PyClass.cc, PyClass.hh, PyCode.cc,
+	PyFunction.cc, PyFunction.hh, PyInstance.cc, PyInstance.hh,
+	PyMethod.cc, PyMethod.hh, coldmodule.cc, coldmodule.hh, pyc.cc,
+	start.cc: Removed tests of method, instance, class, etc.  Added
+	preliminary support for freon interface
+
+2001-05-09 00:08  opiate
+
+	* languages/freon/: freonLexer.cc, freonLexer.hh, freonParser.y:
+	Parser: removed circular top-frame problem.  Will have to revisit
+	_top and _caller at some point.  Lexer: cleaned up some casting
+
+2001-05-09 00:07  opiate
+
+	* languages/freon/: Freon.cc, Freon.hh, Parse.cc: Freon interface
+	class created.	Will eventually be replaced by a generic
+	coldstore/Compiler once we figure out what that will look like. 
+	Parse.cc modified to use above.  Parse.cc also modified to not call
+	into demo routine, so it can be used as a lib from Python.
+
+2001-05-09 00:05  opiate
+
+	* coldstore/: InterpreterNodes.cc, InterpreterNodes.hh, Node.cc:
+	listNode + misc Changes.
+
+2001-05-09 00:05  opiate
+
+	* coldstore/: Frame.cc, Frame.hh: Cleanups that came along with
+	making Frame python friendly
+
+2001-05-09 00:04  opiate
+
+	* coldstore/Data.cc: Fixed Data::New call to Builtin constructor,
+	to pass along library option.
+
+2001-05-09 00:04  opiate
+
+	* coldstore/Dict.cc: Dict::slice returns single value instead of
+	pair
+
+2001-05-08 21:13  coldstore
+
+	* coldstore/: Builtin.cc, Data.cc, Data.hh: generalised Data::New
+	to cope with symbols from other .so files than coldstore
+
+2001-05-07 09:54  maelstorm
+
+	* coldstore/Cached.hh: Forgot closing marks.
+
+2001-05-07 08:21  maelstorm
+
+	* coldstore/Cached.hh: Fixing the template a little more.
+
+2001-05-07 08:20  maelstorm
+
+	* coldstore/Cached.hh: Braindead class naming.
+
+2001-05-07 01:45  opiate
+
+	* languages/freon/: Freon.cc, Freon.hh, Makefile, Parse.cc:
+	Singleton utility class for compiling freon methods.
+
+2001-05-07 01:44  opiate
+
+	* coldstore/: Frame.cc, Frame.hh, Slot.cc: ::call on Frame reduces
+	nodes.
+
+2001-05-07 00:57  opiate
+
+	* coldstore/: Data.cc, Data.hh, Slot.cc, Slot.hh: added Data::call(
+	Frame ) operator() uses it
+
+2001-05-06 23:50  opiate
+
+	* languages/python/coldmodule.cc: cold.voodoo is a broken attempt
+	at store/retrieve raw pointer to PyObject.
+
+2001-05-06 22:54  opiate
+
+	* coldstore/Object.cc, coldstore/Object.hh,
+	languages/python/coldmodule.cc: Made search const (like on
+	Data.hh), as it was being ignored.  Did same for del, fixed truth
+	tests in search (broken behaviour in VectorSet...).  Made
+	createChild create Object in Slot, fixing refcounting issue.  Fixed
+	python obj_getattr behaviour for object.  Object now works as
+	advertised.
+
+2001-05-05 16:46  maelstorm
+
+	* coldstore/: Object.cc, Object.hh: Got rid of the segfaults
+	related to creating children.
+	
+	TODO: find the reason why search isn't being used all the time.
+
+2001-05-05 14:07  opiate
+
+	* languages/python/: coldmodule.cc, coldmodule.hh: Object
+	fixes/cleanups.  set attr removed for non-Objects, two versions of
+	getattr, one which uses Object's namespace, and one for non-Objects
+	which merely returns list of Data methods.
+
+2001-05-05 00:58  opiate
+
+	* languages/python/: coldmodule.cc, coldmodule.hh: First smack at
+	adding Object support.
+
+2001-05-04 23:55  maelstorm
+
+	* coldstore/: Cached.hh, Data.hh, Dict.hh, Makefile, Symbol.hh:
+	adding the isMap vp extension.
+	
+	Adding a first pass at the Cached<> mixin.
+
+2001-05-04 19:11  opiate
+
+	* languages/python/: Makefile, PyClass.cc, PyClass.hh, PyCode.cc,
+	PyCode.hh, PyData.cc, PyData.hh, PyFunction.cc, PyFunction.hh,
+	PyInstance.cc, PyInstance.hh, PyMethod.cc, PyMethod.hh,
+	coldmodule.cc, coldmodule.hh: Slot-based replacements for more
+	python types.  Am dubious about use of them.
+
+2001-05-03 22:39  maelstorm
+
+	* coldstore/: Object.cc, Object.hh: Need a little work, but revised
+	object that is AKO namespace.
+
+2001-05-03 01:33  opiate
+
+	* languages/python/: Makefile, PyData.cc, PyData.hh, coldmodule.cc,
+	runpyc, start.cc, test.py: PyData added -- is a Tuple wrapping
+	around PyObject, for storing unconverted PyObjects.  Maybe. 
+	coldObject constructor crashes when trying to create one.  try
+	test.py as example
+
+2001-05-02 22:59  opiate
+
+	* languages/python/coldmodule.cc: misc fixes
+
+2001-05-02 17:10  opiate
+
+	* languages/python/coldmodule.cc: Fixed coercion (maybe) so it
+	actually works.
+
+2001-05-02 01:36  opiate
+
+	* languages/python/: coldmodule.cc, coldmodule.hh: Fixed
+	construction of NULL coldObjects Committed unfixed op_contains. 
+	Owwy bug.  Ouch.
+
+2001-05-02 01:10  opiate
+
+	* languages/python/: coldmodule.cc, coldmodule.hh: Garble at end of
+	string representation function fixed.  For X in Y problem fixed
+	(had to convert ~range to IndexError) Sped up list conversions by
+	using dirty-unsafe-macro Misc fixes.
+
+2001-05-01 17:12  opiate
+
+	* languages/python/: coldmodule.cc, coldmodule.hh: Major changes:
+	
+	coldType divided into:		coldScalarType	       
+	coldSequenceType		coldMappingType
+	
+	constructor changed to determine type automatically (need to modify
+	operations like concat, etc. to make sure type is set correctly. 
+	they are currently done barbaric, old way using ->data)
+	
+	most base scalar/numeric operations - except for: divmod (tuple of
+	div and mod), power (must grok the 3 arity argument), and the
+	conversion functions for: to float, to long, to octal, to hex. 
+	also, op_coerce is a fake atm
+
+2001-04-29 13:50  opiate
+
+	* languages/python/coldmodule.cc: Getting/setting attributes of
+	namespaces behaves like Python objects.
+
+2001-04-27 21:54  opiate
+
+	* languages/python/coldmodule.cc: .object() constructs an Object. 
+	try/catch fixed on one arg methods.
+
+2001-04-27 20:38  coldstore
+
+	* coldstore/: Data.cc, Data.hh, Dict.cc, Dict.hh, File.cc, File.hh,
+	VectorSet.cc, VectorSet.hh: Made isIterator() constant
+
+2001-04-27 20:20  amphibian
+
+	* coldstore/: Symbol.cc, Symbol.hh: Evil constness bug in
+	Namespace::iterator(). gcc should have picked this up!
+
+2001-04-26 11:17  amphibian
+
+	* coldstore/: Directory.cc, Directory.hh, Symbol.cc, Symbol.hh:
+	Reimplemented Namespace in terms of a Slot to a (for now)
+	VectorSet. Eliminated NamespaceIt. Changed Name comparison rules.
+
+2001-04-26 11:10  amphibian
+
+	* coldstore/VectorSet.cc: Interface bugfixes
+
+2001-04-26 11:07  amphibian
+
+	* coldstore/: Slot.cc, Slot.hh: Added operator Directory* to Slot
+
+2001-04-26 11:06  amphibian
+
+	* coldstore/NamedNamespace.hh: Added include guards to
+	NamedNamespace headers
+
+2001-04-26 11:03  amphibian
+
+	* chaos/chaos.test: Removed broken duplicated test
+
+2001-04-25 22:39  maelstorm
+
+	* languages/python/Makefile: Adding demangling to coldstore has
+	forced a dependancy on libiberty
+
+2001-04-25 22:30  maelstorm
+
+	* coldstore/Data.cc: Wrong text in unimplemented exception.
+
+2001-04-25 22:26  maelstorm
+
+	* coldstore/: Builtin.cc, Builtin.hh: Added demangling support to
+	Builtin (from intern's Csym)
+
+2001-04-25 22:25  maelstorm
+
+	* intern/demangle.h: Added a demangling header -- cplus_demangle
+	doesn't seem to be part of the headers that come with libiberty. 
+	Go figure.
+
+2001-04-25 22:23  maelstorm
+
+	* intern/: Makefile, elf.cc, elf.hh: Added demangling to intern's
+	Csym
+
+2001-04-25 22:22  maelstorm
+
+	* chaos/Makefile: Created a dependancy to -liberty (found in
+	binutils-dev under debian)
+
+2001-04-25 21:26  maelstorm
+
+	* intern/: elf.cc, elf.hh: Shifting from using char* to string for
+	storage of symbol names and library file names
+
+2001-04-25 18:24  opiate
+
+	* languages/python/coldmodule.cc: Finished non-operator base Data
+	functions on coldObject.
+
+2001-04-25 15:17  amphibian
+
+	* chaos/semantics.cc, coldstore/BaseSet.cc, coldstore/BaseSet.hh,
+	coldstore/Makefile, coldstore/OrderedSet.cc,
+	coldstore/OrderedSet.hh, coldstore/Set.cc, coldstore/Set.hh,
+	coldstore/Slot.cc, coldstore/Slot.hh, coldstore/VectorSet.cc,
+	coldstore/VectorSet.hh: Refactored Set->OrderedSet->VectorSet from
+	BaseSet->Set.
+
+2001-04-25 14:37  opiate
+
+	* languages/python/: Makefile, coldmodule.cc, coldmodule.hh: Major
+	source cleanup, auto-refcounting in coldObject constructor, header
+	file, macros to auto declare Data methods via attributes on
+	coldObject, etc.
+
+2001-04-24 23:18  opiate
+
+	* languages/python/: coldmodule.cc, pyc.cc, start.cc: Fixed
+	copyright notices and removed CVS logging.
+
+2001-04-24 23:15  opiate
+
+	* languages/python/coldmodule.cc: Preliminary error handling code
+	added to all functions.
+
+2001-04-24 22:52  opiate
+
+	* languages/python/: coldmodule.cc, start.cc: added cold.convert,
+	support for tuples, floats=>reals, example of possible error
+	handling in cold.convert added cold.new, but error handling is
+	broken (try cold.new("String") to see how error is not caught)
+
+2001-04-24 21:22  coldstore
+
+	* coldstore/: Data.cc, Data.hh: Added static Data::New(typename,
+	args) to permit construction of arbitrary types by reference to
+	their name as a string.
+
+2001-04-24 20:44  coldstore
+
+	* coldstore/Tuple.cc: Implemented monadic Tuple::replace, to
+	replace whole subrange of Tuple, starting at origin, with whole
+	value supplied.  Value must be conformant, in that it must be no
+	longer than Tuple.
+
+2001-04-24 20:41  coldstore
+
+	* coldstore/Tuple.cc: Made Tuple::Replace(where,el) more efficient.
+	 Was increasing in strength to Replace(where, range, len), which
+	was just inefficient/lazy.
+
+2001-04-24 20:35  coldstore
+
+	* coldstore/TupleBase.th: off by one in range check on
+	TupleBase::Replace
+
+2001-04-24 20:10  coldstore
+
+	* coldstore/: Segment.th, TupleBase.th, Vector.th: Changed some
+	low-level'd asserts into throw new Error()s - to facilitate
+	language-level handling of recoverable errors (particularly input
+	range checks.)
+
+2001-04-24 15:02  maelstorm
+
+	* configure: Removing potentially dangerous and confusing partially
+	finished configure before it shoots someone else in the foot.
+
+2001-04-24 15:00  opiate
+
+	* coldstore/: Functions.cc, Functions.hh, Makefile: Removed example
+	functions
+
+2001-04-23 18:17  opiate
+
+	* languages/python/coldmodule.cc: retrieval by list index vs.
+	dict/namespace slicing distinguished, as _item wasn't being called
+
+2001-04-23 18:07  opiate
+
+	* languages/python/: coldmodule.cc, start.cc: removed names(),
+	changed to module global variable.  i.e. cold.names instead of
+	cold.names()
+
+2001-04-23 17:58  opiate
+
+	* languages/python/: coldmodule.cc, start.cc: cold.names() exposes
+	the global coldstore namespace to python
+
+2001-04-23 17:30  opiate
+
+	* coldstore/Symbol.cc: Minor fix to Symbol::dump to prevent
+	infinite loop.
+
+2001-04-23 16:19  opiate
+
+	* languages/python/: coldmodule.cc, start.cc: cold.retrieve and
+	cold.store to store references betweeen sessions.  works.
+
+2001-04-22 01:15  coldstore
+
+	* mk/gcc.defs.mk, qvmm/memory.cc, qvmm/mmap.cc,
+	languages/python/Makefile, languages/python/coldmodule.cc,
+	languages/python/debugpyc, languages/python/start.cc: Made python
+	use qvmm for new coldObjects Wrapped __libc__{free,malloc} which
+	python was calling directly - not sure about this Tried to get
+	python/ to use stock-standard python, including threads (holds
+	breath)
+
+2001-04-15 12:50  opiate
+
+	* languages/freon/Unfinished-Nodes: A list of unfinished nodes for
+	freon's completion.
+
+2001-04-15 12:50  opiate
+
+	* coldstore/: InterpreterNodes.cc, InterpreterNodes.hh: Removed all
+	MOO-specific non-implemented Nodes and obsoleted nodes.
+
+2001-04-14 19:46  coldstore
+
+	* coldstore/InterpreterNodes.cc: Moved back to del(0), as it's more
+	efficient, and it'll work now that we use toSequence to convert the
+	argument.
+
+2001-04-14 19:39  coldstore
+
+	* coldstore/InterpreterNodes.cc: Generalised forListNode to use
+	toSequence
+
+2001-04-14 19:33  coldstore
+
+	* coldstore/InterpreterNodes.cc, languages/freon/while-test.fr:
+	Made forlist use slice(1,-1) instead of del(0) for taking cdr,
+	because the latter won't work for tuples.
+
+2001-04-14 19:20  coldstore
+
+	* coldstore/Frame.cc, coldstore/InterpreterNodes.cc,
+	coldstore/InterpreterNodes.hh, languages/freon/range-test.fr: Added
+	ForRange
+
+2001-04-14 18:48  coldstore
+
+	* coldstore/InterpreterNodes.cc, coldstore/InterpreterNodes.hh,
+	languages/freon/while-test.fr: Added continue Made While understand
+	break/continue Added some nodes for While and ForList continuations
+
+2001-04-14 11:26  coldstore
+
+	* coldstore/InterpreterNodes.cc, coldstore/Node.cc,
+	coldstore/Node.hh, languages/freon/for-test.fr,
+	languages/freon/freonNodes.cc: Made forListNode work semi-major
+	mods to the way reduce works.
+
+2001-04-14 03:20  coldstore
+
+	* languages/freon/freonNodes.cc: fixed my major upfuckity (not
+	realising that most of its contents have been moved to
+	InterpreterNodes) made it use Node pretty printing
+
+2001-04-14 03:18  coldstore
+
+	* languages/freon/freonParser.y: made it dump output to cerr, not
+	cout
+
+2001-04-14 03:16  coldstore
+
+	* languages/freon/debugfreon: debugger was loading freon-t, not
+	freon.
+
+2001-04-14 03:14  coldstore
+
+	* languages/freon/Parse.cc: updated for pretty printer and
+	operator<< Data* usage.
+
+2001-04-14 03:09  coldstore
+
+	* coldstore/: Data.cc, Data.hh, Integer.cc, InterpreterNodes.cc,
+	List.cc, Node.cc, Node.hh, Slot.cc, TupleBase.th, Vector.hh,
+	Vector.th: Added Node pretty-printer Added operator<< for Data*
+	Fixed whileNode - was pretty bogus
+
+2001-04-14 03:05  coldstore
+
+	* coldstore/Frame.cc: fixed annoying warning, del() needed a retval
+
+2001-04-14 01:18  opiate
+
+	* languages/freon/: Parse.cc, freonParser.y: More work on ~error. 
+	Unfinished.
+
+2001-04-13 10:58  opiate
+
+	* languages/freon/freonParser.y: fixed parsing of try/catch
+
+2001-04-09 23:27  opiate
+
+	* languages/python/: coldmodule.cc, start.cc: Index and key
+	assignment.
+
+2001-04-09 22:40  opiate
+
+	* languages/python/: coldmodule.cc, start.cc: Added array indexing
+	(by int) and dict slicing by key.  Missing: bounds checks.
+
+2001-04-09 21:37  opiate
+
+	* languages/python/: coldmodule.cc, start.cc: Dict constructor.
+
+2001-04-09 21:10  opiate
+
+	* languages/python/: Makefile, coldmodule.cc, pyc.cc, start.cc,
+	world.cc, world.hh, xxmodule.cc: Added operations: concat, length. 
+	Added function: PyToCold converts python types to layer1 equiv. 
+	Moved everything into coldmodule.cc.  Take a look at start.cc for
+	example.
+
+2001-04-09 09:34  maelstorm
+
+	* coldstore/Makefile: Resurrecting Makefile because autoconf isn't
+	ready yet.
+
+2001-04-09 09:31  maelstorm
+
+	* Makefile: Re-adding old makefile -- configure isn't ready yet.
+
+2001-04-09 09:28  maelstorm
+
+	* Makefile: Re-adding a dead Makefile
+
+2001-04-08 11:39  coldstore
+
+	* chaos/semantics.cc, coldstore/Connection.cc,
+	coldstore/Connection.hh, coldstore/Data.cc, coldstore/Data.hh,
+	coldstore/Endpoint.cc, coldstore/Node.hh,
+	languages/freon/freonNodes.cc, languages/freon/global-freebsd.c,
+	languages/freon/global-linux.c: Added a DopeV to each object by
+	means of occ juju.
+
+2001-04-08 11:35  coldstore
+
+	* Makefile, coldstore/Makefile: Oops, removed the Makefile - put it
+	back.
+
+2001-04-08 11:24  coldstore
+
+	* chaos/: global-freebsd.c, global-linux.c: Made noopNode::noop a
+	static const - it's just a placeholder for the `do nothing' opcode.
+	 Created a global for noopNode::noop.
+
+2001-04-08 11:23  coldstore
+
+	* coldstore/InterpreterNodes.hh: Made noopNode::noop a static const
+	- it's just a placeholder for the `do nothing' opcode.
+
+2001-04-08 10:56  coldstore
+
+	* metaclass/ColdClass.mc: Fixed a bug in the generation of extra
+	code at the end of the .cc file, due to the way I was calling
+	Ptree::Make().	The bug only showed up when the generated code got
+	quite large.
+
+2001-03-29 01:55  opiate
+
+	* coldstore/Frame.cc, coldstore/InterpreterNodes.cc,
+	coldstore/InterpreterNodes.hh, languages/freon/for-test.fr,
+	languages/freon/freonLexer.cc, languages/freon/freonParser.y: Some
+	work on exceptions.  Not finished.
+
+2001-03-29 01:54  opiate
+
+	* languages/python/: Makefile, debugpyc, global-freebsd.c,
+	global-linux.c, global.c, pyc.cc, runpyc, start.cc, world.cc,
+	world.hh, xxmodule.cc: Initial python/coldstore interface module. 
+	xxmodule.so is a class "xx" which when created attaches itself to a
+	coldstore List object (just for example) it can be passed around as
+	a python value, and one method called on it.. typeId, which
+	executes Slot::typeId the beginning of something beautiful ;-)
+
+2001-03-14 14:07  opiate
+
+	* languages/freon/for-test.fr: Regression test for forListNode
+
+2001-03-14 14:06  opiate
+
+	* languages/freon/freonParser.y: Fixed nested list inside stmtNode.
+
+2001-03-14 14:05  opiate
+
+	* coldstore/InterpreterNodes.cc: Fixed version of forListNode
+
+2001-03-14 13:24  maelstorm
+
+	* coldstore/TNode.hh: Bad bad bad.  Javaisms strike Mael's C++
+	code.
+
+2001-03-14 13:17  maelstorm
+
+	* coldstore/TNode.hh: Doh -- forgot to make everything public
+
+2001-03-14 13:14  maelstorm
+
+	* coldstore/TNode.hh: Forgot to keep Node public
+
+2001-03-14 12:11  maelstorm
+
+	* coldstore/TNode.hh: Adding a templated version of Node to the mix
+	-- trying to keep weirdness with Slot cloning from happening.
+
+2001-03-01 17:45  opiate
+
+	* languages/freon/: TODO, freonParser.y: Minor tweakins'
+
+2001-03-01 17:02  opiate
+
+	* coldstore/: Data.hh, Functions.cc, Functions.hh, Makefile,
+	Slot.cc, Slot.hh: Ladies and gentelman, the humble beginnings of
+	first class function objects in coldstore.
+
+2001-02-28 17:38  opiate
+
+	* languages/freon/TODO:  Updated TODO files.
+
+2001-02-28 17:30  opiate
+
+	* languages/freon/: Parse.cc, freonParser.y: Updated and fixed
+	index based local variables.
+
+2001-02-28 17:29  opiate
+
+	* languages/freon/: freonLexer.cc, freonLexer.hh: Fixed some lexer
+	bugs (trailing repeat of last token).  One more to go (trailing int
+	sitting at end of stream.  harmless to parser)
+
+2001-02-28 17:28  opiate
+
+	* coldstore/: Frame.cc, Frame.hh: Finished local variable indexed
+	lookup.
+
+2001-02-28 11:10  opiate
+
+	* languages/freon/: Makefile, Parse.cc, freonNodes.cc,
+	freonNodes.hh, freonParser.y: Uses new Frame variable interface.
+
+2001-02-28 11:10  opiate
+
+	* coldstore/: Frame.cc, Frame.hh, InterpreterNodes.cc, Node.cc,
+	Node.hh: Rework of Frame variable interface, identNode, etc.  Still
+	needs work.
+
+2001-02-28 11:09  opiate
+
+	* Makefile: Removed MOO from Makefile
+
+2001-02-27 13:54  maelstorm
+
+	* NEWS: New news.
+
+2001-02-27 13:51  maelstorm
+
+	* configure: Getting the first pass at autoconfig in, including the
+	starting shell script.
+
+2001-02-27 13:50  maelstorm
+
+	* AUTHORS, COPYING, ChangeLog, Makefile.am, NEWS, aclocal.m4,
+	config.h.in, configure.in: Getting autoconfiguration information
+	closer to true for the project
+
+2001-02-27 13:15  maelstorm
+
+	* aclocal.m4: More autoconfigure sutff.
+
+2001-02-26 16:21  maelstorm
+
+	* configure.in: Beginnings of the creation of an autoconf based
+	suite.
+
+2001-02-23 18:27  opiate
+
+	* coldstore/Frame.cc, coldstore/Frame.hh,
+	coldstore/InterpreterNodes.cc, coldstore/InterpreterNodes.hh,
+	languages/freon/Parse.cc, languages/freon/freonNodes.cc,
+	languages/freon/freonParser.y: First crack at using indices and a
+	List _variables (on Frame) for variable lookup/assignment.
+
+2001-02-23 15:10  opiate
+
+	* coldstore/: Frame.cc, Frame.hh: Hid member variables, provided
+	get/set methods.
+
+2001-02-23 15:10  opiate
+
+	* coldstore/InterpreterNodes.cc: Modified to use public interface
+	to Frame, not private members.	Guaranteed to not work. Yet.
+
+2001-02-23 15:09  opiate
+
+	* coldstore/: Data.cc, Data.hh: Removed obsolete "eval" (replaced
+	by "reduce")
+
+2001-02-23 13:57  opiate
+
+	* coldstore/InterpreterNodes.cc, coldstore/InterpreterNodes.hh,
+	coldstore/Makefile, languages/freon/Makefile,
+	languages/freon/Parse.cc, languages/freon/freonNodes.cc,
+	languages/freon/freonNodes.hh, languages/freon/freonParser.y: Moved
+	Nodes common to freon and moo into coldstore/InterpreterNodes, and
+	reduced freonNodes and mooNodes to contain only local language
+	specific nodes.
+
+2001-02-13 22:12  amphibian
+
+	* coldstore/Makefile: Unbroke the build.
+
+2001-02-13 00:53  crag
+
+	* README: OpenC++ not provided anymore (upstream fixed) Added more
+	Debian package recommendations (openc++, etc)
+
+2001-02-07 10:28  amphibian
+
+	* coldstore/: BaseSet.cc, BaseSet.hh, Set.cc, Set.hh: Added
+	BaseSet, base for Set, implements non-implementation-dependant Set
+	ops and hence allows different types of Set to easily factor() each
+	other.
+
+2001-02-07 10:07  amphibian
+
+	* coldstore/: BigInt.cc, BigInt.hh, Data.cc, Data.hh, Dict.cc,
+	Dict.hh, File.cc, File.hh, Integer.cc, Integer.hh, Real.cc,
+	Real.hh, Symbol.cc, Symbol.hh: Added virtual Slot create(const
+	Slot& arg) to the VP. Calls construct(). Also made construct's args
+	const
+
+2001-02-05 22:07  amphibian
+
+	* coldstore/: BTree.hh, BTree.th, Dict.cc, Dict.hh, Symbol.cc,
+	Symbol.hh: Made BigBTree et al, BigBTreeNodes always occupy just
+	under a page; made Namespace and Dict use BigBTreeNodes.
+
+2001-01-20 10:26  amphibian
+
+	* coldstore/Set.hh: Changed a comment
+
+2001-01-18 12:26  maelstorm
+
+	* chaos/new.diff: Getting rid of an old diff file that should
+	already be merged.
+
+2001-01-12 12:34  maelstorm
+
+	* languages/joy/scan.c: Converted joy's operator '==' to ':'
+
+2001-01-12 12:00  maelstorm
+
+	* languages/joy/joy.joy: Added joy interpreter in joy
+
+2001-01-12 11:56  maelstorm
+
+	* languages/joy/: Makefile, Readme, globals.h, interp.c, main.c,
+	scan.c, stdlib.joy, testlib.joy, typlib.joy, utils.c: A possible
+	replacement for chaos.
+
+2001-01-08 22:08  coldstore
+
+	* coldstore/List.cc, languages/freon/freonNodes.cc: Added local var
+	handling back into freon.  ATM uses a Namespace, might change to
+	something lighter-weight later.  Seems to be able to set/fetch
+	local var values now, at least.
+	
+	In the long run, we need to store them in an array (like a stack,
+	really) and map the identifiers to ordinal indices into that array.
+
+2001-01-08 22:02  coldstore
+
+	* coldstore/: Frame.cc, Symbol.hh: Added local var handling back
+	into freon.  ATM uses a Namespace, might change to something
+	lighter-weight later.  Seems to be able to set/fetch local var
+	values now, at least.
+	
+	In the long run, we need to store them in an array (like a stack,
+	really) and map the identifiers to ordinal indices into that array.
+
+2001-01-06 16:05  amphibian
+
+	* coldstore/: Data.cc, Slot.cc: Removed hardcoded bottom/top of
+	stack used to prevent deletion of stack allocated Data
+
+2001-01-04 22:41  amphibian
+
+	* coldstore/Set.cc: Made Set iterators work (with new iterators)
+
+2001-01-04 22:39  amphibian
+
+	* chaos/chaos.test: Tests for Set, new iterators
+
+2001-01-04 22:09  coldstore
+
+	* chaos/chaos.test, chaos/semantics.cc, chaos/semantics.hh,
+	coldstore/Data.cc, coldstore/Data.hh, coldstore/Dict.cc,
+	coldstore/Dict.hh, coldstore/Directory.cc, coldstore/File.cc,
+	coldstore/File.hh, coldstore/List.cc, coldstore/List.hh,
+	coldstore/NList.cc, coldstore/NList.hh, coldstore/Node.cc,
+	coldstore/Set.cc, coldstore/Set.hh, coldstore/String.cc,
+	coldstore/String.hh, coldstore/Symbol.cc, coldstore/Symbol.hh,
+	coldstore/Tuple.cc, coldstore/index.html, coldstore/index.sgml:
+	Removed Current() from virtual protocol (and all the bits of it)
+
+2001-01-04 19:35  amphibian
+
+	* chaos/semantics.cc: Made next return a value to chaos
+
+2001-01-04 19:35  amphibian
+
+	* coldstore/Symbol.hh: Doc fix
+
+2001-01-04 10:49  amphibian
+
+	* coldstore/Set.cc: Fixed modulo (monadic factor)
+
+2001-01-04 10:28  amphibian
+
+	* coldstore/Set.cc: Fixed Set::concat, Set::factor and derived
+	functions
+
+2001-01-03 22:42  amphibian
+
+	* coldstore/: Set.cc, Set.hh: Set should be COW. Misc other bits
+
+2001-01-03 22:14  amphibian
+
+	* coldstore/Set.cc: More Set work
+
+2001-01-03 22:13  amphibian
+
+	* chaos/: semantics.cc, semantics.hh: Consistency fix multiply vs
+	divide. Added order operator
+
+2001-01-03 21:51  amphibian
+
+	* coldstore/Set.cc: Set::slice(start,end) now works
+
+2001-01-03 21:33  amphibian
+
+	* coldstore/Set.cc: Set::lshift, rshift work now
+
+2001-01-03 21:21  amphibian
+
+	* coldstore/Set.cc: Inserts work now for all cases
+
+2001-01-03 20:52  amphibian
+
+	* coldstore/Set.cc: A single insert on an empty Set works now
+
+2001-01-03 20:33  amphibian
+
+	* coldstore/: Set.cc, Set.hh: Set bugfixes
+
+2001-01-03 20:33  amphibian
+
+	* coldstore/Slot.cc: Fixed Slot infinite loop mysteriously findNull
+	was never called before
+
+2001-01-03 18:58  amphibian
+
+	* coldstore/: Set.cc, Set.hh: Set now gets as far as creating and
+	dumping
+
+2001-01-03 18:28  coldstore
+
+	* coldstore/: List.cc, String.cc, Tuple.cc: Fixed strange voodoobug
+	by explicitly instantiating _TupleBase in List.cc
+
+2001-01-03 10:53  amphibian
+
+	* coldstore/String.cc: Fixed horrible chaos killer bug.
+
+2001-01-02 21:50  amphibian
+
+	* coldstore/: Set.cc, Set.hh: Set should be : public Data, :
+	private Vector
+
+2001-01-02 21:48  amphibian
+
+	* coldstore/Object.cc: Fixed warning
+
+2001-01-02 21:47  amphibian
+
+	* coldstore/: List.cc, List.hh, String.cc: Disambiguations; add
+	List::List(Vector<Slot>*,int,int)
+
+2001-01-02 21:46  amphibian
+
+	* coldstore/: Data.cc, Ribbon.cc, Tree.cc: Don't pass Slots through
+	elipses. Pass Data*
+
+2001-01-02 20:43  amphibian
+
+	* coldstore/Segment.hh: Trivial formatting change
+
+2001-01-02 20:41  amphibian
+
+	* chaos/semantics.cc: "set" command was ambiguous. Use nset for
+	creating new sets.
+
+2000-12-28 21:27  coldstore
+
+	* INSTALL: added openc++ URL for non-debian users.
+
+2000-12-25 01:15  opiate
+
+	* languages/freon/freonParser.y: Fixed List and Dict construction
+	in the parser.
+
+2000-12-25 00:22  opiate
+
+	* languages/freon/freon.cc: Fixed lost freon.cc.
+
+2000-12-24 21:53  amphibian
+
+	* chaos/runtest: Made test.diff more readable by using diff -u
+
+2000-12-24 21:51  amphibian
+
+	* coldstore/Set.hh, chaos/semantics.cc, chaos/semantics.hh: Unbroke
+	the build
+
+2000-12-24 21:30  opiate
+
+	* languages/freon/freonParser.y: Oops, we lost freonParser.y 
+	Here's restored from freonParser-t.y rev 1.6
+
+2000-12-24 21:24  amphibian
+
+	* chaos/semantics.cc: Added shortcut Set creation
+
+2000-12-24 21:23  amphibian
+
+	* coldstore/: Makefile, Set.cc, Set.hh, Slot.cc, Slot.hh: Added new
+	class Set. No idea whether it works yet.
+
+2000-12-24 21:20  amphibian
+
+	* coldstore/: NamedNamespace.cc, NamedNamespace.hh: Removed (most
+	of) NamedNamespace special case deletion
+
+2000-12-24 21:19  amphibian
+
+	* coldstore/: Error.hh, List.hh: Made Error.hh and List.hh
+	includable stand-alone
+
+2000-12-23 21:05  coldstore
+
+	* chaos/global-freebsd.c, languages/freon/global-freebsd.c,
+	languages/freon/global-linux.c: Fixed the global.* files in chaos
+	and freon to account for changed gPool symbols.
+
+2000-12-23 20:45  coldstore
+
+	* coldstore/File.cc: Made File iterate properly (I hope.)  It had
+	required that you do a Next before first Current, now it does that
+	silently.
+
+2000-12-23 20:21  coldstore
+
+	* chaos/chaos.test, chaos/global-linux.c, coldstore/BTree.th,
+	coldstore/Dict.cc, coldstore/Dict.hh, coldstore/List.cc,
+	coldstore/Tuple.cc: Another attempt to fix up Tuple vararg
+	construction, for DictIt.  This time, for sure!  :)
+
+2000-12-22 21:47  coldstore
+
+	* coldstore/: Pool.hh, Pool.th: Fixed stupid bug in Pool change.
+
+2000-12-22 20:51  coldstore
+
+	* coldstore/: Directory.cc, Integer.cc, Pool.hh, Pool.th, Tree.cc,
+	Tree.hh: Made derived Pool called gPool (global Pool) which has the
+	same functionality as the original Pool with respect to its
+	behavior on exhaustion (a gPool will create new gPools to
+	accomodate new objects, as required.)
+	
+	Pool now has a `local' Pool function - you allocate a certain
+	number of elements in a Pool, and when it's exhausted you get() a
+	NULL.
+
+2000-12-22 18:02  coldstore
+
+	* INSTALL: Added INSTALL warning about upstream bug in libpcre.h
+
+2000-12-14 00:59  coldstore
+
+	* INSTALL: minor version fix in INSTALL
+
+2000-12-02 14:24  opiate
+
+	* languages/freon/freonNodes.cc: Fixed list construction in the
+	parser.
+
+2000-12-02 12:36  opiate
+
+	* languages/freon/: Makefile, Parse.cc, freonNodes.hh, runfreon:
+	Makefile changes, etc. to make Colin's "reduce version" standard. 
+	Backed up old stack version to stack-experiment
+
+2000-12-02 12:04  opiate
+
+	* languages/freon/: runfreon, runfreon-t,
+	stack-experiment/runfreon: Switch to new reduction based system,
+	backed up stack experiment.
+
+2000-12-02 12:02  opiate
+
+	* languages/freon/: Parse.cc, debugfreon, debugfreon-t, freon-t.cc,
+	freonNodes.cc, freonParser-t.cc, freonParser-t.hh, freonParser-t.y,
+	freonReduce.cc, runfreon: Replaced stack based version with new
+	reduction based version
+
+2000-12-02 11:54  opiate
+
+	* languages/freon/: Parse-t.cc, Parse.cc, freon.cc, freonNodes.cc,
+	freonParser.y, stack-experiment/Parse.cc,
+	stack-experiment/freon.cc, stack-experiment/freonNodes.cc,
+	stack-experiment/freonParser.y: Moved old stack-based system to
+	"stack-experiment".
+
+2000-11-19 20:55  coldstore
+
+	* coldstore/: Dict.cc, Vector.th: Modified Vector<> to accept NULL
+	value pointer in insertion, replacement, and concatenation, with
+	the result of adding the required number of NULL elements to the
+	vector, as if they'd been passed in as an array of NULL of that
+	size.
+
+2000-11-15 18:12  coldstore
+
+	* coldstore/: Hash.cc, List.cc: Fixed Hash insert crash - evident
+	from chaos.test - problem was we were inserting new key at
+	off-by-one position (length() instead of length()-1)
+
+2000-11-15 09:41  coldstore
+
+	* INSTALL: Added an INSTALL file which talks about dependencies and
+	where to get 'em.
+
+2000-11-15 09:40  coldstore
+
+	* openc++/src/Unix/.cvsignore: Removed openc++ from the repository
+	(No, really :)
+
+2000-11-15 09:35  coldstore
+
+	* coldstore/Regexp.hh, openc++/Readme, openc++/open++.tut.pdf,
+	openc++/reference.pdf, openc++/html/base.html,
+	openc++/html/class.html, openc++/html/env.html,
+	openc++/html/green-pin.gif, openc++/html/green.gif,
+	openc++/html/index.html, openc++/html/instance-of.gif,
+	openc++/html/logo.gif, openc++/html/man.html,
+	openc++/html/member.html, openc++/html/mop.html,
+	openc++/html/occ.gif, openc++/html/overview.html,
+	openc++/html/ptree.html, openc++/html/red-pin.gif,
+	openc++/html/red.gif, openc++/html/typeinfo.html,
+	openc++/html/yellow-pin.gif, openc++/html/yellow.gif,
+	openc++/sample/BeforeClass.mc, openc++/sample/GraphClass.h,
+	openc++/sample/GraphClass.mc, openc++/sample/Makefile,
+	openc++/sample/Makefile.IrixCC, openc++/sample/Makefile.Win,
+	openc++/sample/Makefile.static, openc++/sample/MatrixClass.mc,
+	openc++/sample/Readme, openc++/sample/RtmopClass.h,
+	openc++/sample/RtmopClass.mc, openc++/sample/SyncClass.mc,
+	openc++/sample/VerboseClass.mc, openc++/sample/VerboseClass2.mc,
+	openc++/sample/WrapperClass.h, openc++/sample/WrapperClass.mc,
+	openc++/sample/baseScript, openc++/sample/before-test.cc,
+	openc++/sample/gclass-test.cc, openc++/sample/matrix-test.cc,
+	openc++/sample/matrix.cc, openc++/sample/matrix.h,
+	openc++/sample/metaobj-test.cc, openc++/sample/metaobj.cc,
+	openc++/sample/metaobj.h, openc++/sample/person.cc,
+	openc++/sample/person2.cc, openc++/sample/sync-test.cc,
+	openc++/src/buffer.cc, openc++/src/buffer.h,
+	openc++/src/cbodywalk.cc, openc++/src/cbodywalk.h,
+	openc++/src/classwalk.cc, openc++/src/classwalk.h,
+	openc++/src/driver.cc, openc++/src/driver2.cc,
+	openc++/src/driver2.cpp, openc++/src/encoding.cc,
+	openc++/src/encoding.h, openc++/src/env.cc, openc++/src/env.h,
+	openc++/src/hash.cc, openc++/src/hash.h, openc++/src/main-con.cc,
+	openc++/src/member.cc, openc++/src/member.h,
+	openc++/src/metaclass.cc, openc++/src/metaclass.h,
+	openc++/src/mop.cc, openc++/src/mop.h, openc++/src/parse.cc,
+	openc++/src/parse.h, openc++/src/pattern.cc,
+	openc++/src/ptree-core.cc, openc++/src/ptree-core.h,
+	openc++/src/ptree.cc, openc++/src/ptree.h,
+	openc++/src/quote-class.cc, openc++/src/quote-class.h,
+	openc++/src/token.cc, openc++/src/token.h, openc++/src/typeinfo.cc,
+	openc++/src/typeinfo.h, openc++/src/types.h, openc++/src/walker.cc,
+	openc++/src/walker.h, openc++/src/Unix/Makefile,
+	openc++/src/Unix/Makefile.FreeBSD,
+	openc++/src/Unix/Makefile.IrixCC, openc++/src/Unix/Makefile.Linux,
+	openc++/src/Unix/Makefile.Solaris,
+	openc++/src/Unix/Makefile.SunOSandBSD,
+	openc++/src/Win32/Makefile.gc, openc++/src/Win32/Makefile.occ,
+	openc++/src/gc/BCC_MAKEFILE, openc++/src/gc/EMX_MAKEFILE,
+	openc++/src/gc/MacOS.c, openc++/src/gc/MacProjects.sit.hqx,
+	openc++/src/gc/Makefile, openc++/src/gc/Makefile.DLLs,
+	openc++/src/gc/Makefile.dj, openc++/src/gc/NT_MAKEFILE,
+	openc++/src/gc/NT_THREADS_MAKEFILE, openc++/src/gc/OS2_MAKEFILE,
+	openc++/src/gc/PCR-Makefile, openc++/src/gc/README,
+	openc++/src/gc/README.Mac, openc++/src/gc/README.OS2,
+	openc++/src/gc/README.QUICK, openc++/src/gc/README.alpha,
+	openc++/src/gc/README.amiga, openc++/src/gc/README.debugging,
+	openc++/src/gc/README.dj, openc++/src/gc/README.hp,
+	openc++/src/gc/README.linux, openc++/src/gc/README.rs6000,
+	openc++/src/gc/README.sgi, openc++/src/gc/README.solaris2,
+	openc++/src/gc/README.uts, openc++/src/gc/README.win32,
+	openc++/src/gc/SCoptions.amiga, openc++/src/gc/SMakefile.amiga,
+	openc++/src/gc/WCC_MAKEFILE, openc++/src/gc/add_gc_prefix.c,
+	openc++/src/gc/allchblk.c, openc++/src/gc/alloc.c,
+	openc++/src/gc/alpha_mach_dep.s, openc++/src/gc/barrett_diagram,
+	openc++/src/gc/blacklst.c, openc++/src/gc/callprocs,
+	openc++/src/gc/checksums.c, openc++/src/gc/dbg_mlc.c,
+	openc++/src/gc/dyn_load.c, openc++/src/gc/finalize.c,
+	openc++/src/gc/gc.h, openc++/src/gc/gc.mak, openc++/src/gc/gc.man,
+	openc++/src/gc/gc_alloc.h, openc++/src/gc/gc_cpp.cc,
+	openc++/src/gc/gc_cpp.h, openc++/src/gc/gc_hdrs.h,
+	openc++/src/gc/gc_mark.h, openc++/src/gc/gc_priv.h,
+	openc++/src/gc/gc_private.h, openc++/src/gc/gc_typed.h,
+	openc++/src/gc/gcc_support.c, openc++/src/gc/gcconfig.h,
+	openc++/src/gc/headers.c, openc++/src/gc/if_mach.c,
+	openc++/src/gc/if_not_there.c, openc++/src/gc/irix_threads.c,
+	openc++/src/gc/linux_threads.c, openc++/src/gc/mach_dep.c,
+	openc++/src/gc/makefile.depend, openc++/src/gc/malloc.c,
+	openc++/src/gc/mallocx.c, openc++/src/gc/mark.c,
+	openc++/src/gc/mark_rts.c, openc++/src/gc/mips_sgi_mach_dep.s,
+	openc++/src/gc/mips_ultrix_mach_dep.s, openc++/src/gc/misc.c,
+	openc++/src/gc/new_hblk.c, openc++/src/gc/obj_map.c,
+	openc++/src/gc/os_dep.c, openc++/src/gc/pc_excludes,
+	openc++/src/gc/pcr_interface.c, openc++/src/gc/ptr_chck.c,
+	openc++/src/gc/real_malloc.c, openc++/src/gc/reclaim.c,
+	openc++/src/gc/rs6000_mach_dep.s, openc++/src/gc/setjmp_t.c,
+	openc++/src/gc/solaris_pthreads.c,
+	openc++/src/gc/solaris_threads.c, openc++/src/gc/solaris_threads.h,
+	openc++/src/gc/sparc_mach_dep.s,
+	openc++/src/gc/sparc_sunos4_mach_dep.s, openc++/src/gc/stubborn.c,
+	openc++/src/gc/test.c, openc++/src/gc/test_cpp.cc,
+	openc++/src/gc/threadlibs.c, openc++/src/gc/typd_mlc.c,
+	openc++/src/gc/version.h, openc++/src/gc/weakpointer.h,
+	openc++/src/gc/win32_threads.c, openc++/src/gc/cord/README,
+	openc++/src/gc/cord/SCOPTIONS.amiga,
+	openc++/src/gc/cord/SMakefile.amiga, openc++/src/gc/cord/cord.h,
+	openc++/src/gc/cord/cordbscs.c, openc++/src/gc/cord/cordprnt.c,
+	openc++/src/gc/cord/cordtest.c, openc++/src/gc/cord/cordxtra.c,
+	openc++/src/gc/cord/de.c, openc++/src/gc/cord/de_cmds.h,
+	openc++/src/gc/cord/de_win.RC, openc++/src/gc/cord/de_win.c,
+	openc++/src/gc/cord/de_win.h, openc++/src/gc/cord/ec.h,
+	openc++/src/gc/cord/gc.h, openc++/src/gc/cord/private/cord_pos.h,
+	openc++/src/gc/include/cord.h, openc++/src/gc/include/ec.h,
+	openc++/src/gc/include/gc.h, openc++/src/gc/include/gc_alloc.h,
+	openc++/src/gc/include/gc_cpp.h, openc++/src/gc/include/gc_inl.h,
+	openc++/src/gc/include/gc_inline.h,
+	openc++/src/gc/include/gc_typed.h,
+	openc++/src/gc/include/javaxfc.h,
+	openc++/src/gc/include/new_gc_alloc.h,
+	openc++/src/gc/include/weakpointer.h,
+	openc++/src/gc/include/private/cord_pos.h,
+	openc++/src/gc/include/private/gc_hdrs.h,
+	openc++/src/gc/include/private/gc_priv.h,
+	openc++/src/gc/include/private/gcconfig.h: Removed openc++ from the
+	repository (No, really :)
+
+2000-11-15 03:31  coldstore
+
+	* coldstore/BTree.hh, coldstore/List.cc, coldstore/String.cc,
+	coldstore/TupleBase.hh, languages/freon/freonLexer.cc,
+	languages/freon/freonNodes.cc, languages/freon/freonNodes.hh,
+	languages/freon/freonParser-t.cc, languages/freon/freonParser-t.hh,
+	languages/freon/freonParser-t.y, languages/freon/freonParser.y,
+	languages/freon/freonReduce.cc, metaclass/ColdClass.mc,
+	metaclass/ColdTemplate.h, mk/occ.defs.mk: Replaced local version of
+	openc++ with openc++ 2.5.10, debian for the updated version is
+	here: 
+	ftp://coldstore.sourceforge.net/pub/coldstore/debs/openc++_2.5.10-1
+	_i386.deb
+
+2000-11-14 21:19  coldstore
+
+	* coldstore/List.hh, coldstore/String.hh,
+	languages/freon/freonParser-t.cc, languages/freon/freonParser-t.y,
+	languages/freon/freonReduce.cc: a few cleanups
+
+2000-11-14 08:56  coldstore
+
+	* chaos/semantics.cc, coldstore/Builtin.cc, coldstore/Data.cc,
+	coldstore/Dict.cc, coldstore/Directory.cc, coldstore/Error.cc,
+	coldstore/Frame.cc, coldstore/Hash.cc, coldstore/List.cc,
+	coldstore/List.hh, coldstore/NamedNamespace.cc,
+	coldstore/Object.cc, coldstore/Ribbon.cc, coldstore/Symbol.cc,
+	coldstore/Tuple.cc, languages/freon/Parse-t.cc,
+	languages/freon/freonParser-t.cc, languages/freon/freonParser-t.y,
+	languages/freon/freonReduce.cc: Times like this I hate gcc.  Hate
+	hate hate.  Spent several days sweating because List::List(int
+	size, ...) wasn't working.  Turns out the `warning' about `can't
+	pass Slot via ...' is really an error - it simply ignores the Slot.
+	 So you have to pass a Data* or similar.  1) changed Tuple so now a
+	negative arg is needed to count in initializers 2) modded List
+	variadic constructor so it resembles Tuple's
+	
+	Modded all the List and Tuple variadic constructors (and call) to
+	pass Data* not Slot.  Bleah.
+
+2000-11-13 18:45  coldstore
+
+	* languages/freon/: freonParser-t.cc, freonParser-t.y,
+	freonParser.y, freonReduce.cc: Stupidly forgot to add
+	freonReduce.cc ... hopefully it's semi-stable atm.
+
+2000-11-13 11:33  amphibian
+
+	* coldstore/: List.cc, List.hh: Added List::sortuniq()
+
+2000-11-12 21:22  coldstore
+
+	* coldstore/List.cc, languages/freon/Parse-t.cc,
+	languages/freon/freonNodes.cc, languages/freon/freonParser-t.cc,
+	languages/freon/freonParser-t.y: Freon-t: made stmt contain a List
+	preparatory to making Node ako Tuple.
+
+2000-11-11 23:05  coldstore
+
+	* languages/freon/: Parse-t.cc, debugfreon-t, freon-t.cc,
+	freonParser-t.cc, freonParser-t.hh, freonParser-t.y, runfreon-t:
+	Node tree Reduction - works for simple while-test - Additional
+	(temporary) freon files, parallel to main freon, All have -t suffix
+
+2000-11-11 23:01  coldstore
+
+	* coldstore/Frame.cc, coldstore/List.cc, coldstore/Node.cc,
+	coldstore/Node.hh, coldstore/Symbol.cc, coldstore/Symbol.hh,
+	coldstore/Vector.th, languages/freon/Makefile,
+	languages/freon/Parse.cc, languages/freon/freonNodes.cc,
+	languages/freon/freonNodes.hh, languages/freon/freonParser.y,
+	metaclass/ColdClass.mc: Node tree Reduction - works for simple
+	while-test
+
+2000-11-10 00:43  coldstore
+
+	* coldstore/Data.cc, coldstore/Data.hh, coldstore/Frame.cc,
+	coldstore/Frame.hh, coldstore/List.cc, coldstore/List.hh,
+	coldstore/Node.cc, coldstore/Node.hh, coldstore/Vector.hh,
+	coldstore/Vector.th, languages/freon/Makefile,
+	languages/freon/freonNodes.hh, languages/freon/freonParser.y,
+	languages/freon/global-freebsd.c, languages/freon/global-linux.c,
+	metaclass/ColdClass.mc: A whole slew of mods related to: 1) Frame
+	interface cleanup - some more abstract interfaces (getIdent,
+	setIdent) 2) new vp element (probably temporary) reduce() for
+	tree-transforming evaluation
+
+2000-11-09 20:39  coldstore
+
+	* coldstore/: Data.cc, Data.hh, Frame.cc, Frame.hh: Modded
+	Data::eval so it is more polite (using Frame::doConst() instead of
+	referring directly to Frame's guts.)
+
+2000-11-09 12:38  opiate
+
+	* coldstore/Frame.cc, coldstore/Frame.hh, coldstore/Node.cc,
+	coldstore/Node.hh, languages/freon/Parse.cc,
+	languages/freon/freonNodes.cc, languages/freon/freonNodes.hh:
+	Changed Frame::prepareStack to be Node::toPostfix Changed
+	Node::unfold to Node::isTerminal Changed whileNode::eval to
+	actually work Changed interpretStack, ifNode, etc. to use toPostfix
+
+2000-11-09 08:25  coldstore
+
+	* coldstore/: Frame.cc, List.cc, Segment.th: Fixed a bug in
+	List::reverse which wasn't respecting the refcount() on the
+	underlying allocation.
+
+2000-11-09 00:57  opiate
+
+	* languages/freon/while-test.fr: Simple while loop test
+
+2000-11-09 00:56  opiate
+
+	* coldstore/Frame.cc, coldstore/Frame.hh, coldstore/Node.cc,
+	coldstore/Node.hh, coldstore/String.cc, coldstore/String.hh,
+	languages/freon/Parse.cc, languages/freon/freonNodes.cc,
+	languages/freon/freonParser.y: String::add copied from List::add
+	Frame::prepareStack and addStack (nonreversing) broken
+	freonNodes::whileNode
+
+2000-11-08 17:17  opiate
+
+	* languages/freon/freonParser.y: Oops
+
+2000-11-08 17:07  opiate
+
+	* languages/freon/freonParser.y: Added CVS Id and log entries.
+
+2000-11-08 17:06  opiate
+
+	* languages/freon/: Parse.cc, freon.cc, freonLexer.cc,
+	freonNodes.cc: Added CVS log and version entries.
+
+2000-11-08 17:03  opiate
+
+	* languages/freon/: freonLexer.cc, freonLexer.hh, freonNodes.cc,
+	freonNodes.hh, freonParser.y: Added copyright and CVS entries.
+
+2000-11-08 16:56  opiate
+
+	* languages/freon/: Parse.cc, freonNodes.cc, freonNodes.hh,
+	freonParser.y: Replaced binaryNode with addNode, mulNode, subNode,
+	divNode, etc.  Unfortunately, openc++ won't compile it correctly. 
+	No idea why.
+
+2000-11-08 00:58  opiate
+
+	* coldstore/Frame.cc, coldstore/Frame.hh, languages/freon/Parse.cc,
+	languages/freon/freonNodes.cc, languages/freon/freonParser.y:
+	whileNode working.
+
+2000-11-07 16:21  opiate
+
+	* coldstore/Frame.cc, coldstore/Frame.hh, coldstore/Node.cc,
+	coldstore/Node.hh, coldstore/Slot.cc, languages/freon/Parse.cc,
+	languages/freon/freonLexer.cc, languages/freon/freonNodes.cc,
+	languages/freon/freonNodes.hh, languages/freon/freonParser.y:
+	Frame::prepareStack(topNode) creates a stack on the Frame with
+	topNode as top Node::unfold returns bool if Node should not be
+	unfolded during prepareStack freonParser generates frameNode, which
+	is unfold == false, within ifNode branch ifNode creates new child
+	Frame for ifNode branch if conditional is true.  thus: if/else
+	works and framework is in place for all conditional statements
+
+2000-11-05 18:55  opiate
+
+	* coldstore/: Frame.cc, Makefile: Oops :-)
+
+2000-11-05 18:39  opiate
+
+	* languages/freon/freonNodes.cc: Dictionary construction fix.
+
+2000-11-05 17:12  coldstore
+
+	* qvmm/Makefile: Turned Guard back on by default.
+
+2000-11-05 15:24  opiate
+
+	* languages/freon/: Parse.cc, freonNodes.cc, freonParser.y: List
+	construction, variable assignment, variable retrieval, variable
+	declaration, Dict construction (broken insert?)
+
+2000-11-05 13:35  opiate
+
+	* coldstore/Frame.cc, coldstore/Makefile, languages/freon/Parse.cc,
+	languages/freon/freonNodes.cc, languages/freon/freonParser.y:
+	Rewrote interpreter loop completely.  (See Parse.cc prepareStack
+	and interpretStack.)  Stack is now recursively unfolded from node
+	tree and then interpreted.  Todo: move new interpeter loop into
+	Frame::call, remove Frame::eval, make parser generate more
+	intelligent stmtNode nesting (hard) and generally clean up parser
+	tree generation.  Write more nodes.  Borrow liberally from Chaos
+	now that we are stack based.
+
+2000-11-05 08:56  coldstore
+
+	* chaos/Makefile, chaos/global-freebsd.c, chaos/global-linux.c,
+	coldstore/File.cc, coldstore/File.hh, languages/freon/Makefile,
+	languages/freon/global-freebsd.c, languages/freon/global-linux.c:
+	Made a File::all Q, to contain all Files (so they can be tracked
+	down and exterminated when the store comes up after being taken
+	down.)
+	
+	Mucked around a bit more with Connection and Endpoint.
+
+2000-11-05 07:43  coldstore
+
+	* coldstore/: Connection.cc, Connection.hh, Endpoint.cc,
+	Endpoint.hh: Simplified Connection hierarchy to roll BFConnection
+	into BConnection, Now BConnection buffers and additionally forwards
+	(which is more what we want anyway)
+
+2000-11-05 02:46  coldstore
+
+	* coldstore/: Connection.cc, Connection.hh, Endpoint.cc,
+	Endpoint.hh, Server.cc: Added some fancier Connections: FConnection
+	- forwards events to another Slot BConnection - buffers transmits
+	and receives BFConnection - buffers transmits and receives,
+	forwards incoming events
+
+2000-11-04 22:15  coldstore
+
+	* coldstore/Connection.cc, coldstore/Endpoint.cc, include/Q.th:
+	Cleaned up disposal of defunct network Connections, they were being
+	removed in the wrong place, now they're removed as we scan for
+	select() work to do.
+
+2000-11-04 21:38  coldstore
+
+	* languages/freon/: global-freebsd.c, global-linux.c: mods to
+	freon2/global* to bring it into line with network stuff.
+	
+	We should centralised global*
+
+2000-11-04 12:37  opiate
+
+	* coldstore/Frame.cc, languages/freon/Makefile,
+	languages/freon/Parse.cc, languages/freon/freonNodes.cc,
+	languages/freon/freonVisitor.cc, languages/freon/freonVisitor.hh:
+	Some radical changes.	     Frame::eval (soon to be renamed
+	Frame::call) now executes node arguments before the nodes
+	themselves, attempting to insure that the data stack is full of
+	what is needed before the operation proceeds	     
+	Nested/recursive frames are executed non-recursively in Frame::eval
+	through the while() loop.  When frames exit the parent frame
+	resumes, until a null frame is reached.        Most node operations
+	were concerning themselves with pushing things onto the stack,
+	which was backwards.  Now we assume that what we want has been put
+	there by evaluation of our arguments, leaving us free to do what
+	we're supposed to be doing.
+	
+	None of this has been tested, since I can't compile since someone
+	broke compile with Connection.	(ahm)
+
+2000-11-04 08:27  coldstore
+
+	* coldstore/Connection.cc, coldstore/Connection.hh,
+	coldstore/Endpoint.cc, coldstore/Endpoint.hh, include/Q.hh,
+	include/Q.th: More Network work: Rolled 2 loops into one in event
+	handler loop.  Cleaned up the code quite a bit.  It's almost ready
+	to test. :)
+	
+	Oh, and added a Qh::add method (amazing we haven't needed it
+	before.)
+
+2000-11-04 02:03  coldstore
+
+	* coldstore/: Connection.cc, Connection.hh, Endpoint.cc,
+	Endpoint.hh, Makefile, Net.cc, Net.hh, Server.cc, Server.hh: Split
+	Network objects into separate source files.  Rearranged network
+	queues down from Endpoint.
+
+2000-11-03 18:27  opiate
+
+	* coldstore/Data.cc, coldstore/Frame.cc, coldstore/Frame.hh,
+	coldstore/Node.cc, coldstore/Node.hh, languages/freon/Parse.cc,
+	languages/freon/freonNodes.cc, languages/freon/freonNodes.hh,
+	languages/freon/freonParser.y: [no log message]
+
+2000-11-03 15:17  opiate
+
+	* coldstore/Frame.cc, coldstore/Frame.hh,
+	languages/freon/freonNodes.cc: Agh.  Strange refcount bug from some
+	sort of circular reference during Push() in freonNodes::exprNode
+	when generating new Frame.  See Frame::next and
+	freonNodes::exprNode and help me.  _caller is the issue.
+
+2000-11-03 10:58  coldstore
+
+	* chaos/global-freebsd.c, chaos/global-linux.c, coldstore/Data.cc,
+	coldstore/Data.hh, coldstore/Makefile, coldstore/Net.cc,
+	coldstore/Net.hh, include/Q.th: Initial addition of networking,
+	Net.{cc,hh} and mods to the VP to accomodate, global also gets some
+	new symbols.
+
+2000-11-01 01:20  opiate
+
+	* coldstore/Frame.cc, languages/freon/freonNodes.cc: [no log
+	message]
+
+2000-11-01 01:17  opiate
+
+	* coldstore/Frame.cc, coldstore/Frame.hh, languages/freon/Parse.cc,
+	languages/freon/freonNodes.cc: Frame::eval freonNodes updated there
+	is a recursion problem with pushing a Frame * onto the
+	Frame->_stack leading to segv in freonNodes::expr
+
+2000-10-31 23:35  coldstore
+
+	* languages/freon/freonNodes.cc: Minor cleanup.
+
+2000-10-31 23:16  coldstore
+
+	* README, coldstore/Data.cc, coldstore/Data.hh, coldstore/List.cc,
+	coldstore/List.hh, languages/freon/Parse.cc,
+	languages/freon/freonLexer.cc, languages/freon/freonNodes.cc,
+	languages/freon/freonNodes.hh, languages/freon/freonVisitor.cc:
+	Initial mods to Freon.
+
+2000-10-31 21:02  coldstore
+
+	* languages/freon/: Parse.cc, freonNodes.cc, freonNodes.hh,
+	freonVisitor.cc: Changed Closure's name to Frame, with consequent
+	pain in deleting/adding files.
+
+2000-10-31 20:53  coldstore
+
+	* coldstore/: Closure.cc, Closure.hh, Data.cc, Data.hh, Frame.cc,
+	Frame.hh, Makefile, Slot.hh: Changed Closure's name to Frame, with
+	consequent pain in deleting/adding files.
+
+2000-10-31 20:25  coldstore
+
+	* coldstore/: List.cc, List.hh: Added some utility functions for
+	commonly used operations on List.
+
+2000-10-31 19:56  opiate
+
+	* coldstore/Closure.cc, coldstore/Closure.hh, coldstore/Data.cc,
+	coldstore/Data.hh, languages/freon/Parse.cc,
+	languages/freon/freonNodes.cc, languages/freon/freonNodes.hh: [no
+	log message]
+
+2000-10-27 15:27  opiate
+
+	* languages/freon/: Parse.cc, freonLexer.cc, freonLexer.hh: Moved
+	lex_init code into Lexer's constructor.  Renamed lex_start to start
+
+2000-10-27 15:15  opiate
+
+	* languages/freon/freonLexer.cc: WTF was r_words Hash for anyways? 
+	Got rid of it.
+
+2000-10-27 10:33  coldstore
+
+	* coldstore/: Hash.cc, Hash.cc: Hash - couple of screwups, it's not
+	over yet, either.
+
+2000-10-26 18:19  coldstore
+
+	* coldstore/Hash.cc: Fixed stupid infinite recursion in Hash::order
+
+2000-10-26 17:22  opiate
+
+	* coldstore/Makefile, languages/freon/global-freebsd.c,
+	languages/freon/global-linux.c: Added Node back into Makefile,
+	fixed globals in freon
+
+2000-10-26 17:08  opiate
+
+	* languages/freon/: Makefile, freonNodes.cc: Removed use of Visitor
+	pattern. (Sigh)
+
+2000-10-24 04:35  coldstore
+
+	* chaos/: semantics.cc, semantics.hh: Made Chaos and scope Stacks
+
+2000-10-24 04:19  coldstore
+
+	* chaos/semantics.cc, chaos/semantics.hh, coldstore/List.hh,
+	metaclass/MetaType.mc, qvmm/Makefile: [no log message]
+
+2000-10-24 03:30  crag
+
+	* coldstore/Seppuku.cc: Added extra condition.
+
+2000-10-24 03:23  coldstore
+
+	* coldstore/Seppuku.cc: [no log message]
+
+2000-10-24 03:17  crag
+
+	* chaos/: chaos.test, semantics.cc: Removed uses of List->pop
+	Changed ChDict to take one arg instead of two Changed chaos.test to
+	take new ChDict into account added null proc test to chaos.test
+
+2000-10-24 03:16  coldstore
+
+	* coldstore/: List.cc, List.hh: List pop/push changed to make 'em
+	non-destructive Added Stack subclass of List as a destructive
+	option (which will vanish after the vtable voodoo to make
+	mutability dynamic.)
+
+2000-10-24 02:47  coldstore
+
+	* coldstore/Vector.th: Made Vector::Replace(where, 0, something,
+	for) pass to vinsert(where, something, for), since replacing
+	nothing is the same as inserting, IMHO.
+
+2000-10-24 02:27  coldstore
+
+	* coldstore/List.cc: fixed degenerate self-reference caused by
+	List()->slice(0,0) returning itself, you could then insert the
+	result into itself, and it got all twisty.
+
+2000-10-23 23:10  crag
+
+	* chaos/chaos.test: Style related changes
+
+2000-10-23 07:17  coldstore
+
+	* coldstore/: File.cc, File.hh: Fixed bug in modified File iterator
+
+2000-10-23 06:56  crag
+
+	* coldstore/: File.cc, File.hh: Change behavior of ->current and
+	->next to be more consistant with existing iterators.
+
+2000-10-23 05:49  crag
+
+	* chaos/chaos.test: Clarified dict/list iteration tests.
+
+2000-10-22 18:30  amphibian
+
+	* coldstore/.cvsignore, coldstore/Makefile, mk/gcc.defs.mk,
+	mk/gcc.rules.mk, mk/occ.rules.mk: Reinstated automatic dependancies
+	and made them use .%.d so the files are hidden
+
+2000-10-22 17:04  amphibian
+
+	* coldstore/Directory.hh: Default arguments do not override parent
+	virtuals with less args!
+
+2000-10-22 16:51  amphibian
+
+	* coldstore/Object.cc: Killed microscopic build-breaking bug
+
+2000-10-22 16:45  amphibian
+
+	* include/Makefile.inc, mk/gcc.defs.mk, mk/occ.defs.mk: Removed
+	-Woverloaded-virtual
+
+2000-10-22 16:38  amphibian
+
+	* coldstore/: Closure.cc, Dict.cc, Dict.hh, Directory.hh, List.cc,
+	NList.cc, NList.hh, Object.cc: Warning fixes etc
+
+2000-10-22 16:28  maelstorm
+
+	* coldstore/: List.cc, List.hh, Ribbon.cc, Ribbon.hh, String.cc,
+	String.hh, Tree.cc, Tree.hh, Tuple.cc, Tuple.hh: Converting more
+	bits of layer one to the new and improved slice with const fu grip
+
+2000-10-22 16:09  maelstorm
+
+	* coldstore/: Data.cc, Data.hh, Object.cc, Object.hh: Changed the
+	access of the second arg to Data->slice/2 to be a const Slot&
+
+2000-10-22 16:08  maelstorm
+
+	* coldstore/Regexp.hh: There's something evil in String.hh on my
+	machine that causes the regexp.h file to kill compilation.  So I
+	inverted the include order.
+
+2000-10-22 15:44  maelstorm
+
+	* coldstore/Object.cc: Fixed some logic errors in slice(const
+	Slot&,Slot&) - If an object had its own names list, it would short
+	circuit any attempt at looking futher up the parent hierarchy.	the
+	context class wasn't being used as efficiently as it could have
+	been.
+
+2000-10-22 09:21  coldstore
+
+	* coldstore/: File.cc, File.hh, List.cc, Makefile, Vector.hh: Added
+	File class - an interface to gnu's fstream.  Handles text and
+	binary.
+
+2000-10-22 09:12  coldstore
+
+	* chaos/: chaos.test, semantics.cc, semantics.hh: Added file
+	constructor command, and rudimentary test.
+
+2000-10-21 10:42  coldstore
+
+	* coldstore/: Alloca.hh, Data.hh, Hash.cc, Hash.hh, Object.cc,
+	Pool.hh, Slot.hh, TODO: Moved RefCount to Data's source files
+	(where it should have been all along)
+	
+	Made Hash inherit from List, got rid of all vestiges of the
+	original coldmud code's internal structure of 2 Lists for
+	key/values, and replaced it with this inherited List.
+	
+	Made Hash as sequence {key value ...} instead of {{key value} ...},
+	removed the dual-slot constructor, made mono-slot constructor take
+	a list of the new form.
+
+2000-10-21 07:50  coldstore
+
+	* coldstore/: Integer.cc, List.cc, Slot.cc: Made Pooled<Integer>
+	comparable with Integer, Made Tuple comparable with List.
+	
+	There's a general problem here, of promoting types.
+
+2000-10-21 07:46  coldstore
+
+	* coldstore/: Alloca.hh, Pool.hh: Added a foolish method
+	`enclosed()' to return the enclosed type.  Pointless, really, I
+	just thought it might help in making Pooled<T> == T comparisons.
+
+2000-10-21 05:33  crag
+
+	* README: Added list of debian packages to install (incomplete)
+
+2000-10-21 05:25  crag
+
+	* chaos/semantics.cc: Changed args of ChHash from List[keys]
+	List[data] to just List
+
+2000-10-21 05:17  crag
+
+	* chaos/chaos.test: Changed hash constructor invocation to a single
+	list Changed 'foreach definition now that dict iteration is fixed. 
+	Added hash iteration test
+
+2000-10-21 04:57  coldstore
+
+	* coldstore/Hash.cc: Fixed foolish Hash initialization bug.
+
+2000-10-20 21:04  coldstore
+
+	* qvmm/: memory.cc, qvmm.h: Added a debugging call to onError from
+	qvmm_throw, so exceptions from qvmm are easier to trap.
+
+2000-10-20 21:01  coldstore
+
+	* chaos/chaos.test: Fixed a couple of minor errors in the test
+	script
+
+2000-10-20 20:59  coldstore
+
+	* coldstore/: Regexp.cc, Regexp.hh: pcre changed to allocate its
+	compilation somewhere on the stack, or in static data.
+	
+	Made RegExp force pcre to allocate in heap.
+
+2000-10-20 20:56  coldstore
+
+	* coldstore/: Tuple.cc, Tuple.hh, TupleBase.hh, TupleBase.th:
+	TupleBase destroys its content when it's destroyed, but so does
+	Tuple, leading to duplicate destructions.
+	
+	Split out _TupleBase for Tuple to derive from, it doesn't destroy
+	its contents.
+
+2000-10-20 17:39  amphibian
+
+	* coldstore/Symbol.cc: Changed Name refcounting. A Name keeps its
+	own refcount, which is at least 1 if it is in a Namespace. If it is
+	in a Namespace, when refcount goes 1->2 and 2->1 it
+	upcounts/dncounts the parent.
+
+2000-10-20 13:23  amphibian
+
+	* coldstore/: Directory.cc, Pool.hh, Pool.th, Slot.cc,
+	TupleBase.hh: Introduced Pooled<T>::unPool and used it in
+	Directory. Stack allocated Data should not be deleted, but they
+	must be destructed when their refcount reaches zero
+
+2000-10-19 00:59  coldstore
+
+	* coldstore/: Alloca.hh, TupleBase.hh, TupleBase.th: Catch dncounts
+	which send Alloca and ATupleBase stack-allocated templated types to
+	0, and call their destructor, to clean up any dangling leakage
+	which would otherwise arise.
+	
+	This is necessary for the case where we catch stack-based dncount
+	by checking the addresses (a questionable practice, IMHO) but
+	should work in either case.
+
+2000-10-19 00:18  coldstore
+
+	* chaos/chaos.test: fixed test - had introduced some bad arg
+	ordering
+
+2000-10-19 00:02  coldstore
+
+	* coldstore/: Data.cc, Makefile, Ribbon.cc, Ribbon.hh: Moved Ribbon
+	into Make, cleaned it up.
+
+2000-10-19 00:00  coldstore
+
+	* coldstore/Symbol.cc: test against deleting non-existent Names
+	from Namespace
+
+2000-10-18 23:57  coldstore
+
+	* coldstore/List.cc: removed redundant this-> in List.cc
+
+2000-10-17 18:07  amphibian
+
+	* coldstore/: Pool.th, Segment.th, TupleBase.th, Vector.th: Added
+	emacs mode specifiers
+
+2000-10-09 18:37  coldstore
+
+	* qvmm/qvmm.h: Made quantum size depend upon GUARD_ALLOC, to
+	compile more efficiently without Guards.
+
+2000-10-07 12:37  amphibian
+
+	* coldstore/: Directory.cc, List.hh: TEMP_LIST works now. Using it
+	in Directory for now...
+
+2000-10-07 10:32  amphibian
+
+	* coldstore/: Directory.cc, List.cc, List.hh: ALMOST got
+	stack-allocated Lists working
+
+2000-10-07 08:44  amphibian
+
+	* coldstore/Closure.cc: Ryan owes me a Pepsi
+
+2000-10-07 08:29  coldstore
+
+	* coldstore/: Alloca.hh, List.cc, List.hh, Pool.th, Regexp.cc,
+	String.cc, String.hh, Tuple.cc, TupleBase.hh: Created Alloca<> and
+	ATupleBase<> to permit use of alloca() for
+	local/temporary/automatic storage of ColdStore types.
+	
+	Modded List to handle ATupleBase constructor.
+
+2000-10-06 15:20  opiate
+
+	* coldstore/Closure.cc, coldstore/Closure.hh,
+	languages/freon/Makefile, languages/freon/freonNodes.cc,
+	languages/freon/freonVisitor.cc, languages/freon/freonVisitor.hh:
+	(broken) Visitor pattern used.	Needs work.
+
+2000-10-05 08:28  coldstore
+
+	* coldstore/: Directory.cc, Integer.cc, Pool.hh, Pool.th: Fixed bug
+	in Pool freeing resulting from double-deletion of Pooled's from
+	Q<Pooled>.  Decided the use of Q in Pooled was overheavy
+	(`ludicrously so') and simplified the free list per Pool by making
+	it an ordinal index of next free, hence singly linked.
+
+2000-10-04 11:01  amphibian
+
+	* coldstore/String.cc: Strings can == Pooled<String>s, as well as
+	order() == 0
+
+2000-10-02 16:52  amphibian
+
+	* coldstore/: Pool.hh, Pool.th: Plugged a leak and got pool
+	deletions working
+
+2000-10-02 16:49  amphibian
+
+	* coldstore/List.cc: un-DEBUGLOGed List.cc
+
+2000-10-02 09:36  amphibian
+
+	* coldstore/Symbol.cc: Prevented SEGV in a DEBLOG
+
+2000-10-02 07:46  amphibian
+
+	* coldstore/Directory.cc: Removed List alloc hack, made permanent
+	Strings non-pooled
+
+2000-10-02 07:07  amphibian
+
+	* coldstore/String.cc: String::order should understand other String
+	subtypes. Compared as before, according to content
+
+2000-10-02 06:52  amphibian
+
+	* coldstore/Directory.cc: Minor bugfix/speedup
+
+2000-10-01 22:08  amphibian
+
+	* coldstore/List.cc: Stack went the wrong way in varargs
+	constructor
+
+2000-10-01 22:08  amphibian
+
+	* coldstore/Directory.cc: Directory debug output bugfix
+
+2000-10-01 22:06  amphibian
+
+	* coldstore/: Data.cc, Slot.cc: Made stack allocated Data's not be
+	deleted
+
+2000-10-01 22:05  amphibian
+
+	* coldstore/Symbol.cc: Made Name::order produce meaningful debug
+	output
+
+2000-10-01 19:54  coldstore
+
+	* chaos/.gdbinit, coldstore/Data.cc, coldstore/Dict.cc,
+	coldstore/Directory.cc, coldstore/Hash.cc, coldstore/List.cc,
+	coldstore/List.hh, coldstore/Pool.th, coldstore/Ribbon.cc,
+	coldstore/Symbol.cc, coldstore/Tree.cc, coldstore/Vector.hh,
+	coldstore/Vector.th: Some temporary hackymods to diagnose a problem
+	with List constructor from varargs.
+
+2000-09-30 11:23  amphibian
+
+	* chaos/Makefile, chaos/global-freebsd.c, chaos/global-linux.c,
+	coldstore/Directory.cc, coldstore/String.cc, coldstore/String.hh,
+	qvmm/global.cc: Makefile fix, added Pool of String, tried to use it
+	in Directory.
+
+2000-09-30 11:08  coldstore
+
+	* coldstore/: Data.cc, List.cc, Ribbon.cc, Tree.cc: Changed
+	List(-int,...) to expect Slot, not Data* for the varargs.
+
+2000-09-29 21:37  coldstore
+
+	* chaos/global-freebsd.c, chaos/global-linux.c, coldstore/Pool.hh,
+	coldstore/Pool.th: Made a new Pool constructor - get(Slot&) which
+	will construct the returned object with the Slot& arg
+	
+	Fixed a bug with allocation - wasn't zeroing allocation.
+
+2000-09-29 20:30  coldstore
+
+	* chaos/Makefile, chaos/global-linux.c, coldstore/Integer.cc,
+	coldstore/Pool.hh, coldstore/Pool.th, mk/gcc.defs.mk,
+	qvmm/memory.cc: Moved Pool out of Integer.cc into the bigtime and
+	templated it.
+	
+	Pool<T> is an allocation pool containing Pooled<T> which augment T
+	with a virtual delete() which arranges for the pooled entities to
+	be recycled back into the allocating Pool<T>.
+	
+	As yet, still only works for Integer, because it needs a persistent
+	global Pool<T>::all (to keep track of all Pool<T>s) and I haven't
+	worked out how best to do that yet.
+
+2000-09-29 18:19  amphibian
+
+	* coldstore/: Directory.cc, String.cc, String.hh: Moved string
+	prefix operations into String
+
+2000-09-29 12:08  opiate
+
+	* languages/freon/: Makefile, OpCodes.cc, OpCodes.hh, Parse.cc,
+	freonNodes.cc, freonNodes.hh, freonParser.y: [no log message]
+
+2000-09-29 09:28  amphibian
+
+	* coldstore/: BTree.hh, BTree.th, Dict.cc, Dict.hh, Directory.cc,
+	Makefile, Symbol.cc: Made order a template parameter of BTree
+
+2000-09-28 19:28  amphibian
+
+	* coldstore/Directory.cc: Directory performance hack and SLR fix
+
+2000-09-28 19:26  amphibian
+
+	* qvmm/: memory.cc, store.cc: DEBLOGed out nProfileLookupCount
+
+2000-09-26 19:22  amphibian
+
+	* qvmm/: memory.cc, qvmm.h, store.cc: Made store growing occur in
+	blocks of page * quantum. Dramatically improves fragmentation!
+
+2000-09-26 13:39  opiate
+
+	* coldstore/: Closure.cc, Data.cc: Made Closure::~Closure clean up
+	properly.
+
+2000-09-26 12:34  opiate
+
+	* coldstore/Data.cc, languages/freon/Parse.cc,
+	languages/freon/freonNodes.cc: Removed some logging messages.
+
+2000-09-26 10:55  opiate
+
+	* coldstore/Closure.cc, coldstore/Closure.hh, coldstore/Data.cc,
+	languages/freon/Parse.cc: Fixed Closure's mutate/copy/construct.
+
+2000-09-25 21:32  amphibian
+
+	* qvmm/memory.cc: Allocation size includes the locality pointer !
+
+2000-09-25 19:37  coldstore
+
+	* qvmm/: memory.cc, qvmm.h: Modified qvmm to allocate only in
+	Memory::quantum sized blocks (currently 40 if Guard)
+	
+	This is intended to solve the problem of external heap
+	fragmentation adding unallocatable (4b 8b) extents to the free
+	list, requiring traversal on each allocation.
+	
+	This makes the round-off into internal fragmentation, which is not
+	seen by the freelist, saving time searching for free blocks.
+
+2000-09-25 16:01  opiate
+
+	* coldstore/Data.cc, coldstore/Data.hh, languages/freon/Parse.cc,
+	languages/freon/freonNodes.cc, languages/freon/freonNodes.hh,
+	languages/freon/freonParser.y: Data::eval
+
+2000-09-25 13:32  opiate
+
+	* documentation/ClosuresAndNodes.txt: Added initial documentation
+	of Closure and Node
+
+2000-09-25 11:12  opiate
+
+	* coldstore/Events-Proposal, documentation/ClosuresAndNodes.txt,
+	documentation/EventNotes.txt: Some unfinished, pretentious
+	documentation.
+
+2000-09-24 19:37  coldstore
+
+	* qvmm/memory.cc: Modified qvmm's Memory::alloc to treat NULL
+	locale differently - not to try to search for an optimal location,
+	but just to pick the first acceptable fit.
+
+2000-09-24 13:19  opiate
+
+	* languages/freon/: freonNodes.cc, freonNodes.hh: [no log message]
+
+2000-09-23 22:09  coldstore
+
+	* chaos/Makefile, chaos/profchaos, mk/gcc.defs.mk, mk/occ.defs.mk,
+	qvmm/Makefile: After hours of fruitlessly battling sprof and ld.so
+	it transpires that you must set LD_PROFILE to the same name as is
+	being used to link it in.  Thanks again, Ulrich Drepper.
+	
+	Fixes to account for this.
+
+2000-09-23 18:32  coldstore
+
+	* Makefile, chaos/profchaos, coldstore/Builtin.cc,
+	coldstore/Data.cc, coldstore/Integer.cc, coldstore/Makefile,
+	coldstore/Store.cc, intern/Makefile, libs/Makefile,
+	metaclass/Makefile, mk/gcc.defs.mk, mk/occ.defs.mk,
+	mk/occ.rules.mk, qvmm/store.cc: Profiling support for .so
+	components of coldstore.      make clean all PROFILE=yes  generates
+	binaries able to be profiled with sprof.
+	
+	Example:	LD_LIBRARY_PATH=../libs:/usr/lib/debug/:.
+	LD_PROFILE_OUTPUT=. LD_PROFILE=../libs/libcold.so ./chaos
+
+2000-09-23 18:28  coldstore
+
+	* chaos/: Makefile, profchaos, runchaos: Profiling support for .so
+	components of coldstore.     make clean all PROFILE=yes  generates
+	binaries able to be profiled with sprof.
+	
+	Example:	LD_LIBRARY_PATH=../libs:/usr/lib/debug/:.
+	LD_PROFILE_OUTPUT=. LD_PROFILE=../libs/libcold.so ./chaos
+
+2000-09-23 07:10  amphibian
+
+	* coldstore/Directory.cc: Bugfix
+
+2000-09-23 06:56  amphibian
+
+	* coldstore/: Directory.cc, Directory.hh: Directory fixes and
+	improvements
+
+2000-09-22 20:46  amphibian
+
+	* coldstore/Directory.cc: They compiled but they were WRONG
+
+2000-09-22 20:45  amphibian
+
+	* coldstore/Directory.cc: Bugfix for last bugfix, which didn't even
+	compile!
+
+2000-09-22 20:37  amphibian
+
+	* coldstore/: Directory.cc, Symbol.cc: Directory/Symbol bugfixes,
+	revealed by stress testing
+
+2000-09-21 21:43  opiate
+
+	* languages/freon/freonNodes.cc, languages/freon/freonNodes.hh,
+	languages/freon/freonParser.y, metaclass/ColdClass.mc: Yay!
+
+2000-09-21 21:13  coldstore
+
+	* metaclass/ColdClass.mc: Made Node-descendant inserted
+	constructors take Slot, not Slot&
+
+2000-09-21 21:03  coldstore
+
+	* chaos/chaos.test, chaos/semantics.cc, coldstore/Node.cc,
+	coldstore/String.cc, coldstore/String.hh, metaclass/ColdClass.mc:
+	Added ColdClass special handling for direct descendants of Node, so
+	they get default constructors of appropriate type - passing args
+	directly to Node's constructors.
+
+2000-09-21 20:22  amphibian
+
+	* coldstore/String.cc: Removed unnecessary kludge to work around
+	String copy constructor defectiveness which Colin has now fixed
+
+2000-09-21 20:16  amphibian
+
+	* chaos/semantics.cc, chaos/semantics.hh, coldstore/Directory.cc,
+	coldstore/Directory.hh, coldstore/Symbol.cc: monadic insert should
+	create a name. accessed in chaos by minsert
+
+2000-09-21 19:21  coldstore
+
+	* coldstore/Tuple.cc: 1) fix to Vector constructors to properly
+	handle subranges (it was incorrectly setting the length to the
+	length of the whole range, not the subrange) 2) test for -start in
+	those constructors 3) fixed String so that clone wasn't making an
+	empty string - related to 1&2 4) fixed Tuple so it correctly
+	returned its length instead of throwing unimpl.
+
+2000-09-21 19:12  coldstore
+
+	* coldstore/: String.cc, String.hh, Vector.th: 1) fix to Vector
+	constructors to properly handle subranges (it was incorrectly
+	setting the length to the length of the whole range, not the
+	subrange) 2) test for -start in those constructors 3) fixed String
+	so that clone wasn't making an empty string - related to 1&2 4)
+	fixed Tuple so it correctly returned its length instead of throwing
+	unimpl.
+
+2000-09-21 17:37  opiate
+
+	* coldstore/Node.cc, coldstore/Node.hh, languages/freon/Parse.cc:
+	[no log message]
+
+2000-09-21 17:22  opiate
+
+	* languages/freon/: freonNodes.cc, freonNodes.hh: [no log message]
+
+2000-09-21 17:00  opiate
+
+	* languages/freon/: Makefile, freonNodes.cc, freonNodes.hh,
+	freonParser.y: [no log message]
+
+2000-09-21 15:01  opiate
+
+	* coldstore/Makefile, coldstore/Node.cc, coldstore/Node.hh,
+	coldstore/Slot.hh, languages/freon/Makefile,
+	languages/freon/Node.cc, languages/freon/Node.hh,
+	languages/freon/OpCodes.cc, languages/freon/OpCodes.hh,
+	languages/freon/Parse.cc, languages/freon/freonParser.y: Moved Node
+	to layer1
+
+2000-09-21 14:01  opiate
+
+	* languages/freon/: Makefile, Node.cc, OpCodes.cc, OpCodes.hh,
+	Parse.cc, freonLexer.cc, freonParser.y: [no log message]
+
+2000-09-21 11:38  opiate
+
+	* languages/freon/: Node.cc, Node.hh, Parse.cc, freonLexer.cc,
+	freonParser.y: Now successfully parses and generates a nested Node
+	structure for any c-- you can throw at it.
+
+2000-09-21 08:29  amphibian
+
+	* coldstore/: Directory.cc, String.cc, Symbol.cc:
+	Directory::lshift, rshift should work now
+
+2000-09-21 00:58  opiate
+
+	* languages/freon/: Makefile, Node.cc, Node.hh, Parse.cc, freon.cc,
+	freonLexer.cc, freonLexer.hh, freonParser.y, global-freebsd.c,
+	global-linux.c, global.c, runfreon: First submission of a version
+	of freon based on the original coldmud lexer/parser.  On its way to
+	doing full parses.
+
+2000-09-20 20:09  amphibian
+
+	* coldstore/: Directory.cc, Directory.hh, Symbol.cc, Symbol.hh:
+	Implemented a way for a Name to get its full pathname from the
+	ultimate parent Directory
+
+2000-09-20 13:14  amphibian
+
+	* coldstore/: Directory.cc, Symbol.cc, Symbol.hh:
+	Directory::insert, replace and search now work in all occasions...
+	hopefully
+
+2000-09-20 13:04  amphibian
+
+	* chaos/semantics.cc: Reversed order of dyadic replace args so is
+	like dyadic insert
+
+2000-09-20 11:28  amphibian
+
+	* coldstore/: Directory.cc, Symbol.cc: Directory::insert fixes,
+	some caused by bug in Namespace::rshift
+
+2000-09-18 18:46  amphibian
+
+	* coldstore/: Directory.cc, Directory.hh: Implemented
+	Directory::lshift, rshift (see Namespace's usage)
+
+2000-09-18 12:22  opiate
+
+	* coldstore/Object.cc: Fixed Object::insert
+
+2000-09-17 19:37  amphibian
+
+	* coldstore/: Directory.cc, Directory.hh: More Directory fixes
+
+2000-09-17 18:50  amphibian
+
+	* coldstore/: Directory.cc, Directory.hh: Fixed Directory bugs
+	induced by becoming a NamedNamespace
+
+2000-09-17 13:09  amphibian
+
+	* coldstore/: Directory.cc, Directory.hh, NamedNamespace.cc,
+	NamedNamespace.hh: Made Directory AKO NamedNamespace, as it should
+	have been in the first place
+
+2000-09-13 19:19  amphibian
+
+	* coldstore/Symbol.cc: That didn't work. Don't cast Slots to int
+	unless they are actually integers!
+
+2000-09-13 19:03  amphibian
+
+	* coldstore/Symbol.cc: Made >> and << 0 work (treat 0 as NULL, 0 !=
+	NULL as a Slot though, chaos wants a numeric 0)
+
+2000-09-13 18:03  amphibian
+
+	* coldstore/Symbol.cc: Trivial improvement to rshift
+
+2000-09-13 17:09  amphibian
+
+	* coldstore/NamedNamespace.hh: NamedNamespace lacked a search(), so
+	used Tuple => crash
+
+2000-09-13 17:01  opiate
+
+	* mk/gcc.defs.mk: Removed -D_NOTHREADS, to stop problems with
+	linking STL
+
+2000-09-13 16:34  amphibian
+
+	* coldstore/: Directory.cc, Symbol.cc: Basic Directory
+	functionality should work now... maybe
+
+2000-09-13 09:51  amphibian
+
+	* coldstore/Symbol.cc: Refcounting fixes against the BTree changes
+
+2000-09-12 20:47  amphibian
+
+	* coldstore/: Directory.cc, Symbol.cc: Continued debugging
+	Directory
+
+2000-09-12 19:50  amphibian
+
+	* coldstore/: BTree.th, BTree.hh: Items were not zeroed in one
+	Remove path, which could lead to leaks in a BTree <Slot>, and
+	zeroing should not require operator = (0), only a default
+	constructor.
+
+2000-09-10 20:20  amphibian
+
+	* coldstore/: Directory.cc, Symbol.cc: Continuing debugging of
+	Directory
+
+2000-09-09 22:35  amphibian
+
+	* coldstore/: Directory.cc, Directory.hh, NamedNamespace.hh,
+	Symbol.cc, Symbol.hh: Debugging Directory
+
+2000-09-09 18:57  amphibian
+
+	* coldstore/Directory.cc: Names are not Strings!
+
+2000-09-08 19:42  opiate
+
+	* coldstore/: Object.hh, Slot.hh: added Closure, Object,
+	NamedNamespace, and Directory to the list of classes in Slot.hh
+
+2000-09-08 18:26  coldstore
+
+	* coldstore/Hash.cc, coldstore/Hash.hh, coldstore/NList.cc,
+	coldstore/Object.cc, coldstore/Slot.cc, coldstore/Slot.hh,
+	coldstore/Store.cc, coldstore/Symbol.cc, coldstore/Symbol.hh,
+	coldstore/TupleBase.th, include/Q.th, intern/elf.cc: Fix to severe
+	bug caused by mods to Q.th
+
+2000-09-08 16:29  opiate
+
+	* include/Makefile.inc: Added bits of antlr-2.7.1-betasomething
+
+2000-09-08 15:51  opiate
+
+	* coldstore/: Closure.cc, Closure.hh: Typos in Closure.cc fixed. 
+	Compiles.  But does it work?
+
+2000-09-08 15:40  opiate
+
+	* coldstore/: Closure.cc, Closure.hh, Makefile: Changed Closure to
+	use Tuple, added to Makefile, implemented.   OpenC++ dies with
+	cryptic error on compile.  Help.
+
+2000-09-06 11:28  amphibian
+
+	* coldstore/: Directory.cc, Directory.hh: Directory should now
+	automatically split wherever it can
+
+2000-09-06 09:31  coldstore
+
+	* coldstore/: Closure.hh, Ribbon.cc, Ribbon.hh: Changed Tree to
+	Ribbon
+
+2000-09-06 00:17  coldstore
+
+	* coldstore/Integer.cc, coldstore/Integer.hh, coldstore/Slot.cc,
+	include/Q.hh, include/Q.th, intern/elf.cc: Split Q.hh into header
+	and template implementation.  Fixed *stupid* bug where iPool was
+	returning Integers with a 0 refcount.
+	
+	Rewrote all of iPool so it's now ready to be genericised and moved
+	into its own files. (en passant, as a bonus.)
+
+2000-09-05 19:16  amphibian
+
+	* coldstore/: Directory.cc, Directory.hh: Disabled
+	Directory::wantInsert(x,y)
+
+2000-09-03 18:48  amphibian
+
+	* coldstore/Directory.cc: Debugging Directory
+
+2000-09-03 18:14  amphibian
+
+	* coldstore/Symbol.cc: Fixed some Namespace bugs while debugging
+	Directory
+
+2000-09-03 18:01  amphibian
+
+	* coldstore/Symbol.cc: Fixed Namespace::dump bug (correctly this
+	time)
+
+2000-09-03 17:52  amphibian
+
+	* coldstore/Symbol.cc: Fixed minor bug in Namespace::dump
+
+2000-09-03 17:33  amphibian
+
+	* coldstore/: Directory.cc, Directory.hh, Symbol.cc, Symbol.hh:
+	More work on Directory
+
+2000-08-31 21:21  amphibian
+
+	* coldstore/: Directory.cc, Directory.hh, Makefile, Symbol.cc:
+	Implemented rest of Directory abstract base class functionality
+
+2000-08-31 20:09  amphibian
+
+	* coldstore/: Directory.cc, Directory.hh: Added beginnings of
+	Directory, a filesystem-like flat view of a Name tree
+
+2000-08-31 20:07  amphibian
+
+	* coldstore/: Slot.cc, Slot.hh: Added various operators for Slot.
+
+2000-08-26 02:09  coldstore
+
+	* coldstore/: List.cc, Segment.hh, Segment.th, String.cc, Tuple.cc,
+	TupleBase.hh, TupleBase.th, Vector.hh, Vector.th: Split Segment
+	Vector and TupleBase implementation from their headers, to prevent
+	inlining of code, to permit debugging.	We can probably make the
+	inclusion of these template implementation files (I've called them
+	.th) in the headers compilation-conditional, so as to get back the
+	inlining efficiencies, at some stage.
+
+2000-08-25 21:45  amphibian
+
+	* coldstore/: NamedNamespace.cc, Symbol.cc, Symbol.hh: Made Names
+	refcounted under their Namespaces. Warning: creates new bugs!
+
+2000-08-24 21:01  amphibian
+
+	* coldstore/Slot.cc: Fixed deletion of possibly multiply inherited
+	RefCount objects
+
+2000-08-24 13:26  opiate
+
+	* coldstore/Events-Proposal: Just some notes
+
+2000-08-24 12:57  opiate
+
+	* coldstore/Closure.hh: Some minor changes.
+
+2000-08-24 12:28  opiate
+
+	* coldstore/Closure.hh: 1st try at a stub for Closure descended
+	from Tree.
+
+2000-08-23 14:25  amphibian
+
+	* chaos/semantics.cc: Make NamedNamespace insert itself into parent
+	Namespace
+
+2000-08-23 14:22  amphibian
+
+	* coldstore/Symbol.cc: Various Name* fixes
+
+2000-08-22 20:14  coldstore
+
+	* coldstore/: BTree.hh, Data.hh, NamedNamespace.cc,
+	NamedNamespace.hh, Slot.cc, Slot.hh, Symbol.cc: Mods to try to
+	correct multiple RefCounts leading to spurious deletions of
+	multiply inherited descendants of RefCount.
+
+2000-08-22 16:32  amphibian
+
+	* coldstore/: Data.cc, NamedNamespace.cc, NamedNamespace.hh,
+	Symbol.cc, Symbol.hh, TODO: Trying to get NamedNamespace to work in
+	chaos.	Some debugging stuff left in.
+
+2000-08-22 06:34  amphibian
+
+	* chaos/: semantics.cc, semantics.hh: nnspace creates a
+	NamedNamespace
+
+2000-08-22 06:32  amphibian
+
+	* coldstore/: NamedNamespace.cc, NamedNamespace.hh, Symbol.cc:
+	nspace must be a Namespace*
+
+2000-08-22 05:50  amphibian
+
+	* coldstore/NamedNamespace.cc: Made Slot& constructor work
+
+2000-08-21 17:11  amphibian
+
+	* coldstore/TODO: Updated
+
+2000-08-21 17:10  amphibian
+
+	* coldstore/: Makefile, NamedNamespace.cc, NamedNamespace.hh,
+	Regexp.cc, Symbol.cc, Symbol.hh, TODO: Made Namespace know about
+	Names, not just Symbols.
+
+2000-08-18 11:54  amphibian
+
+	* coldstore/: Data.cc, Data.hh, Dict.cc, Dict.hh, Hash.cc, Hash.hh,
+	NList.cc, NList.hh, NamedNamespace.cc, Real.cc, Real.hh, String.cc,
+	String.hh, Tuple.cc, Tuple.hh: Continued const'ifying and cleaning
+	up after constifications
+
+2000-08-18 11:18  amphibian
+
+	* coldstore/: BigInt.cc, BigInt.hh, Data.cc, Data.hh, Integer.cc,
+	Integer.hh, List.cc, List.hh, NamedNamespace.hh, Real.cc, Real.hh,
+	Regexp.cc, Regexp.hh: Made some stuff const
+
+2000-08-18 10:11  amphibian
+
+	* coldstore/: Slot.cc, Slot.hh, Symbol.cc, Symbol.hh: Split
+	valueless Symbol functions out into Name.
+
+2000-08-17 09:50  amphibian
+
+	* coldstore/: Symbol.cc, Symbol.hh: Added lshift, rshift operators
+	to Namespace for getting x such that x member of Namespace names, x
+	< y, max x and its converse
+
+2000-08-17 08:52  amphibian
+
+	* coldstore/.cvsignore: Use a .cvsignore to avoid annoying messages
+	about .ii files
+
+2000-08-17 08:43  amphibian
+
+	* coldstore/: Makefile, NamedNamespace.cc, NamedNamespace.hh: Added
+	class NamedNamespace. Several remaining issues, untested, but
+	compiles.
+
+2000-08-16 21:12  amphibian
+
+	* coldstore/: Symbol.cc, Symbol.hh: Added Namespace.length(),
+	multiply/divide operators (for Rank operations)
+
+2000-08-16 20:08  coldstore
+
+	* coldstore/Tree.cc: Tree.cc defined some Vector<Slot> static
+	values, and instantiated the template, in error.  Normally these
+	duplicates are written out as `link once', by relatively modern
+	compilers, but older ones don't, and complain about duplicate
+	symbols.  The multiple definitions were spurious anyway, so I've
+	removed them.
+
+2000-08-16 19:34  amphibian
+
+	* openc++/src/Unix/.cvsignore: Ignore occ binary so nobody commits
+	it accidentally
+
+2000-08-16 09:40  coldstore
+
+	* openc++/src/Unix/Makefile: fixed make clean to remove occ and
+	opencxx.a - failure to do which lead to a bad make, which lead to
+	metaclasses not working, which lead to spurious complaints about
+	template definition for TupleBase in coldstore/
+
+2000-08-15 20:24  coldstore
+
+	* openc++/src/Unix/occ: Removed occ from the distro - we really
+	shouldn't be using cvs for executables.
+
+2000-08-09 21:29  coldstore
+
+	* coldstore/Data.hh, coldstore/Slot.cc, coldstore/Slot.hh,
+	coldstore/Symbol.cc, coldstore/TODO, qvmm/memory.cc, qvmm/qvmm.h:
+	Moved RefCount to coldstore/ from qvmm, Made up/dncount virtual, to
+	prepare for a fix to Namespace/Symbol in which Namespace gets all
+	of its Symbols' upcnts.
+
+2000-08-09 21:27  coldstore
+
+	* chaos/semantics.cc: Fixed bug in ChDict where a tmp was being
+	deleted wrongly
+
+2000-08-05 12:47  coldstore
+
+	* chaos/chaos.test, chaos/semantics.cc, qvmm/qvmm.h: Debugged
+	Csym::callit, Builtin::call and Chaos::ChNew Now we can construct
+	instances of named classes.
+
+2000-08-05 12:43  coldstore
+
+	* intern/elf.cc, coldstore/Builtin.cc, coldstore/Slot.cc: Debugged
+	Csym::callit, Builtin::call and Chaos::ChNew Now we can construct
+	instances of named classes.
+
+2000-08-05 05:10  coldstore
+
+	* coldstore/Builtin.cc, coldstore/Builtin.hh, coldstore/Object.cc,
+	coldstore/String.hh, coldstore/Tuple.cc, coldstore/Tuple.hh,
+	experimental/nvmm/Mem.hh, experimental/nvmm/README,
+	experimental/nvmm/stl_mmap.hh, intern/elf.cc, intern/elf.hh: Wrote
+	.call() for Builtin, and Csym, mods to Tuple to create a Tuple from
+	a stack representation.
+	
+	As yet untested.
+
+2000-08-05 05:04  coldstore
+
+	* chaos/: Makefile, semantics.cc, semantics.hh: Created a Regexp
+	class, using / to run pcre (perl like regexps) over a string, and
+	return the result as a list.  Added regexp command to Chaos.
+
+2000-08-05 05:01  coldstore
+
+	* coldstore/: Makefile, Regexp.cc, Regexp.hh: Created a Regexp
+	class, using / to run pcre (perl like regexps) over a string, and
+	return the result as a list.
+
+2000-08-04 14:32  coldstore
+
+	* coldstore/: Builtin.cc, Builtin.hh, Data.cc, Data.hh, Makefile,
+	Object.cc, Object.hh, Slot.hh, Tree.cc, Tree.hh: Created a SlotMeta
+	metaclass for Slot, which translates slot->call(...) to
+	slot->call(int nargs, ...) (and, thence to Data::call) This allows
+	us to know the number of args passed to Data::call() Changed the
+	Data protocol to match.  Commented out some non-conformant
+	implementations, for the moment.
+
+2000-08-04 14:30  coldstore
+
+	* metaclass/: Makefile, SlotClass.h, SlotClass.mc: Created a
+	SlotMeta metaclass for Slot, which translates slot->call(...) to
+	slot->call(int nargs, ...) (and, thence to Data::call) This allows
+	us to know the number of args passed to Data::call()
+
+2000-08-04 11:02  coldstore
+
+	* coldstore/: Object.cc, Object.hh: Added Object.length() to return
+	length of parents List.  Fixed some stupid bugs I introduced into
+	Object.
+
+2000-08-04 10:46  coldstore
+
+	* coldstore/: Object.cc, Object.hh: Modified Object to simplify it:
+	(a) no distinct private namespace, (b) all numeric indices
+	redirected to apply to parent List.
+
+2000-07-31 18:41  maelstorm
+
+	* experimental/nvmm/stl_mmap.hh: Initial pass at wrapping the Mmap
+	class for use with STL collections.
+
+2000-07-29 21:47  coldstore
+
+	* experimental/nvmm/: mmap.cc, mmap.hh, new.cc, new.hh, prime.cc,
+	prospect, prospect.c, qvmm.h, store.cc, store.hh: Putting the
+	work-in-progress nvmm generic memory allocation schema up for
+	perusal It's unfinished, it won't compile, it's a sketch, YMMV,
+	etc.
+
+2000-07-29 21:44  coldstore
+
+	* experimental/nvmm/: Guard.cc, LICENSE, Latch.cc, Makefile,
+	Mem.cc, Mem.hh, QVmm.cc, QVmm.hh, README, TODO, global.cc,
+	memory.cc: Putting the work-in-progress nvmm generic memory
+	allocation schema up for perusal It's unfinished, it won't compile,
+	it's a sketch, YMMV, etc.
+
+2000-07-27 18:54  coldstore
+
+	* experimental/skiplist/: Makefile, README, SkipList.hh,
+	SkipList.th, Skip_simple.cc, Skip_test.cc: Initial release of
+	skiplist, pending integration.
+
+2000-07-18 02:49  maelstorm
+
+	* chaos/chaos.test: Added factorial to the math tests in the chaos
+	test file.
+	
+	There seems to be a double deallocation occuring in the Dictionary
+	tests right now.
+
+2000-07-17 21:36  coldstore
+
+	* chaos/chaos.test: Added Tree tests
+
+2000-07-17 21:34  coldstore
+
+	* chaos/chaos.l: Fixed bug which treated negative numbers as
+	strings.
+
+2000-07-17 21:33  coldstore
+
+	* chaos/semantics.cc: Added tests for Tree, and a new tree command.
+
+2000-07-17 21:30  coldstore
+
+	* coldstore/: List.cc, Tree.cc, Tree.hh: Changed Tree
+	implementation from Tuple-like to List-like.  Trees are now just
+	Lists with a prefix, all operations are offset by the value of the
+	prefix.  Negative indices get the colour Slots.
+
+2000-07-17 14:27  maelstorm
+
+	* tools/CppUnit/: README.html, test/framework/Guards.h,
+	test/framework/Test.h, test/framework/TestFailure.cpp,
+	test/framework/TestSuite.cpp, test/framework/estring.h,
+	ms/TestRunner/ActiveTest.cpp, ms/TestRunner/ProgressBar.cpp,
+	ms/TestRunner/ProgressBar.h, ms/TestRunner/Resource.h,
+	ms/TestRunner/StdAfx.cpp, ms/TestRunner/StdAfx.h,
+	ms/TestRunner/TestRunner.cpp, ms/TestRunner/TestRunner.h,
+	samples/ExampleTestCase.cpp, samples/ExampleTestCase.h,
+	samples/TestTest.h, samples/Multicaster/Multicaster.cpp,
+	samples/Multicaster/Multicaster.h,
+	samples/Multicaster/MulticasterTest.cpp,
+	samples/Multicaster/MulticasterTest.h,
+	test/framework/CppUnitException.h, test/framework/TestCaller.h,
+	test/framework/TestCase.cpp, test/framework/TestCase.h,
+	test/framework/TestFailure.h, test/framework/TestResult.cpp,
+	test/framework/TestResult.h, test/framework/TestSuite.h,
+	test/framework/extensions/Orthodox.h,
+	test/framework/extensions/RepeatedTest.h,
+	test/framework/extensions/TestDecorator.h,
+	test/framework/extensions/TestSetup.h, test/textui/TestRunner.cpp,
+	test/textui/TextTestResult.cpp, test/textui/TextTestResult.h,
+	ms/HostApp/HostApp.cpp, ms/HostApp/HostApp.dsp,
+	ms/HostApp/HostApp.dsw, ms/HostApp/HostApp.h,
+	ms/HostApp/HostApp.ico, ms/HostApp/HostApp.rc,
+	ms/HostApp/HostApp.rc2, ms/HostApp/HostAppDoc.cpp,
+	ms/HostApp/HostAppDoc.h, ms/HostApp/HostAppDoc.ico,
+	ms/HostApp/HostAppView.cpp, ms/HostApp/HostAppView.h,
+	ms/HostApp/MainFrm.cpp, ms/HostApp/MainFrm.h,
+	ms/HostApp/Resource.h, ms/HostApp/StdAfx.cpp, ms/HostApp/StdAfx.h,
+	ms/HostApp/res/HostApp.ico, ms/HostApp/res/HostApp.rc2,
+	ms/HostApp/res/HostAppDoc.ico, ms/HostApp/res/Toolbar.bmp,
+	ms/TestRunner/ActiveTest.h, ms/TestRunner/GUITestResult.cpp,
+	ms/TestRunner/GUITestResult.h,
+	ms/TestRunner/SynchronizedTestResult.h,
+	ms/TestRunner/TestResultDecorator.h, ms/TestRunner/TestRunner.def,
+	ms/TestRunner/TestRunner.dsp, ms/TestRunner/TestRunner.dsw,
+	ms/TestRunner/TestRunner.rc, ms/TestRunner/TestRunnerDlg.cpp,
+	ms/TestRunner/TestRunnerDlg.h, ms/TestRunner/res/TestRunner.rc2,
+	ms/culib/culib.dsp, ms/culib/culib.dsw, doc/cookbook.htm,
+	doc/license.htm, doc/test.gif, linux/Makefile: Initial revision
+
+2000-07-17 14:27  maelstorm
+
+	* tools/CppUnit/: README.html, test/framework/Guards.h,
+	test/framework/Test.h, test/framework/TestFailure.cpp,
+	test/framework/TestSuite.cpp, test/framework/estring.h,
+	ms/TestRunner/ActiveTest.cpp, ms/TestRunner/ProgressBar.cpp,
+	ms/TestRunner/ProgressBar.h, ms/TestRunner/Resource.h,
+	ms/TestRunner/StdAfx.cpp, ms/TestRunner/StdAfx.h,
+	ms/TestRunner/TestRunner.cpp, ms/TestRunner/TestRunner.h,
+	samples/ExampleTestCase.cpp, samples/ExampleTestCase.h,
+	samples/TestTest.h, samples/Multicaster/Multicaster.cpp,
+	samples/Multicaster/Multicaster.h,
+	samples/Multicaster/MulticasterTest.cpp,
+	samples/Multicaster/MulticasterTest.h,
+	test/framework/CppUnitException.h, test/framework/TestCaller.h,
+	test/framework/TestCase.cpp, test/framework/TestCase.h,
+	test/framework/TestFailure.h, test/framework/TestResult.cpp,
+	test/framework/TestResult.h, test/framework/TestSuite.h,
+	test/framework/extensions/Orthodox.h,
+	test/framework/extensions/RepeatedTest.h,
+	test/framework/extensions/TestDecorator.h,
+	test/framework/extensions/TestSetup.h, test/textui/TestRunner.cpp,
+	test/textui/TextTestResult.cpp, test/textui/TextTestResult.h,
+	ms/HostApp/HostApp.cpp, ms/HostApp/HostApp.dsp,
+	ms/HostApp/HostApp.dsw, ms/HostApp/HostApp.h,
+	ms/HostApp/HostApp.ico, ms/HostApp/HostApp.rc,
+	ms/HostApp/HostApp.rc2, ms/HostApp/HostAppDoc.cpp,
+	ms/HostApp/HostAppDoc.h, ms/HostApp/HostAppDoc.ico,
+	ms/HostApp/HostAppView.cpp, ms/HostApp/HostAppView.h,
+	ms/HostApp/MainFrm.cpp, ms/HostApp/MainFrm.h,
+	ms/HostApp/Resource.h, ms/HostApp/StdAfx.cpp, ms/HostApp/StdAfx.h,
+	ms/HostApp/res/HostApp.ico, ms/HostApp/res/HostApp.rc2,
+	ms/HostApp/res/HostAppDoc.ico, ms/HostApp/res/Toolbar.bmp,
+	ms/TestRunner/ActiveTest.h, ms/TestRunner/GUITestResult.cpp,
+	ms/TestRunner/GUITestResult.h,
+	ms/TestRunner/SynchronizedTestResult.h,
+	ms/TestRunner/TestResultDecorator.h, ms/TestRunner/TestRunner.def,
+	ms/TestRunner/TestRunner.dsp, ms/TestRunner/TestRunner.dsw,
+	ms/TestRunner/TestRunner.rc, ms/TestRunner/TestRunnerDlg.cpp,
+	ms/TestRunner/TestRunnerDlg.h, ms/TestRunner/res/TestRunner.rc2,
+	ms/culib/culib.dsp, ms/culib/culib.dsw, doc/cookbook.htm,
+	doc/license.htm, doc/test.gif, linux/Makefile: initial import of
+	the CppUnit unit test harness (version 1.5)
+
+2000-07-17 13:57  opiate
+
+	* include/Makefile.inc: Modified link rule to compile freon in same
+	fashion as chaos.
+
+2000-07-17 13:30  maelstorm
+
+	* chaos/chaos.test: Flipped around the test case for Dictionaries
+	-- seeing as they're now fixed.
+
+2000-07-17 09:25  coldstore
+
+	* chaos/: semantics.cc, semantics.hh: Added coloured Tree
+	implementation.  Permits the creation of ako List with associated
+	`colours', which can be accessed by negative ordinal indices.
+
+2000-07-16 23:27  coldstore
+
+	* coldstore/: Makefile, Tree.cc, Tree.hh: Added coloured Tree
+	implementation.  Permits the creation of ako List with associated
+	`colours', which can be accessed by negative ordinal indices.
+
+2000-07-16 22:42  maelstorm
+
+	* metaclass/coldtest.cc: Switched some of the code around to make
+	it look like the new openC++ samples: basicly, only loaded the
+	MetaClass for ColdClass, without explicitly naming a specific class
+	(so the cold keyword works).
+
+2000-07-14 11:07  maelstorm
+
+	* openc++/src/gc/cord/: README, SCOPTIONS.amiga, SMakefile.amiga,
+	cord.h, cordbscs.c, cordprnt.c, cordtest.c, cordxtra.c, de.c,
+	de_cmds.h, de_win.RC, de_win.c, de_win.h, ec.h, gc.h,
+	private/cord_pos.h: Trying to make sure we have all the stuff in
+	here necessary to build openC++
+
+2000-07-14 10:05  maelstorm
+
+	* openc++/src/gc/include/private/: cord_pos.h, gc_hdrs.h,
+	gc_priv.h, gcconfig.h: Headers required for occ to compile
+	properly.
+
+2000-07-13 16:04  maelstorm
+
+	* openc++/: Readme, sample/Makefile, src/buffer.cc, src/buffer.h,
+	src/cbodywalk.cc, src/cbodywalk.h, src/classwalk.cc,
+	src/classwalk.h, src/driver.cc, src/driver2.cc, src/driver2.cpp,
+	src/encoding.cc, src/encoding.h, src/env.cc, src/env.h,
+	src/hash.cc, src/hash.h, src/main-con.cc, src/member.cc,
+	src/member.h, src/metaclass.cc, src/metaclass.h, src/mop.cc,
+	src/mop.h, src/parse.cc, src/parse.h, src/pattern.cc,
+	src/ptree-core.cc, src/ptree-core.h, src/ptree.cc, src/ptree.h,
+	src/quote-class.cc, src/quote-class.h, src/token.cc, src/token.h,
+	src/typeinfo.cc, src/typeinfo.h, src/types.h, src/walker.cc,
+	src/walker.h, src/Unix/Makefile.FreeBSD, src/Unix/Makefile.IrixCC,
+	src/Unix/Makefile.Linux, src/Unix/Makefile.Solaris,
+	src/Unix/Makefile.SunOSandBSD, src/Unix/occ, src/Win32/Makefile.gc,
+	src/Win32/Makefile.occ, src/gc/Makefile, src/gc/alpha_mach_dep.s,
+	src/gc/solaris_pthreads.c: Updating the Openc++ source code to the
+	new, bugfixed version of the code base.
+
+2000-07-11 20:00  coldstore
+
+	* chaos/chaos.cc, coldstore/Hash.hh, qvmm/mmap.cc: Fixed bug
+	https://sourceforge.net/bugs/?func=detailbug&group_id=3472&bug_id=1
+	04142  [ Bug #104142 ] chaos segfaults on exit.
+	
+	Problem was/is that _fini was deallocating something allocated in
+	the store, after Mmap::close() was called (ie: after the store was
+	unmapped), leaving it trying to deallocate unmapped storage.
+	
+	I took the unmap out of Mmap::close() in qvmm, reasoning that the
+	system will unmap it for us anyway, and do it at the right time.
+	
+	There's still an open question: what if glibc stuff malloc()s, but
+	doesn't free - we get a leak.  I know it's a general potential
+	problem, but it'll be more of a problem for us, because our mmap
+	persists, whereas most exit()s clean up the mess after glibc.
+
+2000-07-07 02:58  coldstore
+
+	* chaos/Makefile, chaos/chaos.cc, chaos/chaos.test,
+	chaos/semantics.cc, coldstore/Data.cc, coldstore/Data.hh,
+	coldstore/Dict.cc, coldstore/Hash.cc, coldstore/Hash.hh,
+	coldstore/Integer.cc, coldstore/List.cc, coldstore/Pool.hh,
+	coldstore/Slot.cc, coldstore/String.cc, coldstore/Vector.hh,
+	qvmm/memory.cc: Fixed some quite serious bugs in Hash.	Changed
+	List::insert semantics to make them more sane (now, insert just
+	inserts, replace(point, 0, sequence) will splice sequence into list
+	at point.  This involved a fair bit of tinkering, a few false
+	starts, which is why I've touched so many files.  Fixed a bug in
+	Chaos, regarding argument ordering in insert.  Hash seems now to
+	pass the tests.
+
+2000-07-06 22:38  coldstore
+
+	* chaos/Makefile, chaos/semantics.cc, chaos/semantics.hh,
+	coldstore/Builtin.cc, coldstore/Builtin.hh, coldstore/Data.cc,
+	coldstore/Data.hh, coldstore/Dict.cc, coldstore/Dict.hh,
+	coldstore/Hash.cc, coldstore/Hash.hh, coldstore/List.cc,
+	coldstore/List.hh, coldstore/Makefile, coldstore/NList.cc,
+	coldstore/NList.hh, coldstore/Object.cc, coldstore/Object.hh,
+	coldstore/String.cc, coldstore/String.hh, coldstore/Tuple.cc,
+	coldstore/Tuple.hh: Changed triadic slice() to accept non-const
+	second argument, to permit Object to return modified context.  Made
+	toSequence() return List* (I mean, who're we kidding making it
+	Data*?) Wrote some Hash methods to complete its transition to ako
+	Data.  Added (but haven't tested) Hash construction in chaos.
+
+2000-07-06 21:05  coldstore
+
+	* coldstore/Object.cc: Added replace() operators.
+
+2000-07-06 21:05  coldstore
+
+	* coldstore/Object.hh: Added replace() operators
+
+2000-07-06 16:16  maelstorm
+
+	* coldstore/: Hash.cc, Hash.hh, Makefile, Object.cc, Object.hh:
+	Fixed up Hash so order actually has the same signature as Data's
+	Fixed up Object so it should maybe work...  Fates willing.
+
+2000-07-06 11:48  coldstore
+
+	* coldstore/: Object.cc, Object.hh: Made the default values of the
+	various parents NULL, just for efficiency's sake, and to bring out
+	the question of how we add elements, and how we add them
+	differentially to pub/private.
+
+2000-07-06 11:35  coldstore
+
+	* coldstore/: Object.cc, Object.hh: Cleanup of Object, to remove
+	some casts and take advantage of coldstore hacks.
+
+2000-07-05 18:13  maelstorm
+
+	* coldstore/: Makefile, Object.cc, Object.hh: Broken version of
+	Object.
+
+2000-06-30 15:06  maelstorm
+
+	* chaos/chaos.test, chaos/runtest, coldstore/Notes.html,
+	coldstore/Object.hh: Commiting broken code for review.
+
+2000-06-23 12:23  coldstore
+
+	* coldstore/: Hash.cc, Hash.hh, Makefile, Store.cc: Added Hash,
+	verbatim from Greg's in coldmud.  Note, hash function is an
+	identity on address of key - not safe for users.  Untested as yet.
+
+2000-05-05 20:43  coldstore
+
+	* openc++/src/: token.cc, token.h: Fixed openc++ breakage on asm()
+	stemming from its assumption that asm() are normal C++ expr forms. 
+	Now we just skip asm() altogether.
+
+2000-05-02 01:06  crag
+
+	* chaos/chaos.l: Preperation for ChCompile: Remove parsing of
+	individual primitives.
+
+2000-05-02 01:05  crag
+
+	* chaos/semantics.cc: Yet another ChProc fix.
+
+2000-05-01 22:28  crag
+
+	* chaos/chaos.test: minor proc test update
+
+2000-05-01 22:21  crag
+
+	* chaos/chaosmanual.wml: Documented proc, cond
+
+2000-04-28 15:45  maelstorm
+
+	* chaos/runtest: Fixed up the runtest script so it uses runchaos,
+	rather then chaos directly
+
+2000-04-24 19:06  skeptopotamus
+
+	* Makefile: removed useless OSNAME test (moved to gcc.defs.mk)
+
+2000-04-24 19:03  skeptopotamus
+
+	* mk/gcc.defs.mk: added OSNAME test so makes from submodules work
+	properly
+
+2000-04-23 17:49  crag
+
+	* chaos/: chaos.test, semantics.cc, semantics.hh: Implemented and
+	added a test for 'cond' primitive.
+
+2000-04-23 16:25  crag
+
+	* chaos/semantics.cc: Fixed arg order on some more primitives.
+
+2000-04-23 14:38  skeptopotamus
+
+	* chaos/runchaos: wrapper for chaos
+
+2000-04-23 13:30  crag
+
+	* chaos/semantics.cc: Improved ChProc (probably fixed a bug or
+	two).
+
+2000-04-22 14:43  skeptopotamus
+
+	* chaos/chaos.test: added stack cleanup at end
+
+2000-04-22 12:44  skeptopotamus
+
+	* qvmm/mmap.cc: Added asserts to Mmap::open to ensure store doesnt
+	overlap initial data or stack
+
+2000-04-21 21:12  skeptopotamus
+
+	* intern/elf.cc: normalized indent
+
+2000-04-21 21:01  skeptopotamus
+
+	* intern/: elf.cc, elf.hh, elf_c.c, elfdump.hh, elfexe.cc,
+	elfexe.hh: normalized indent
+
+2000-04-20 21:14  skeptopotamus
+
+	* qvmm/: memory.cc, mmap.cc, prime.cc, qvmm.h, store.cc: normalized
+	indentation
+
+2000-04-20 20:52  skeptopotamus
+
+	* qvmm/: prospect, prospect.c: [no log message]
+
+2000-04-17 16:44  crag
+
+	* chaos/: chaos.test, test.results.base: Updates for fixed modulo
+	bug, fixed proc bug, etc.
+
+2000-04-17 16:37  crag
+
+	* chaos/semantics.cc: Fixed ChProc (had boundry condition
+	problems).
+
+2000-04-17 16:33  crag
+
+	* coldstore/Integer.cc: & -> % in Integer::modulo
+
+2000-04-17 12:21  crag
+
+	* chaos/: chaos.l, chaos.test, chaosmanual.wml, semantics.cc,
+	semantics.hh: Added fn primitive. Invokes the primitive or function
+	named by TOP.
+
+2000-04-15 13:54  skeptopotamus
+
+	* chaos/Makefile: removed chaosmanual.html from all: target for
+	those of us without wml
+
+2000-04-15 01:59  crag
+
+	* chaos/: Makefile, chaos.html, chaosmanual.wml: Changed
+	documentation to be in chaosmanual.html which is to be generated
+	from chaosmanual.wml.
+
+2000-04-14 01:21  crag
+
+	* chaos/chaos.l: 'foo == "foo" == {foo}
+
+2000-04-14 01:05  crag
+
+	* chaos/runtest: Script to automatically test chaos (and hence
+	coldstore)
+
+2000-04-14 01:03  crag
+
+	* chaos/chaos.l: Reformat primitive list: one per line. (token {
+	code })
+
+2000-04-14 01:02  crag
+
+	* chaos/chaos.test: Clean up: spurious @ signs came from somewhere.
+
+2000-04-14 00:46  crag
+
+	* chaos/chaos.l: Added alias ! for set, added @ and get as RPN
+	version of $.
+
+2000-04-14 00:39  crag
+
+	* chaos/: ChaosParser.g, grammar.g: .g files not used.
+
+2000-04-13 22:16  skeptopotamus
+
+	* chaos/Makefile, openc++/src/gc/base_lib, openc++/src/gc/c++:
+	removed unneeded libcold.so from dependency line
+
+2000-04-13 21:40  skeptopotamus
+
+	* mk/occ.rules.mk: Added LDLIBS macro to end of ld targets
+
+2000-04-13 21:39  skeptopotamus
+
+	* mk/gcc.rules.mk: re-added LDLIBS macro, used at the end of a rule
+	that calls the linker
+
+2000-04-13 16:35  skeptopotamus
+
+	* mk/gcc.defs.mk: changed -g to -g3, seems to be only -ggdb3 that
+	breaks.  odd, eh?
+
+2000-04-13 16:22  skeptopotamus
+
+	* mk/gcc.defs.mk: replaced -ggdb3 with -g, the former was
+	generating incorrect info
+
+2000-04-13 16:21  skeptopotamus
+
+	* chaos/chaos.test: converted to new ! and @ operators
+
+2000-04-13 16:18  skeptopotamus
+
+	* chaos/: semantics.cc, semantics.hh: Removed $foo operation for
+	getting variables, replaced with @
+
+2000-04-13 16:17  skeptopotamus
+
+	* chaos/chaos.cc: added assert to ensure program space doesnt
+	overlay the store
+
+2000-04-13 02:50  crag
+
+	* chaos/chaos.test: Renamed over to rot, added a real over.
+
+2000-04-13 02:17  skeptopotamus
+
+	* chaos/README: [no log message]
+
+2000-04-13 02:01  skeptopotamus
+
+	* chaos/README: Initial checkin
+
+2000-04-12 15:24  skeptopotamus
+
+	* qvmm/: memory.cc, mmap.cc, qvmm.h: added qvmm_throw
+
+2000-04-12 14:34  skeptopotamus
+
+	* intern/elf.cc: merged colin's changes to elf symbol loading
+
+2000-04-11 23:58  skeptopotamus
+
+	* coldstore/: List.cc, Tuple.cc: restored typedefs to work around
+	bugs in gcc 2.96 parser
+
+2000-04-11 23:53  skeptopotamus
+
+	* coldstore/BTree.th: fixed include path problem
+
+2000-04-11 23:43  skeptopotamus
+
+	* coldstore/String.cc: re-added memmem definition from regressed
+	version
+
+2000-04-11 23:37  skeptopotamus
+
+	* coldstore/Makefile: backed out regression of Makefile
+
+2000-04-11 23:32  skeptopotamus
+
+	* coldstore/: BTree.th, Hash.hh, Object.hh: initial appearance
+
+2000-04-11 23:29  skeptopotamus
+
+	* coldstore/: BTree.hh, BigInt.cc, BigInt.hh, Builtin.cc, Data.cc,
+	Dict.cc, Error.cc, Integer.cc, Integer.hh, List.cc, List.hh,
+	Makefile, NList.cc, Real.cc, Real.hh, Segment.hh, Slot.cc, Slot.hh,
+	Store.cc, Store.hh, String.cc, String.hh, Symbol.cc, Symbol.hh,
+	Task.cc, Task.hh, Tuple.cc, TupleBase.hh, Vector.hh: Committed
+	Colin's monstro-diff from the retro version.  Hopefully nothing
+	regressed.
+
+2000-04-11 23:19  skeptopotamus
+
+	* coldstore/Capability.hh: initial appearance
+
+2000-04-11 01:36  crag
+
+	* chaos/chaos.l: Fix new function syntax (was eating first
+	charachter)
+
+2000-04-11 01:35  crag
+
+	* chaos/chaos.test: Changed syntax:   foo    - invoke "foo" builtin
+	or function   "foo"  - raw string foo (as before)
+
+2000-04-10 23:27  skeptopotamus
+
+	* chaos/Makefile: added linux-specific -ldl addition to LDFLAGS
+
+2000-04-10 23:25  skeptopotamus
+
+	* Makefile, chaos/chaos.l, coldstore/List.cc, mk/gcc.defs.mk,
+	prospect/Makefile, prospect/prospect.c: [no log message]
+
+2000-04-10 22:34  coldstore
+
+	* chaos/Makefile, include/options.h, intern/elf.cc,
+	intern/elfexe.cc, metaclass/Makefile, mk/gcc.defs.mk,
+	mk/occ.defs.mk, openc++/src/Unix/Makefile.Linux, qvmm/qvmm.h:
+	Changes to reorganised build structure to permit Linux build
+
+2000-04-10 21:41  skeptopotamus
+
+	* mk/gcc.defs.mk: nuked -fno-implicit-templates, since STL usually
+	requires it
+
+2000-04-10 12:20  skeptopotamus
+
+	* openc++/src/Unix/Makefile.unspecified: removed
+	Makefile.unspecified, is now the permanent Makefile
+
+2000-04-10 12:19  skeptopotamus
+
+	* openc++/src/: Unix/Makefile, gc/Makefile: added a distclean
+	target
+
+2000-04-10 00:26  skeptopotamus
+
+	* Makefile, coldstore/Integer.s, coldstore/String.s: Made USE_EGCC
+	actually work from the top level.  removed stray .s files
+
+2000-04-09 23:52  skeptopotamus
+
+	* openc++/src/Unix/: Makefile, Makefile.FreeBSD: Even more generic
+	top-level makefile, no need to replace it now
+
+2000-04-09 23:33  skeptopotamus
+
+	* openc++/src/Unix/Makefile.unspecified: Changed Makefile to a
+	symlink to Makefile.unspecified so it can be reset
+
+2000-04-09 23:31  skeptopotamus
+
+	* openc++/src/Unix/Makefile: Made unaltered Makefile more generic
+
+2000-04-09 23:12  skeptopotamus
+
+	* Makefile, chaos/semantics.cc: [no log message]
+
+2000-04-09 23:07  skeptopotamus
+
+	* mk/gcc.defs.mk: added switch for me to use gmake USE_EGCC=yes,
+	everyone else can just make
+
+2000-04-09 22:09  skeptopotamus
+
+	* coldstore/List.cc: Fixed List::reverse to actually work
+
+2000-04-09 21:06  skeptopotamus
+
+	* chaos/: chaos.l, chaos.test, grammar.g: changed primitives from
+	'foo syntax to .foo
+
+2000-04-09 20:38  skeptopotamus
+
+	* qvmm/mmap.cc: added MAP_NOSYNC flag to mmap() call in Mmap:open
+
+2000-04-09 20:19  skeptopotamus
+
+	* coldstore/String.cc, include/options.h: [no log message]
+
+2000-04-09 20:18  skeptopotamus
+
+	* chaos/semantics.cc: reversed arg order for 'search function
+	(still returns NULL on fail tho)
+
+2000-04-09 16:57  skeptopotamus
+
+	* chaos/Makefile, mk/occ.rules.mk: restored $(DEFINES) in occ make
+	rules
+
+2000-04-09 16:11  skeptopotamus
+
+	* chaos/global-freebsd.c, intern/elf.hh, mk/gcc.defs.mk,
+	qvmm/Makefile, qvmm/mmap.cc: changed magic constants and library
+	names, all need to be hoisted out
+
+2000-04-09 15:06  skeptopotamus
+
+	* include/options.h, qvmm/memory.cc, qvmm/qvmm.h: Broke start and
+	size parameters of qvmm out into new options.h file
+
+2000-04-09 14:51  skeptopotamus
+
+	* chaos/: global-bsd.cc, global-freebsd.c, global-linux.c,
+	global.c: Made global.c platform indepent with #ifdefs
+
+2000-04-09 14:14  skeptopotamus
+
+	* Makefile, coldstore/List.cc, coldstore/Tuple.cc, include/new,
+	metaclass/ColdClass.mc, metaclass/ColdTemplate.mc,
+	openc++/src/Unix/Makefile: Compliance with g++ 2.96, including some
+	workarounds for parser bugs
+
+2000-04-09 13:30  skeptopotamus
+
+	* Makefile, mk/gcc.rules.mk: added #include <new> (libstdc++ 3.x
+	requirement) to memory.cc
+
+2000-04-09 12:46  crag
+
+	* chaos/chaos.test: Added/corrected tests for 'proc and 'splice
+
+2000-04-09 00:58  skeptopotamus
+
+	* README, openc++/src/Unix/Makefile, prospect/README: added
+	prospect/README, added requirements to top-level README
+
+2000-04-08 23:39  skeptopotamus
+
+	* Makefile, README, chaos/Makefile, coldstore/Makefile,
+	include/Makefile, intern/Makefile, libs/Makefile,
+	metaclass/Makefile, mk/occ.defs.mk, openc++/src/Unix/Makefile,
+	openc++/src/Unix/Makefile.Linux, openc++/src/gc/alpha_mach_dep.s,
+	openc++/src/gc/solaris_pthreads.c, qvmm/Makefile: committed new
+	openc++ from dev tree
+
+2000-04-08 23:04  skeptopotamus
+
+	* languages/guile/Makefile: added freon AGAIN AND AGAIN AND AGAIN
+	UNTIL CVS STOPS SUCKING
+
+2000-04-08 22:44  skeptopotamus
+
+	* libelf/: lib/32.fsize.c, lib/32.getehdr.c, lib/32.getphdr.c,
+	lib/32.getshdr.c, lib/32.newehdr.c, lib/32.newphdr.c,
+	lib/32.xlatetof.c, lib/64.xlatetof.c, lib/Makefile,
+	lib/Makefile.in, lib/begin.c, lib/byteswap.h, lib/cntl.c,
+	lib/cook.c, lib/data.c, lib/elf_repl.h, lib/end.c, lib/errmsg.c,
+	lib/errno.c, lib/errors.h, lib/ext_types.h, lib/fill.c, lib/flag.c,
+	lib/getarhdr.c, lib/getarsym.c, lib/getbase.c, lib/getdata.c,
+	lib/getident.c, lib/getscn.c, lib/hash.c, lib/input.c, lib/kind.c,
+	lib/libelf.h, lib/memset.c, lib/ndxscn.c, lib/newdata.c,
+	lib/newscn.c, lib/next.c, lib/nextscn.c, lib/nlist.c, lib/nlist.h,
+	lib/opt.delscn.c, lib/private.h, lib/rand.c, lib/rawdata.c,
+	lib/rawfile.c, lib/stamp-h, lib/strptr.c, lib/sys_elf.h,
+	lib/sys_elf.h.in, lib/update.c, lib/version.c, po/Makefile,
+	po/Makefile.in, po/gmo2msg.c, po/libelf.pot, po/stamp-po: added
+	libelf/*/*
+
+2000-04-08 22:41  skeptopotamus
+
+	* libelf/: COPYING.LIB, ChangeLog, INSTALL, Makefile.in, README,
+	VERSION, acconfig.h, aclocal.m4, config.guess, config.h,
+	config.h.in, config.sub, configure, configure.in, install-sh,
+	mkinstalldirs, stamp-h, stamp-h.in: added libelf to tree
+
+2000-04-08 21:48  skeptopotamus
+
+	* openc++/src/Unix/Makefile, prospect/Makefile,
+	prospect/prospect.c: initial commit of prospect/ ; flattened
+	directory structure
+
+2000-04-08 02:50  skeptopotamus
+
+	* mk/: Makefile, README, gcc.defs.mk, gcc.rules.mk, occ.defs.mk,
+	occ.rules.mk: For use in new makefile structure
+
+2000-04-08 02:23  skeptopotamus
+
+	* coldstore/String.cc: Added definition of memmem for FreeBSD port.
+	 This is a temporary fix til platform includes are worked in
+
+2000-04-08 02:09  skeptopotamus
+
+	* intern/elf.cc: Applied Colin's patch to discard symbols relative
+	to UNDEFINED section
+
+2000-04-07 17:57  crag
+
+	* chaos/chaos.l: Added alias 'len to 'length.
+
+2000-04-04 19:22  crag
+
+	* chaos/: chaos.l, chaos.test, semantics.cc, semantics.hh,
+	test.results.base: Fixed 'proc, 'scope, and 'splice, fixed
+	milti-line string echo, fixed typo in chaos.l (positivie ->
+	positive), added to chaos.test, updated test results base.
+
+2000-04-01 21:03  crag
+
+	* chaos/chaos.test: Removed duplicate tests Added test for bug
+	#103780
+
+2000-03-31 19:21  opiate
+
+	* openc++/: Readme, open++.tut.pdf, reference.pdf, html/base.html,
+	html/class.html, html/env.html, html/green-pin.gif, html/green.gif,
+	html/index.html, html/instance-of.gif, html/logo.gif,
+	html/man.html, html/member.html, html/mop.html, html/occ.gif,
+	html/overview.html, html/ptree.html, html/red-pin.gif,
+	html/red.gif, html/typeinfo.html, html/yellow-pin.gif,
+	html/yellow.gif, sample/BeforeClass.mc, sample/GraphClass.h,
+	sample/GraphClass.mc, sample/Makefile, sample/Makefile.IrixCC,
+	sample/Makefile.Win, sample/Makefile.static, sample/MatrixClass.mc,
+	sample/Readme, sample/RtmopClass.h, sample/RtmopClass.mc,
+	sample/SyncClass.mc, sample/VerboseClass.mc,
+	sample/VerboseClass2.mc, sample/WrapperClass.h,
+	sample/WrapperClass.mc, sample/baseScript, sample/before-test.cc,
+	sample/gclass-test.cc, sample/matrix-test.cc, sample/matrix.cc,
+	sample/matrix.h, sample/metaobj-test.cc, sample/metaobj.cc,
+	sample/metaobj.h, sample/person.cc, sample/person2.cc,
+	sample/sync-test.cc, src/buffer.cc, src/buffer.h, src/cbodywalk.cc,
+	src/cbodywalk.h, src/classwalk.cc, src/classwalk.h, src/driver.cc,
+	src/driver2.cc, src/driver2.cpp, src/encoding.cc, src/encoding.h,
+	src/env.cc, src/env.h, src/hash.cc, src/hash.h, src/main-con.cc,
+	src/member.cc, src/member.h, src/metaclass.cc, src/metaclass.h,
+	src/mop.cc, src/mop.h, src/parse.cc, src/parse.h, src/pattern.cc,
+	src/ptree-core.cc, src/ptree-core.h, src/ptree.cc, src/ptree.h,
+	src/quote-class.cc, src/quote-class.h, src/token.cc, src/token.h,
+	src/typeinfo.cc, src/typeinfo.h, src/types.h, src/walker.cc,
+	src/walker.h, src/Unix/Makefile, src/Unix/Makefile.FreeBSD,
+	src/Unix/Makefile.IrixCC, src/Unix/Makefile.Linux,
+	src/Unix/Makefile.Solaris, src/Unix/Makefile.SunOSandBSD,
+	src/Win32/Makefile.gc, src/Win32/Makefile.occ, src/gc/BCC_MAKEFILE,
+	src/gc/EMX_MAKEFILE, src/gc/MacOS.c, src/gc/MacProjects.sit.hqx,
+	src/gc/Makefile, src/gc/Makefile.DLLs, src/gc/Makefile.dj,
+	src/gc/NT_MAKEFILE, src/gc/NT_THREADS_MAKEFILE,
+	src/gc/OS2_MAKEFILE, src/gc/PCR-Makefile, src/gc/README,
+	src/gc/README.Mac, src/gc/README.OS2, src/gc/README.QUICK,
+	src/gc/README.alpha, src/gc/README.amiga, src/gc/README.debugging,
+	src/gc/README.dj, src/gc/README.hp, src/gc/README.linux,
+	src/gc/README.rs6000, src/gc/README.sgi, src/gc/README.solaris2,
+	src/gc/README.uts, src/gc/README.win32, src/gc/SCoptions.amiga,
+	src/gc/SMakefile.amiga, src/gc/WCC_MAKEFILE,
+	src/gc/add_gc_prefix.c, src/gc/allchblk.c, src/gc/alloc.c,
+	src/gc/alpha_mach_dep.s, src/gc/barrett_diagram, src/gc/base_lib,
+	src/gc/blacklst.c, src/gc/c++, src/gc/callprocs,
+	src/gc/checksums.c, src/gc/dbg_mlc.c, src/gc/dyn_load.c,
+	src/gc/finalize.c, src/gc/gc.h, src/gc/gc.mak, src/gc/gc.man,
+	src/gc/gc_alloc.h, src/gc/gc_cpp.cc, src/gc/gc_cpp.h,
+	src/gc/gc_hdrs.h, src/gc/gc_mark.h, src/gc/gc_priv.h,
+	src/gc/gc_private.h, src/gc/gc_typed.h, src/gc/gcc_support.c,
+	src/gc/gcconfig.h, src/gc/headers.c, src/gc/if_mach.c,
+	src/gc/if_not_there.c, src/gc/irix_threads.c,
+	src/gc/linux_threads.c, src/gc/mach_dep.c, src/gc/makefile.depend,
+	src/gc/malloc.c, src/gc/mallocx.c, src/gc/mark.c,
+	src/gc/mark_rts.c, src/gc/mips_sgi_mach_dep.s,
+	src/gc/mips_ultrix_mach_dep.s, src/gc/misc.c, src/gc/new_hblk.c,
+	src/gc/obj_map.c, src/gc/os_dep.c, src/gc/pc_excludes,
+	src/gc/pcr_interface.c, src/gc/ptr_chck.c, src/gc/real_malloc.c,
+	src/gc/reclaim.c, src/gc/rs6000_mach_dep.s, src/gc/setjmp_t.c,
+	src/gc/solaris_pthreads.c, src/gc/solaris_threads.c,
+	src/gc/solaris_threads.h, src/gc/sparc_mach_dep.s,
+	src/gc/sparc_sunos4_mach_dep.s, src/gc/stubborn.c, src/gc/test.c,
+	src/gc/test_cpp.cc, src/gc/threadlibs.c, src/gc/typd_mlc.c,
+	src/gc/version.h, src/gc/weakpointer.h, src/gc/win32_threads.c,
+	src/gc/include/cord.h, src/gc/include/ec.h, src/gc/include/gc.h,
+	src/gc/include/gc_alloc.h, src/gc/include/gc_cpp.h,
+	src/gc/include/gc_inl.h, src/gc/include/gc_inline.h,
+	src/gc/include/gc_typed.h, src/gc/include/javaxfc.h,
+	src/gc/include/new_gc_alloc.h, src/gc/include/weakpointer.h:
+	openc++ files needed to compile coldstore
+
+2000-03-31 19:00  opiate
+
+	* Makefile, README, metaclass/ColdClass.h, metaclass/ColdClass.mc,
+	metaclass/Makefile, metaclass/MetaType.h, metaclass/MetaType.mc,
+	metaclass/coldtest.cc, metaclass/coldtest1.cc,
+	metaclass/crashocc.cc, metaclass/metatype_test.cc,
+	metaclass/typeinfo, metaclass/ColdTemplate.h,
+	metaclass/ColdTemplate.mc, metaclass/coldtest,
+	metaclass/nontemptest.h, metaclass/nontemptest.mc,
+	metaclass/template.cc, metaclass/temptest.h, metaclass/temptest.mc,
+	qvmm/Makefile, qvmm/TODO, qvmm/memory.cc, qvmm/qvmm.h,
+	qvmm/store.cc, qvmm/store.hh, qvmm/LICENSE, qvmm/global.cc,
+	qvmm/mmap.cc, qvmm/prime.cc, qvmm/prospect, qvmm/prospect.c,
+	intern/Makefile, intern/elf.cc, intern/elf.hh, intern/elfdump.hh,
+	intern/index.html, intern/.gdbinit, intern/LICENSE, intern/elf_c.c,
+	intern/elfexe.cc, intern/elfexe.hh, intern/glibc-inc/elf.h,
+	coldstore/.gdbinit, intern/freebsd-inc/rtld.h,
+	intern/freebsd-inc/rtld_machdep.h, intern/glibc-inc/LICENSE,
+	intern/glibc-inc/ldsodefs.h, intern/glibc-inc/link.h,
+	coldstore/BTree.hh, coldstore/BTtest.cc, coldstore/BigInt.cc,
+	coldstore/Builtin.cc, coldstore/Builtin.hh, coldstore/Pool.hh,
+	coldstore/README, coldstore/LICENSE, coldstore/Real.cc,
+	coldstore/Data.cc, coldstore/Data.hh, coldstore/Dict.cc,
+	coldstore/Dict.hh, coldstore/String.s, coldstore/Error.cc,
+	coldstore/Error.hh, coldstore/Integer.cc, coldstore/Integer.hh,
+	coldstore/List.cc, coldstore/List.hh, coldstore/TODO,
+	coldstore/Integer.s, coldstore/Makefile, coldstore/NList.cc,
+	coldstore/NList.hh, coldstore/BigInt.hh, coldstore/Notes.html,
+	coldstore/Segment.hh, coldstore/Slot.cc, coldstore/Slot.hh,
+	coldstore/Store.cc, coldstore/Store.hh, coldstore/String.cc,
+	coldstore/String.hh, coldstore/Symbol.cc, coldstore/Symbol.hh,
+	coldstore/Task.cc, coldstore/Task.hh, coldstore/Tuple.cc,
+	coldstore/Tuple.hh, coldstore/TupleBase.hh, coldstore/Real.hh,
+	coldstore/Vector.hh, coldstore/index.html, coldstore/index.sgml,
+	languages/guile/Makefile, languages/guile/index.html,
+	include/Makefile, include/Makefile.inc, include/Q.hh, include/new,
+	chaos/.gdbinit, chaos/Makefile, chaos/chaos.l, include/Counter.hh,
+	include/Event.hh, include/FlexLexer.h, include/Gate.hh,
+	include/LICENSE, include/Link.hh, include/Race.hh,
+	include/docbook.dsl, include/instmac.m4, libs/Makefile,
+	libs/README, libs/elf.diff, chaos/LICENSE, chaos/chaos.html,
+	chaos/ChaosParser.g, chaos/chaos.cc, chaos/chaos.test,
+	chaos/global-bsd.cc, chaos/global.c, chaos/grammar.g,
+	chaos/new.diff, chaos/semantics.cc, chaos/semantics.hh: Initial
+	revision
+
+2000-03-31 19:00  opiate
+
+	* Makefile, README, metaclass/ColdClass.h, metaclass/ColdClass.mc,
+	metaclass/Makefile, metaclass/MetaType.h, metaclass/MetaType.mc,
+	metaclass/coldtest.cc, metaclass/coldtest1.cc,
+	metaclass/crashocc.cc, metaclass/metatype_test.cc,
+	metaclass/typeinfo, metaclass/ColdTemplate.h,
+	metaclass/ColdTemplate.mc, metaclass/coldtest,
+	metaclass/nontemptest.h, metaclass/nontemptest.mc,
+	metaclass/template.cc, metaclass/temptest.h, metaclass/temptest.mc,
+	qvmm/Makefile, qvmm/TODO, qvmm/memory.cc, qvmm/qvmm.h,
+	qvmm/store.cc, qvmm/store.hh, qvmm/LICENSE, qvmm/global.cc,
+	qvmm/mmap.cc, qvmm/prime.cc, qvmm/prospect, qvmm/prospect.c,
+	intern/Makefile, intern/elf.cc, intern/elf.hh, intern/elfdump.hh,
+	intern/index.html, intern/.gdbinit, intern/LICENSE, intern/elf_c.c,
+	intern/elfexe.cc, intern/elfexe.hh, intern/glibc-inc/elf.h,
+	coldstore/.gdbinit, intern/freebsd-inc/rtld.h,
+	intern/freebsd-inc/rtld_machdep.h, intern/glibc-inc/LICENSE,
+	intern/glibc-inc/ldsodefs.h, intern/glibc-inc/link.h,
+	coldstore/BTree.hh, coldstore/BTtest.cc, coldstore/BigInt.cc,
+	coldstore/Builtin.cc, coldstore/Builtin.hh, coldstore/Pool.hh,
+	coldstore/README, coldstore/LICENSE, coldstore/Real.cc,
+	coldstore/Data.cc, coldstore/Data.hh, coldstore/Dict.cc,
+	coldstore/Dict.hh, coldstore/String.s, coldstore/Error.cc,
+	coldstore/Error.hh, coldstore/Integer.cc, coldstore/Integer.hh,
+	coldstore/List.cc, coldstore/List.hh, coldstore/TODO,
+	coldstore/Integer.s, coldstore/Makefile, coldstore/NList.cc,
+	coldstore/NList.hh, coldstore/BigInt.hh, coldstore/Notes.html,
+	coldstore/Segment.hh, coldstore/Slot.cc, coldstore/Slot.hh,
+	coldstore/Store.cc, coldstore/Store.hh, coldstore/String.cc,
+	coldstore/String.hh, coldstore/Symbol.cc, coldstore/Symbol.hh,
+	coldstore/Task.cc, coldstore/Task.hh, coldstore/Tuple.cc,
+	coldstore/Tuple.hh, coldstore/TupleBase.hh, coldstore/Real.hh,
+	coldstore/Vector.hh, coldstore/index.html, coldstore/index.sgml,
+	languages/guile/Makefile, languages/guile/index.html,
+	include/Makefile, include/Makefile.inc, include/Q.hh, include/new,
+	chaos/.gdbinit, chaos/Makefile, chaos/chaos.l, include/Counter.hh,
+	include/Event.hh, include/FlexLexer.h, include/Gate.hh,
+	include/LICENSE, include/Link.hh, include/Race.hh,
+	include/docbook.dsl, include/instmac.m4, libs/Makefile,
+	libs/README, libs/elf.diff, chaos/LICENSE, chaos/chaos.html,
+	chaos/ChaosParser.g, chaos/chaos.cc, chaos/chaos.test,
+	chaos/global-bsd.cc, chaos/global.c, chaos/grammar.g,
+	chaos/new.diff, chaos/semantics.cc, chaos/semantics.hh: Initial
+	submission of cold-000331.tgz
+

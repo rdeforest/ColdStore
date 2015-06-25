@@ -1,0 +1,18 @@
+Add a publish/subscribe mechanism to the virtual protocol
+
+Why?
+
+Right now, messages are passed to objects via ->call() (or the future "closure" mechanism) -- this works for passing specific method calls to an object or method object.
+
+But IMHO for future applications (agent systems, "MUDs", etc.) we need to be able to signal large arrays of objects with notifications of occurences and allow them to interpret these events accordingly.
+
+One could argue that event receptions are just a particular subset of a method invocation (say, "receiveEvent" or something similar) and that we should leave publish/subscribe up to later implementors.  But:
+
+	* Method invocations have specific conventions related to issuing instructions to an object to perform some function.  Event receptions, however, can be seen as more freeform. 
+	* A standard protocol for broadcasting events in layer1 makes sense for making sure environments built on top of layer1 maintain consistency and interoperability.
+	* Optimization of publishing (via threads, etc.) across the whole system is made easier when the implementation happens at the virtual protocol level.
+
+	
+
+
+

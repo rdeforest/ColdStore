@@ -1,0 +1,239 @@
+// Emacs mode identifier: -*- C++ -*-
+// Pool - maintain an allocation pool of templated type
+// Copyright (C) 1998,1999 Colin McCormack,
+// see LICENSE (MD5 f5220f8f599e5e926f37cf32efe3ab68) for terms
+// 	$Id $
+
+//#define DEBUGLOG
+// DEBUGLOG turns on traces
+#ifdef DEBUGLOG
+#define DEBLOG(x) (x);
+#endif
+
+#include "Pool.hh"
+#include <Q.th>
+
+// instantiate templates
+#ifdef notdef
+template <class T>
+template class Q< Pool<T> >;
+
+template <class T>
+template class Qh< Pool<T> >;
+
+template <class T>
+template class Q< Pooled<T> >;
+
+template <class T>
+template class Qh< Pooled<T> >;
+#endif
+
+template <class T>
+Pooled<T>::Pooled()
+{}
+
+template <class T>
+Pooled<T>::Pooled(Slot& arg)
+        : T(arg)
+{}
+
+template <class T>
+Pooled<T>::~Pooled()
+{
+  DEBLOG(cerr << "deleting Pooled " << this << '\n');
+}
+
+
+template <class T>
+void *Pooled<T>::operator new(size_t size, void *location)
+{
+  memset(location, '\0', size);
+  return location;
+}
+
+template <class T>
+void Pooled<T>::operator delete(void* ptr)
+{
+  Pooled<T> *th = (Pooled<T>*)ptr;
+  Pool<T> *pool = th->pool;
+  DEBLOG(cerr << "delete Pooled T " << (void*)ptr
+         << " from pool " << pool
+         << '\n');
+  assert (pool->check());
+  //th = new (ptr) Pooled<T>;
+  pool->release(th);	// put back on the freelist
+}
+
+template <class T>
+T *Pooled<T>::unPool(void* loc)
+{
+  T* p = new (loc) T(*this); // require copy constructor
+  return p;
+}
+
+template <class T>
+T* Pooled<T>::unPool(T* p, void* loc)
+{
+  if(AKO((Data*)p, Pooled<T>))
+    return ((Pooled<T>*)p)->unPool(loc);
+  return p;
+}
+
+template <class T>
+Pool<T>::Pool(size_t size)
+    : count(size), first(size-1)
+{
+  DEBLOG(cerr << "Pool new " << this
+         << " size " << def_size
+         << '\n');
+  content[0].next = -1;
+  for (unsigned int i = 1; i < size; i++) {
+      content[i].next = i-1;
+  }
+  assert(check());
+}
+
+template <class T>
+gPool<T>::gPool()
+        : Q< gPool<T> >(all)
+{
+  DEBLOG(cerr << "gPool new " << this
+         << " size " << def_size
+         << '\n');
+}
+
+template <class T>
+Pool<T>::~Pool()
+{
+  DEBLOG(cerr << "~Pool " << this << '\n');
+  if (count) {
+      throw "Trying to delete non-empty Pool";
+  }
+}
+
+template <class T>
+gPool<T>::~gPool()
+{
+  DEBLOG(cerr << "~gPool " << this << '\n');
+}
+
+template <class T>
+T *Pool<T>::get()
+{
+  DEBLOG(cerr << "Pool " << this
+         << '(' << first << ") get ");
+  if (first >= 0) {
+    // we have a free item
+    assert(check());
+
+    Pooled<T> *gotit = content + first;
+    first = gotit->next;
+    T *got = new (gotit) Pooled<T>();
+    gotit->pool = this;
+    count--;
+
+    DEBLOG(cerr << gotit << '\n');
+    assert(check());
+    return got;
+  }
+  DEBLOG(cerr << "[NULL]\n");
+  assert(check());
+  return NULL;
+}
+
+template <class T>
+T *Pool<T>::get(Slot& arg)
+{
+  DEBLOG(cerr << "Pool " << this
+         << '(' << first << ") get ");
+  if (first >= 0) {
+    // we have a free item
+    assert(check());
+
+    Pooled<T> *gotit = content + first;
+    first = gotit->next;
+    T *got = new (gotit) Pooled<T>(arg);
+    gotit->pool = this;
+    count--;
+
+    DEBLOG(cerr << gotit << '\n');
+    assert(check());
+    return got;
+  }
+  DEBLOG(cerr << "[NULL]\n");
+  assert(check());
+  return NULL;
+}
+
+template <class T>
+T* gPool<T>::Get()
+{
+    if (!all) {
+        gPool<T> *p =  new gPool<T>();
+        return p->get();
+    } else {
+        // find a Pool with free
+        for (Qi< gPool<T> > pi(all); pi; pi++) {
+            T *found = ((Pool<T>*)pi)->get();
+            if (found)
+                return found;
+        }
+
+        // no Pool has free, create new Pool
+        DEBLOG(cerr << " new Pool\n");
+        gPool<T> *p = new gPool<T>();
+        return p->get();
+    }
+}
+
+template <class T>
+T* gPool<T>::Get(Slot &arg)
+{
+    if (!all) {
+        Pool<T> *p =  new gPool<T>();
+        return p->get(arg);
+    } else {
+        // find a Pool with free
+        for (Qi< gPool<T> > pi(all); pi; pi++) {
+            T *found = ((gPool<T>*)pi)->get(arg);
+            if (found)
+                return found;
+        }
+
+        // no Pool has free, create new Pool
+        DEBLOG(cerr << " new Pool\n");
+        Pool<T> *p = new Pool<T>();
+        return p->get(arg);
+    }
+}
+
+template <class T>
+void Pool<T>::release(Pooled<T> *el)
+{
+    DEBLOG(cerr << "Pool " << this << " release " << el << '\n');
+    assert(check());
+    // add element to the free linked list
+    el->next = first;
+    first = el - content;
+    count++;
+    assert(check());
+}
+
+template <class T>
+bool Pool<T>::check(int) const
+{
+#ifdef POOL_CHECK
+    int counted = 0;
+    for (int i = first; i >= 0; i = content[i].next) {
+        counted++;
+    }
+
+    DEBLOG(cerr << "Pool check counted:" << counted
+         << " count:" << count
+         << '\n');
+    return counted == count;
+#else
+    return true;
+#endif
+    
+}

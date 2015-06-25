@@ -1,0 +1,10 @@
+Coldstore News:
+
+2/27/2000 NDN:
+Well, I've just spent some of the time necessary to get configure to work with
+our project.  There's going ot need to be a few more passes before I get it
+right.  And then we need to add some magic to do the tests/configuration
+that was done with the mk file templates.  After that, we're nearly set to
+do tar based distributions.
+
+

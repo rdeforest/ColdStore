@@ -1,0 +1,58 @@
+TOP_SRCDIR = @top_srcdir@
+srcdir = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+infodir = @infodir@
+libdir = @libdir@
+mandir = @mandir@
+includedir = @includedir@
+INSTALL = @INSTALL@
+
+include $(TOP_SRCDIR)/mk/occ.defs.mk
+
+OCCFLAGS += -SColdClass -SColdTemplate -SSlotClass
+YACC = bison++ 
+INCLUDES += -I$(TOP_SRCDIR)/include -I$(TOP_SRCDIR)/coldstore \
+	    -I$(TOP_SRCDIR)/toolkit
+
+CXXFLAGS += $(INCLUDES)
+LDFLAGS += $(WRAP) -rdynamic
+LDLIBS += -L$(TOP_SRCDIR)/libs -lgmp -lpcre  -lutil -lqvmm  -lintern  -liberty
+LDLIBS += -ldl -liberty 
+
+OCC_ENV += LD_LIBRARY_PATH=.:$(TOP_SRCDIR)/metaclass
+
+
+all:	freon.so freon 
+
+test: freon
+	LD_LIBRARY_PATH=$(TOP_SRCDIR)/libs/ ./freon < freon.test
+
+include $(TOP_SRCDIR)/mk/occ.rules.mk
+
+manual: freonmanual.html
+
+freonmanual.html: freonmanual.wml
+	wml freonmanual.wml > freonmanual.html
+
+freon.so: start.o freonLexer.o freonParser.o
+
+global.o: global-linux.c global-freebsd.c
+start.o: start.cc
+freonLexer.o: freonLexer.cc freonLexer.hh
+freonParser.o: freonParser.cc freonParser.hh
+freon: freon.o global.o $(TOP_SRCDIR)/libs/slop.o
+
+debug: freon
+	-rm coldstore
+	LD_LIBRARY_PATH=$(TOP_SRCDIR)/libs ddd freon &
+
+install: all
+	$(TOP_SRCDIR)/mkinstalldirs $(bindir)
+	$(TOP_SRCDIR)/mkinstalldirs $(libdir)
+	$(INSTALL) freon $(bindir)/freon
+	$(INSTALL) freon.so $(libdir)/freon.so
+
+CLEAN += 
+DISTCLEAN += freon coldstore

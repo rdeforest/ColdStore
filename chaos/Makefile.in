@@ -1,0 +1,77 @@
+TOP_SRCDIR = @top_srcdir@
+srcdir = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+infodir = @infodir@
+libdir = @libdir@
+mandir = @mandir@
+includedir = @includedir@
+INSTALL = @INSTALL@
+
+
+include @top_srcdir@/mk/occ.defs.mk
+
+
+OCCFLAGS += -SColdClass -SColdTemplate -SSlotClass
+
+INCLUDES += -I@top_srcdir@/include -I@top_srcdir@/coldstore \
+	 -I/usr/local/include -I/usr/local/include/libelf
+
+LDFLAGS += $(WRAP) -rdynamic
+
+#LDLIBS += -L@top_srcdir@/libs -lqvmm -lcold -lgmp -lpcre
+LDLIBS += -L@top_srcdir@/libs -lgmp -lpcre -lqvmm  -lintern  -liberty
+ifeq ($(OSNAME),Linux)
+LDLIBS += -ldl
+endif
+
+OCC_ENV += LD_LIBRARY_PATH=.:@top_srcdir@/metaclass:$$LD_LIBRARY_PATH
+
+# DEFINES += -DEBUGLOG
+
+all:	chaos.so chaos
+
+include @top_srcdir@/mk/occ.rules.mk
+
+chaos.so: ChParser.o semantics.o ChServer.o ChPromise.o ChExpr.o ChTime.o
+
+global.o: global-linux.c global-freebsd.c
+
+chaos: chaos.o global.o @top_srcdir@/libs/slop.o 
+
+
+test: chaos
+	LD_LIBRARY_PATH=@top_srcdir@/libs/ ./chaos < chaos.test
+
+manual: chaosmanual.html
+
+chaosmanual.html: chaosmanual.wml
+	wml chaosmanual.wml > chaosmanual.html
+
+global.so: global.o
+	g++ -shared -o global.so -Xlinker -Bsymbolic global.o
+
+profile: chaos
+	runchaos
+	LD_PRELOAD=./global.so LD_LIBRARY_PATH=@top_srcdir@/libs:. sprof chaos.so chaos.so.profile
+
+cchaos.cc: cchaos.l cchaos.hh
+	flex++ -occhaos.cc -d cchaos.l
+
+cchaos: cchaos.o
+	g++ -o cchaos cchaos.o
+
+debug: chaos
+	-rm coldstore
+	LD_LIBRARY_PATH=@top_srcdir@/libs ddd chaos &
+
+install: all
+	$(TOP_SRCDIR)/mkinstalldirs $(bindir)
+	$(TOP_SRCDIR)/mkinstalldirs $(libdir)
+	$(INSTALL) chaos $(bindir)/chaos
+	$(INSTALL) chaos.so $(libdir)/chaos.so
+
+CLEAN += lex.yy.cc
+DISTCLEAN += chaos coldstore
+

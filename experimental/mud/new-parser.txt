@@ -1,0 +1,40 @@
+look at first character for special cases (", :, ', `, etc.) substitute with verb
+if necessary
+
+explode into tokens.  special words get special tokens
+
+get the cat
+[ < $word, "get" >, < $word, "the" > < $word, "cat" > ]
+
+look $ryan
+[ < $word, "look" >, < $objref, "$ryan" > ]
+
+verb in first position, 
+	1 - match verb against available verbs in environment
+	2 - grab verb template, which specializes the parse
+		<verb> <direct object>
+		<verb> <argument> <prep> <direct object>
+		<verb> <direct object> <prep> <indirect object>
+		<verb> <direct object> <prep> <argument>
+		<verb> <direct object> <argument>
+		<verb> <argument> <direct object>
+		<verb> <argument> <prep> <argument>
+
+			* prep = english preps plus  = for assignment
+			verb = surrounding verbs, or queries
+
+		is $ryan in $living_room   v,d,p,i
+		let a = 5                  v,a,p,a
+		go north		   v,a
+		while a is 5:		   v,a,p,a,':' == block closure
+		let a = add 1 to a,	   v,a,p,(v,a,p,a),',' == next statement...
+		print a.		   v,a,'.' == close block/finish statements
+		get "note about colin",	   v,d,',' == next statement
+		clear it.		   v,d,'.' == close block/finish statements
+
+	3 - send command object to command executor, remote or local
+
+		remote -> serialize to xml, transmit over wire
+		local -> execute immediately
+
+

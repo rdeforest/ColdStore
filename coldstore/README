@@ -1,0 +1,5 @@
+ColdStore is a gigabyte-scale persistent object store which mmap()s objects into a file (for persistence), can allocate objects in a minimal working-set of pages (for speed), permits library versions to change without a rebuild of the store, permits application checkpoint/restart. 
+
+ColdStore might be used to replace a database, cache highly structured objects, act as an OODB, act as a Document Store for XML/SGML/HTML, make STL persistent, create a MUD or a VM workbench. 
+
+See http://coldstore.linuxbox.com for details, downloads, contacts, documents.

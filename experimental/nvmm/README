@@ -1,0 +1,17 @@
+nvmm is an experimental, work-in-progress, generic memory memory allocation framework.
+
+Idea is to provide a virtual protocol for allocated memory (MemSegment) and a vp for allocators (MemArena) such that one can plug any semantics into MemArena and provide a new()/delete() over a malloc()/free() interface.
+
+The virtues of this interface are:
+
+1) we can play with different allocation schemas.
+2) we can safely implement Pool-like allocation semantics
+3) the Guard mechanism can be turned on/off per Arena, so delete() won't fail so badly.
+4) Since we expect a valid MemSegment vptr at the start of each allocation, it's probably possible to trap attempts to delete objects allocated on the stack (which's always a potential problem) by dynamically casting what should be a valid MemSegment*, and catching failures (will this ever sigsegv??  Possibly)
+
+There's a problem generalising storage layout schema: some schemas like to allocate metadata adjacent to the actual memory allocated (standard malloc()'s like this,) some like to allocate it in a distinct space (qvmm's like this.)
+
+We require only that each allocation be a MemSegment, and therefore have a vtable pointer to some code and the local-metadata necessary to cover this difference, guaranteeing to access the metadata given only the allocation pointer returned by its MemArena.  In qvmm's case, this entails a lookup of the allocation tree, in malloc()'s case, a pointer adjustment.
+
+A MemArena will allocate MemSegments ... that is, arbitrarily sized spaces which are headed by the MemSegment vptr.  Each MemSegment's implementation can access metadata associated with the allocation implemented by MemArena.
+

@@ -1,0 +1,45 @@
+"Arithmetic Comparisons on 0 and 1" peektop
+    dup 1 "0 0 ==" test
+    dup 1 "1 1 ==" test
+    dup 0 "0 0 !=" test
+    dup 0 "1 0 ==" test
+    dup 1 "1 0 !=" test
+    dup 1 "1 0 >"  test
+    dup 0 "1 0 <"  test
+    dup 0 "0 1 >"  test
+    dup 1 "0 1 <"  test
+drop
+
+"Arithmetic Operations on Integers" peektop
+    dup 7  "5 2 +" test
+    dup 3  "5 2 -" test
+    dup 10 "5 2 *" test
+    dup 2  "5 2 /" test
+    dup 1  "5 2 %" test
+drop
+
+"Bitwise Operations on Integers" peektop
+    dup 14 "12 10 |" test
+    dup 8  "12 10 &" test
+    dup 6  "12 1 >>" test
+    dup 24 "12 1 <<" test
+drop
+
+"Math" peektop
+    { 1 - } 'decr !
+    { dup decr } 'dupdec !
+    { dupdec dup over *} 'decmul !
+    { decmul swap { dup over * swap} {decr dup} while drop } 'fact !
+
+    /*  { fact    < n -- factorial(n) >  */
+    {
+        dup 1 ==
+            {} 
+            {dup decr fact *} 
+        if
+    } 'fact !
+
+    dup 24  "4 fact" test
+    dup 120 "5 fact" test
+drop
+

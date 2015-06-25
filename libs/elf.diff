@@ -1,0 +1,146 @@
+diff -c elf/dl-runtime.c ../glibc-2.1.2.old/elf/dl-runtime.c
+*** elf/dl-runtime.c	Fri Jul 16 04:32:41 1999
+--- ../glibc-2.1.2.old/elf/dl-runtime.c	Mon Jul 26 18:47:47 1999
+***************
+*** 91,100 ****
+  
+    /* Currently value contains the base load address of the object
+       that defines sym.  Now add in the symbol offset.  */
+!   value = (sym ? value + sym->st_value : 0);
+  
+!   /* And now perhaps the relocation addend.  */
+!   value = elf_machine_plt_value (l, reloc, value);
+  
+    /* Finally, fix up the plt itself.  */
+    elf_machine_fixup_plt (l, reloc, rel_addr, value);
+--- 91,104 ----
+  
+    /* Currently value contains the base load address of the object
+       that defines sym.  Now add in the symbol offset.  */
+!   if (sym->st_shndx != SHN_ABS) {
+!       value = (sym ? value + sym->st_value : 0);
+  
+!       /* And now perhaps the relocation addend.  */
+!       value = elf_machine_plt_value (l, reloc, value);
+!   } else {
+!       value = sym ? sym->st_value : 0;
+!   }
+  
+    /* Finally, fix up the plt itself.  */
+    elf_machine_fixup_plt (l, reloc, rel_addr, value);
+***************
+*** 167,176 ****
+  
+        /* Currently value contains the base load address of the object
+  	 that defines sym.  Now add in the symbol offset.  */
+!       value = (sym ? value + sym->st_value : 0);
+  
+!       /* And now perhaps the relocation addend.  */
+!       value = elf_machine_plt_value (l, reloc, value);
+  
+        /* Store the result for later runs.  */
+        *resultp = value;
+--- 171,184 ----
+  
+        /* Currently value contains the base load address of the object
+  	 that defines sym.  Now add in the symbol offset.  */
+!       if (sym->st_shndx != SHN_ABS) {
+!           value = (sym ? value + sym->st_value : 0);
+  
+!           /* And now perhaps the relocation addend.  */
+!           value = elf_machine_plt_value (l, reloc, value);
+!       } else {
+!           value = sym ? sym->st_value : 0;
+!       }
+  
+        /* Store the result for later runs.  */
+        *resultp = value;
+diff -c elf/dl-symbol.c ../glibc-2.1.2.old/elf/dl-symbol.c
+*** elf/dl-symbol.c	Sun Sep  6 19:08:04 1998
+--- ../glibc-2.1.2.old/elf/dl-symbol.c	Mon Jul 26 18:06:46 1999
+***************
+*** 30,34 ****
+    const ElfW(Sym) *ref = NULL;
+    loadbase = _dl_lookup_symbol (name, &ref, map->l_local_scope, map->l_name,
+  				0);
+!   return loadbase + ref->st_value;
+  }
+--- 30,38 ----
+    const ElfW(Sym) *ref = NULL;
+    loadbase = _dl_lookup_symbol (name, &ref, map->l_local_scope, map->l_name,
+  				0);
+!   if (ref->st_shndx != SHN_ABS) {
+!       return loadbase + ref->st_value;
+!   } else {
+!       return ref->st_value;
+!   }
+  }
+diff -c elf/dlsym.c ../glibc-2.1.2.old/elf/dlsym.c
+*** elf/dlsym.c	Wed Feb  3 21:29:22 1999
+--- ../glibc-2.1.2.old/elf/dlsym.c	Mon Jul 26 18:50:09 1999
+***************
+*** 95,99 ****
+    args.name = name;
+  
+    return (_dlerror_run (dlsym_doit, &args)
+! 	  ? NULL : (void *) (args.loadbase + args.ref->st_value));
+  }
+--- 95,102 ----
+    args.name = name;
+  
+    return (_dlerror_run (dlsym_doit, &args)
+! 	  ? NULL
+!           : (void *) (((args.ref->st_shndx != SHN_ABS)
+!                       ?args.loadbase :0)
+!           + args.ref->st_value));
+  }
+diff -c elf/dlvsym.c ../glibc-2.1.2.old/elf/dlvsym.c
+*** elf/dlvsym.c	Wed Feb  3 21:29:39 1999
+--- ../glibc-2.1.2.old/elf/dlvsym.c	Mon Jul 26 18:50:33 1999
+***************
+*** 110,115 ****
+    args.version.filename = NULL;
+  
+    return (_dlerror_run (dlvsym_doit, &args)
+! 	  ? NULL : (void *) (args.loadbase + args.ref->st_value));
+  }
+  weak_alias (__dlvsym, dlvsym)
+--- 110,118 ----
+    args.version.filename = NULL;
+  
+    return (_dlerror_run (dlvsym_doit, &args)
+! 	  ? NULL
+!           : (void *) (((args.ref->st_shndx != SHN_ABS)
+!                       ?args.loadbase :0)
+!           + args.ref->st_value));
+  }
+  weak_alias (__dlvsym, dlvsym)
+diff -c sysdeps/i386/dl-machine.h ../glibc-2.1.2.old/sysdeps/i386/dl-machine.h
+*** sysdeps/i386/dl-machine.h	Sun Feb 21 05:19:47 1999
+--- ../glibc-2.1.2.old/sysdeps/i386/dl-machine.h	Tue Jul 27 12:51:56 1999
+***************
+*** 324,331 ****
+      {
+        const Elf32_Sym *const refsym = sym;
+        Elf32_Addr value = RESOLVE (&sym, version, ELF32_R_TYPE (reloc->r_info));
+!       if (sym)
+! 	value += sym->st_value;
+  
+        switch (ELF32_R_TYPE (reloc->r_info))
+  	{
+--- 330,344 ----
+      {
+        const Elf32_Sym *const refsym = sym;
+        Elf32_Addr value = RESOLVE (&sym, version, ELF32_R_TYPE (reloc->r_info));
+!       if (sym) {
+!           if (_dl_debug_symbols)
+!               _dl_dump_sym(map, sym);
+! 
+!           if (sym->st_shndx != SHN_ABS) {
+!               value += sym->st_value;
+!           } else
+!               value = sym->st_value;
+!       }
+  
+        switch (ELF32_R_TYPE (reloc->r_info))
+  	{

@@ -1,0 +1,59 @@
+Installation for Linux:
+======================
+Unpack it, cd into the directory, type make.
+
+Dependencies:
+============
+The following external facilities are (more or less) required.
+Here are known-good versions, and a probable starting point for acquiring them
+(if you're unfortunate enough not to be using Debian.)
+
+Debian	Debian
+Package	Version		Description
+--------	-------		-----------
+libelfg0	0.7.0-1		ELF object file access library
+libelfg0-dev	0.7.0-1
+
+		ftp://sunsite.unc.edu/pub/Linux/libs/libelf-0.7.0.tar.gz
+
+libpcre3	3.3-3		Perl Compatible Regular Expressions (only Regexp.cc)
+libpcre3-dev	3.3-3
+
+		ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/
+
+		Note, there's a bug in some wild versions of this code:
+		/usr/include/pcre.h line 102 is
+			extern unsigned const char *pcre_maketables(void);
+		but should be
+			extern const unsigned char *pcre_maketables(void);
+
+libgmp3	3.1.1-1		Multiprecision arithmetic library
+libgmp3-dev	3.1.1-1
+
+		ftp.gnu.org
+
+openc++	2.5.10-1	extensible C++ compiler preprocessor
+
+		http://www.hlla.is.tsukuba.ac.jp/~chiba/openc++.html
+		ftp://coldstore.sourceforge.net/pub/coldstore/debs/openc++_2.5.10-1_i386.deb
+
+bison++		none		C++ bison
+
+		ftp://coldstore.sourceforge.net/pub/coldstore/bison++-1.21-8.tar.gz
+
+flex            2.5.4a-23       GNU lex
+
+libgc6-dev      6.0-3           garbage collection library
+
+For DEBIAN builders:
+
+binutils-dev    2.11.93.0.2-3   (provides libiberty)
+
+Testing:
+=======
+
+There's a regression test suite in chaos/
+
+You can run it like this:
+
+    ./runtest

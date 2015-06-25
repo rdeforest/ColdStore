@@ -1,0 +1,15 @@
+#!/bin/bash
+
+if [ -e "test.results" ]; then
+    mv "test.results" "test.results.prev"
+    mv "test.diff" "test.prev.diff"
+fi
+
+rm -f "coldstore"
+make
+        
+if [ -e "chaos" ]; then
+    ( echo '"test.ch" include' | 
+      "./runchaos") > "test.results" 2>&1 | tee
+    diff -u "test.results.base" "test.results" > "test.diff"
+fi

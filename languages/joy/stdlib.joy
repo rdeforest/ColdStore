@@ -1,0 +1,201 @@
+(* file  STDLIB.JOY *)
+
+LIBRA
+
+(* - - - - -   O P E R A T O R S   - - - - - *)
+
+    popd == [pop] dip;
+    dupd == [dup] dip;
+    swapd == [swap] dip;
+    rollup == swap [swap] dip;
+    rolldown == [swap] dip swap;
+    rotate == swap [swap] dip swap;
+    pop2 == pop pop;
+    newstack == [] unstack;
+    putchars == [putch] step;
+    newline == '\n putch;
+    space == '\032 putch;
+
+(* - - -  NUMERIC - - - *)
+
+    positive == 0 >;
+    negative == 0 <;
+    even == 2 rem null;
+    odd == even not;
+    fact == [1 1] dip [dup [*] dip succ] times pop;
+    fib == [0 1] dip [dup [+] dip swap] times pop;
+    nfib == [1 1] dip [dup [+ succ] dip swap] times pop;
+    gcd == [0 >] [dup [rem] dip swap] while pop;
+    exp  ==  1 rotate [*] cons times;
+
+(* - - -  AGGREGATES - - - *)
+
+    unitset == {} cons;
+    unitstring == "" cons;
+    unitlist == [] cons;
+    second == rest first;
+    third == rest rest first;
+    null2 == [ [[null] true] [pop null] ] cond;
+    uncons2 == [uncons] dip uncons swapd;
+    unswons2 == [unswons] dip unswons swapd;
+    duco == dup cons;
+    fix == [duco] first swap cons duco;
+    codufi == cons dup first;
+    string2set == {} swap [swons] step;
+    elements == {} swap [swons] step;
+    set2string == "" swap [swons] step;
+    shunt == [swons] step;
+    reverse == [[]] [""] iflist swap shunt;
+    reverselist == [] swap shunt;
+    reversestring == "" swap shunt;
+    swoncat == swap concat;
+    pair == [] cons cons;
+    unpair == uncons uncons pop;
+    flatten == [null] [] [uncons] [concat] linrec;
+    restlist == [null] [[] cons] [dup rest] [cons] linrec;
+    frontlist1 == (* Thompson p 247 *)
+        [null] [[] cons]
+        [uncons]
+        [ [cons] map popd [] swons ]
+        linrec;
+    frontlist == (* also works for sets and strings *)
+        [null] [[] cons]
+        [uncons]
+        [ [cons] map popd dup first rest swons ]
+        linrec;
+    subseqlist == (* Thompson p 247 *)
+        [null]
+        [[] cons]
+        [ uncons dup
+          [frontlist [cons] map popd] dip ]
+        [concat]
+        linrec;
+    powerlist1 ==
+        [null] [[] cons] [uncons]
+        [dup swapd [cons] map popd concat] linrec;
+    powerlist2 ==
+        [null] [[] cons] [uncons]
+        [dup swapd [cons] map popd swoncat] linrec;
+    insertlist ==       (*   Sequence  Item   ->   List(Sequence) *)
+        swons
+        [ small ]
+        [ unitlist ]
+        [ dup                           (* keep original *)
+          unswons [uncons] dip swons ]  (* take out second *)
+        [ swap [swons] cons map         (* swons in second *)
+          cons ]                        (* cons in original *)
+        linrec;
+    permlist ==
+        [ small ]
+        [ unitlist ]
+        [ uncons ]
+        [ swap [insertlist] cons map
+          flatten ]
+        linrec;
+    sum == 0 swap [+] step;
+(*
+    product == 1 swap [*] step;
+*)
+    product ==
+        1 swap
+        [ null not ]
+        [ [first null]
+          [[pop 0] dip pop []]
+          [uncons [*] dip]
+          ifte ]
+        while
+        pop;
+    qsort ==
+        [small] [] [uncons [>] split] [swapd cons concat] binrec;
+    qsort1-1 ==
+        [small]
+        []
+        [uncons [unswons] dip [first >] split [swons] dip2]
+        [swapd cons concat]
+        binrec;
+    qsort1 ==
+        [small] [] [uncons [[first] app2 >] split] [swapd cons concat] binrec;
+    mk_qsort ==
+        [ [small] [] ] dip
+        [ app2 >] cons [split] cons [uncons] swoncat
+        [ swapd cons concat ]
+        binrec;
+    merge ==
+        [ [ [null] [pop] ]
+          [ [pop null] [popd] ]
+          [ [unswons2 <] [[uncons] dip] [cons] ]
+          [ [unswons2 >] [uncons swapd] [cons] ]
+          [ [uncons2] [cons cons] ] ]
+        condlinrec;
+    merge1 ==
+        [ [ [null] [pop] ]
+          [ [pop null] [popd] ]
+          [ [unswons2 [first] app2 <] [[uncons] dip] [cons] ]
+          [ [unswons2 [first] app2 >] [uncons swapd] [cons] ]
+          [ [uncons2] [cons cons] ] ]
+        condlinrec;
+    insert ==
+        [pop null] [[first] dip >=] disjoin
+        [ swons ]
+        [ [uncons] dip]
+        [ cons ]
+        linrec;
+    insert-old ==
+        [ [ [pop null] [swons] ]
+          [ [[first] dip >= ] [swons] ]
+          [ [[uncons] dip] [cons] ] ]
+        condlinrec;
+    delete ==
+        [ [ [pop null] [pop] ]
+          [ [[first] dip >] [pop] ]
+          [ [[first] dip =] [pop rest] ]
+          [ [[uncons] dip] [cons] ] ]
+        condlinrec;
+    scalarproduct == [0] dip2
+        [null2] [pop2] [uncons2 [* +] dip2] tailrec;
+    zip ==      (* B&W - pp 284 and 287 *)
+        [null2] [pop2 []] [uncons2] [[pair] dip cons] linrec;
+    transpose == (* READE p 133 *)
+        [ [null] [true] [[null] some] ifte ]
+        [ pop [] ]
+        [ [[first] map] [[rest] map] cleave ]
+        [ cons ]
+        linrec;
+    cartproduct == [[]] dip2 [pair swap [swons] dip] step2;
+
+    orlist == [list] swap disjoin;
+    orlistfilter == orlist [filter] cons;
+    treeshunt == [swons] treestep;
+    treeflatten == [] swap treeshunt reverse;
+    treereverse == [] [reverse] [map] treegenrec;
+    treestrip == [list] treefilter;
+
+    treesample == [ [1 2 [3 4] 5 [[[6]]] 7 ] 8 ];
+
+(* - - - - -   P R O G R A M   O P E R A T O R S   - - - - - *)
+
+    conjoin == [[false] ifte] cons cons;
+    disjoin == [ifte] cons [true] swons cons;
+    negate ==  [[false] [true] ifte] cons;
+
+(* - - - - -   C O M B I N A T O R S   - - - - - *)
+
+    b == [i] dip i;
+    leftdist == [app2] dip ternary;
+    callcc == [conts rest rest] dip step;
+    callcc1 == [conts stack put rest rest] dip step;
+
+    dip2 == [dip] cons dip;
+    dip3 == [dip2] cons dip;
+    y == fix i;
+    ry == [ry] codufi i;
+    mutinx == dupd at i;
+    step2 == [[dup] dip] swoncat [step pop] cons cons step;
+    zipwith ==  (* zipwith, B&W p 57 *)
+        [[null2] [pop2 []] [uncons2]] dip
+        [dip cons] cons
+        linrec;
+    treemap == [] [map] treegenrec;
+    treefilter == [] swap orlistfilter [map] treegenrec.
+
+(* end  STDLIB.JOY *)

@@ -1,0 +1,35 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg SYSTEM "SVG-19990812.dtd">
+<!-- local DTD so we aren't subject to changes in draft -->
+
+<svg width="500" height="500" style="text-antialiasing:true" >
+
+  <desc>This example mixes shapes, text, images, and opacity.</desc>
+  <title>Title of WDVL SVG Example 2</title>
+
+  <g id="Group1" style="stroke-width:4; stroke-antialiasing: false" >
+
+    <line x1="0" y1="0" x2="300" y2="300" 
+	style="stroke: yellow; stroke-width: 2" />
+
+    <image xlink:href="WDVL.jpg" x="30" y="30" width="431" height="82" />
+
+    <text style="font-size: 48; fill: teal; fill-opacity: 0.4"
+	x="175" y="45">SVG Rules!</text>
+
+    <rect x="30" y="90"  height="50" width="50" 
+ 	style="stroke: red; fill: blue; fill-opacity: 0.4" />
+
+    <text style="font-size: 14; fill: white; stroke-width: 1"
+	x="35" y="130">Hello, Opacity</text>
+
+    <circle cx="150"  cy="125" r="25"
+ 	style="stroke: blue; fill: red" />
+
+    <image xlink:href="internetcom.jpg" x="170" y="85" width="200" height="27" />
+
+    <line x2="500" y2="0" x1="300" y1="300" 
+	style="stroke: blue; stroke-width: 2" />
+ 
+ </g>
+</svg>

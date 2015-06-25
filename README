@@ -1,0 +1,62 @@
+ColdStore
+=========
+
+Homepage: http://coldstore.sourceforge.net
+Project: http://sourceforge.net/projects/coldstore/
+==================================================
+
+	"There shall, in that time, be rumours of things going astray,
+	erm, and there shall be a great	confusion as to where things 
+	really are, and nobody will really know where lieth those little 
+	things wi-- with the sort of raffia work base that has an attachment.
+	At this time, a friend shall lose his friend's hammer and the young 
+	shall not know where lieth the things possessed by their fathers 
+	that their fathers put there only just the night before, about 
+	eight o'clock."
+	      -- Boring Prophet, Life of Brian, Monty Python
+
+ColdStore is a gigabyte-scale persistent object store which mmap()s objects into a file (for persistence), can allocate objects in a minimal working-set of pages (for speed), permits library versions to change without a rebuild of the store, and permits application checkpoint/restart. 
+
+ColdStore might be used to replace a database, cache highly structured objects, act as an OODB, act as a Document Store for XML/SGML/HTML, make STL persistent, create a MUD or a VM workbench. 
+
+See http://coldstore.sourceforge.net for more information.
+==========================================================
+
+REQUIREMENTS
+ColdStore requires the following:
+
+* A recent Linux 2.2+ or FreeBSD 4.0 system.  
+  Other OS's and versions have not been tested and probably will not build
+  without major work.  Porting efforts for other OS's are welcome.
+
+* gcc 2.95.2 (Linux)
+  (Later version for BSD -- Still in development at this time, so don't
+  install it over your existing installation of gcc.
+  gcc 2.95 will work, but you'll have to get 
+  libstdc++ 3.0, and possibly change makefiles to point to it.)
+
+* OpenC++
+
+* libelf (Linux already has it, other platforms use the provided version)
+
+* libiberty -- this is part of the binutils-dev package in Debian.  If you build
+  your own gcc, then its likely you already have it.  Used to demangle C++ 
+  symbols.
+
+Some handy Debian packages:
+ * libelfg0-dev
+ * libgmp3-dev
+ * libpcre3-dev
+ * openc++
+ * libgc5-dev
+ * binutils-dev
+ * autoconf
+ * flex
+
+=======================================
+
+To Port to another system/architecture:
+* A LARGE chunk of unreserved virtual memory, the larger the better.
+  Follow the directions in prospect/README to find this chunk on your system.
+* There's a small amount of assembler and gcc-i386 specific stuff around.
+  Get in touch, the team will help you port.

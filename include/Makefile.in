@@ -1,0 +1,32 @@
+TOP_SRCDIR = @top_srcdir@
+srcdir = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+infodir = @infodir@
+libdir = @libdir@
+mandir = @mandir@
+includedir = @includedir@
+INSTALL = @INSTALL@
+
+include @top_srcdir@/mk/gcc.defs.mk
+include @top_srcdir@/mk/gcc.rules.mk
+
+headers := *.h *.hh *.th
+
+all:
+	-rm -f ./qvmm.h ./elf.hh
+	-ln -s @top_srcdir@/qvmm/qvmm.h .
+	-ln -s @top_srcdir@/intern/elf.hh .
+
+
+install_headers: $(headers)
+	$(TOP_SRCDIR)/mkinstalldirs $(includedir)
+	@list='$(headers)'; for p in $$list; do \
+	  if test -f "$$p"; then d= ; else d="$(srcdir)/"; fi; \
+	  echo "(INSTALL) $$d$$p $(includedir)/$$p"; \
+	  $(INSTALL) $$d$$p $(includedir)/$$p; \
+	done
+
+
+install: all install_headers
